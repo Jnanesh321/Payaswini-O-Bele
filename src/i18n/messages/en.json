@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "tools": "Tools",
+    "howItWorks": "How It Works",
+    "login": "Login",
+    "register": "Register"
+  },
+  "hero": {
+    "headline": "O Bele~ — Rent Farming Tools",
+    "subheadline": "Carbon fiber poles from ₹200/day. No more ₹70,000 upfront.",
+    "ctaPrimary": "Rent Now",
+    "ctaSecondary": "How It Works?",
+    "statsTools": "Tools",
+    "statsFarmers": "Farmers",
+    "statsVillages": "Villages"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "step1Title": "Browse Tools",
+    "step1Desc": "Explore our catalog of farming tools available for rent near you.",
+    "step2Title": "Book & Pay",
+    "step2Desc": "Select your dates, pay securely via UPI or card, and confirm instantly.",
+    "step3Title": "Pickup or Delivery",
+    "step3Desc": "Pick up from our center or get same-day delivery to your doorstep.",
+    "step4Title": "Return & Deposit",
+    "step4Desc": "Return the tool after use. Your security deposit is refunded within 48h.",
+    "cta": "Get Started Now"
+  },
+  "featuredTools": {
+    "title": "Popular Tools",
+    "viewAll": "View All Tools",
+    "rentNow": "Rent Now",
+    "deposit": "Deposit",
+    "perDay": "/day"
+  },
+  "testimonials": {
+    "title": "What Our Farmers Say"
+  },
+  "trustBadges": {
+    "verifiedTools": "Verified Tools",
+    "insuredRentals": "Insured Rentals",
+    "transparentPricing": "Transparent Pricing",
+    "backedByPayaswini": "Backed by Payaswini.com"
+  },
+  "tools": {
+    "title": "Farming Tools",
+    "subtitle": "Select the tool you need for your farm",
+    "searchPlaceholder": "Search tools…",
+    "available": "Available",
+    "rented": "Rented",
+    "noResults": "No tools found",
+    "noResultsHint": "Try adjusting your filters or search term",
+    "result": "result",
+    "results": "results",
+    "filterTitle": "Filters",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "priceRange": "Price Range / Day",
+    "availability": "Availability",
+    "all": "All",
+    "availableNow": "Available Now",
+    "location": "Location",
+    "clearAll": "Clear All Filters",
+    "sortPopular": "Popular",
+    "sortPriceLow": "Price Low",
+    "sortPriceHigh": "Price High",
+    "sortNewest": "Newest"
+  },
+  "footer": {
+    "productOf": "A product of Payaswini.com",
+    "tagline": "The Farmer's Companion"
+  }
+}

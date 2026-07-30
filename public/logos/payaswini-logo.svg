@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <!-- Icon: River + Leaf -->
+  <g transform="translate(8, 10)">
+    <!-- Outer circle -->
+    <circle cx="30" cy="30" r="28" fill="#1B4D5A"/>
+    
+    <!-- Leaf shape -->
+    <path d="M 30 10 Q 45 20 42 35 Q 30 45 18 35 Q 15 20 30 10 Z" 
+          fill="#D4A017" opacity="0.95"/>
+    <!-- Leaf vein -->
+    <path d="M 30 10 Q 30 25 30 45" stroke="#1B4D5A" stroke-width="1.2" fill="none"/>
+    
+    <!-- Three flowing waves (river) -->
+    <path d="M 8 42 Q 18 38 28 42 T 48 42 T 58 42" 
+          stroke="#7FB8C4" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M 8 47 Q 18 43 28 47 T 48 47 T 58 47" 
+          stroke="#A8D0DB" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M 8 52 Q 18 48 28 52 T 48 52 T 58 52" 
+          stroke="#C8E2EA" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Wordmark -->
+  <text x="78" y="42" font-family="Inter, sans-serif" font-size="26" font-weight="700" fill="#1B4D5A" letter-spacing="0.5">
+    Payaswini
+  </text>
+  <text x="78" y="60" font-family="Inter, sans-serif" font-size="9" font-weight="500" fill="#5A7A82" letter-spacing="2.5">
+    NURTURING ROOTS
+  </text>
+</svg>

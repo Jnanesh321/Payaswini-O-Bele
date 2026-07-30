@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "ಮುಖಪುಟ",
+    "tools": "ಸಾಧನಗಳು",
+    "howItWorks": "ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
+    "login": "ಲಾಗಿನ್",
+    "register": "ನೋಂದಣಿ"
+  },
+  "hero": {
+    "headline": "ಓ ಬೆಳೆ~ — ಬಾಡಿಗೆಗೆ ಕೃಷಿ ಸಾಧನಗಳು",
+    "subheadline": "ಕಾರ್ಬನ್ ಫೈಬರ್ ಪೋಲ್ ದಿನಕ್ಕೆ ₹200 ರಿಂದ. ಇನ್ನು ₹70,000 ಮುಂಗಡ ಇಲ್ಲ.",
+    "ctaPrimary": "ಈಗ ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ",
+    "ctaSecondary": "ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
+    "statsTools": "ಸಾಧನಗಳು",
+    "statsFarmers": "ರೈತರು",
+    "statsVillages": "ಗ್ರಾಮಗಳು"
+  },
+  "howItWorks": {
+    "title": "ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
+    "step1Title": "ಹುಡುಕಿ",
+    "step1Desc": "ನಿಮ್ಮ ಹತ್ತಿರದ ಬಾಡಿಗೆ ಕೃಷಿ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
+    "step2Title": "ಬುಕ್ ಮಾಡಿ",
+    "step2Desc": "ದಿನಾಂಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ, UPI ಅಥವಾ ಕಾರ್ಡ್ ಮೂಲಕ ಸುರಕ್ಷಿತವಾಗಿ ಪಾವತಿಸಿ.",
+    "step3Title": "ಪಡೆಯಿರಿ",
+    "step3Desc": "ನಮ್ಮ ಕೇಂದ್ರದಿಂದ ಪಡೆಯಿರಿ ಅಥವಾ ತಕ್ಷಣದ ವಿತರಣೆಯನ್ನು ಪಡೆಯಿರಿ.",
+    "step4Title": "ಹಿಂತಿರುಗಿಸಿ",
+    "step4Desc": "ಬಳಕೆಯ ನಂತರ ಸಾಧನವನ್ನು ಹಿಂತಿರುಗಿಸಿ. 48 ಗಂಟೆಗಳ ಒಳಗೆ ಠೇವಣಿ ಮರುಪಾವತಿ.",
+    "cta": "ಈಗಲೇ ಆರಂಭಿಸಿ"
+  },
+  "featuredTools": {
+    "title": "ಜನಪ್ರಿಯ ಸಾಧನಗಳು",
+    "viewAll": "ಎಲ್ಲಾ ಸಾಧನಗಳನ್ನು ನೋಡಿ",
+    "rentNow": "ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ",
+    "deposit": "ಠೇವಣಿ",
+    "perDay": "/ದಿನ"
+  },
+  "testimonials": {
+    "title": "ರೈತರ ಅನುಭವಗಳು"
+  },
+  "trustBadges": {
+    "verifiedTools": "ಪರಿಶೀಲಿಸಿದ ಸಾಧನಗಳು",
+    "insuredRentals": "ವಿಮೆ ರಕ್ಷಿತ ಬಾಡಿಗೆ",
+    "transparentPricing": "ಪಾರದರ್ಶಕ ಬೆಲೆ",
+    "backedByPayaswini": "Payaswini.com ನ ಬೆಂಬಲ"
+  },
+  "tools": {
+    "title": "ಕೃಷಿ ಸಾಧನಗಳು",
+    "subtitle": "ನಿಮ್ಮ ಫಾರ್ಮ್ಗೆ ಅಗತ್ಯವಿರುವ ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "searchPlaceholder": "ಸಾಧನಗಳನ್ನು ಹುಡುಕಿ…",
+    "available": "ಲಭ್ಯವಿದೆ",
+    "rented": "ಬಾಡಿಗೆಗೆ ಕೊಡಲಾಗಿದೆ",
+    "noResults": "ಯಾವುದೇ ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+    "noResultsHint": "ನಿಮ್ಮ ಫಿಲ್ಟರ್ಗಳನ್ನು ಸರಿಹೊಂದಿಸಿ ಅಥವಾ ಹುಡುಕಾಟ ಪದವನ್ನು ಬದಲಾಯಿಸಿ",
+    "result": "ಫಲಿತಾಂಶ",
+    "results": "ಫಲಿತಾಂಶಗಳು",
+    "filterTitle": "ಫಿಲ್ಟರ್ಗಳು",
+    "category": "ವರ್ಗ",
+    "allCategories": "ಎಲ್ಲಾ ವರ್ಗಗಳು",
+    "priceRange": "ಬೆಲೆ ವ್ಯಾಪ್ತಿ / ದಿನ",
+    "availability": "ಲಭ್ಯತೆ",
+    "all": "ಎಲ್ಲಾ",
+    "availableNow": "ಈಗ ಲಭ್ಯವಿದೆ",
+    "location": "ಸ್ಥಳ",
+    "clearAll": "ಎಲ್ಲಾ ಫಿಲ್ಟರ್ಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ",
+    "sortPopular": "ಜನಪ್ರಿಯ",
+    "sortPriceLow": "ಕಡಿಮೆ ಬೆಲೆ",
+    "sortPriceHigh": "ಹೆಚ್ಚಿನ ಬೆಲೆ",
+    "sortNewest": "ಹೊಸದು"
+  },
+  "footer": {
+    "productOf": "Payaswini.com ನ ಉತ್ಪನ್ನ",
+    "tagline": "ಬೆಳೆಗಾರನ ಬೆಸುಗೆ"
+  }
+}
