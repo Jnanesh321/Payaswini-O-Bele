@@ -283,7 +283,7 @@ model Tool {
   pricePerDay          Int
   pricePerWeek         Int?
   pricePerSeason       Int?
-  deposit              Int
+  deposit              Int          @default(0)
   // DEPRECATED: tool availability must be DERIVED from ToolInstance rows & bookings
   availableCount       Int          @default(0)
   // DEPRECATED: count equals ToolInstance rows

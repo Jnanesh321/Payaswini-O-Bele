@@ -1,5 +1,89 @@
 # Changelog
 
+## 2026-08-11 — Change 2 rolled back: refundable deposit + upfront payment restored
+
+**What:** The user decided Change 2 (collect-on-completion payment, deposits
+swept from the booking grip) was a regression and asked to restore the
+pre-Change-2 refundable-deposit + upfront-payment flow while keeping all the
+owner-accept work built on top of it.
+
+- **Deposit system restored (from `cac8eb5`):** `Tool.deposit`,
+  `Booking.deposit`, `Payment.depositFrozen/depositDeducted/depositRefunded` +
+  `disputeLocked`. Seed deposits ₹2,000 / ₹1,000 / ₹5,000. Checkout shows the
+  refundable-deposit line and the full upfront amount is charged via Razorpay;
+  `create-order` creates a real Razorpay order with the deposit included and
+  `depositFrozen: true`; `verify` captures payment and moves the booking to
+  `OWNER_PENDING`.
+- **Change 2 only additions removed:** `Payment.manualCaptured`; the
+  `RETURNING_TOOL` payment gate in the transition route; the
+  `collect/[bookingId]` and `payments/[bookingId]/cash` endpoints; the operator
+  Work-Completed pay screen (`operator/work/[bookingId]`).
+- **Kept (owner work on top):** the owner Requests/Earnings/Profile/My-Equipment
+  screens + API routes, `owner-sla.ts`, and the transition route's explicit
+  owner-accept `operatorMode` (assign_operator | self_service) with the
+  self-service financial conversion. The now-stale SMS wording
+  ("payment collected on work completion") was corrected since payment is
+  collected upfront.
+- **Owner Earnings semantic fix:** `settled` now means `status === COMPLETED`
+  only (payment is captured upfront, so `CAPTURED` no longer implies the money
+  is the owner's). Owner ledger and profile `lifetimeEarnings` sum
+  `totalToolFee` (owner share), never the full payment amount.
+
+**Verification:** `npx tsc --noEmit` clean; `prisma db push` + `prisma generate`
+applied; build checked after restore.
+
+## 2026-08-11 — Change 1: certified-tool scenario selection (self-operate vs operator)
+
+**What:** The tool detail page now lets the farmer choose how to operate a tool
+that requires a certified operator, and the booking's `serviceType` is set from
+that choice instead of being silently defaulted to self-service.
+
+- **Schema:** `Tool` gained `requiresCertifiedOperator Boolean @default(false)`
+  and `operatorFeePerDay Int @default(0)` (paise). New `SelfOperatePermission`
+  model (`farmerId` ↔ `toolOwnerId`, `VerificationStatus`) records a Tool
+  Owner's verified grant that lets a specific farmer self-operate their
+  certified tools. `prisma db push` + `prisma generate` applied.
+- **Seed:** carbon-fibre pole + power tiller are certified (₹200/day and
+  ₹350/day operator fees); sprayer is not. One verified grant seeded:
+  Raju Gowda (Tool Owner) → Suresh Shetty (Farmer).
+- **`GET /api/tools/[slug]`** now resolves the listing owner from the tool's
+  `ToolInstance`s and, for authenticated requests, returns `canSelfOperate`
+  (true only when a VERIFIED `SelfOperatePermission` exists with that owner).
+- **Tool detail page** (`src/app/(store)/tools/[slug]/page.tsx`): for certified
+  tools a scenario selector is shown — "Self-Operate" (only when
+  `canSelfOperate`, else hidden) vs "Request Operator" (adds the operator fee
+  to the estimate). Non-certified tools skip the step (self-operate only). The
+  chosen scenario drives `serviceType` (`SELF_SERVICE_RENTAL` /
+  `OPERATOR_ONLY`) which is carried through the cart.
+- **`CartItem` + cart store:** items now carry `serviceType`, `toolOwnerId`,
+  `operatorFeePerDay`, `totalOperatorFee`; `getTotalOperatorFee()` added and
+  `getGrandTotal()` includes it. Cart + checkout show an Operator Fee line.
+- **`POST /api/razorpay/create-order`:** resolves the REAL `toolOwnerId`
+  server-side from the tool's instances (never trusts a client-supplied owner),
+  writes the item's `serviceType` and operator-fee breakdown onto the booking,
+  and the `require()` import was converted to an ESM import (pre-existing
+  eslint todo item cleared).
+
+**Verification:**
+- `npx tsc --noEmit` clean; `eslint` clean on touched files (only pre-existing
+  unused-vars warnings); `next build` 26/26.
+- Drive-test with a real Suresh Shetty session (OTP flow → NextAuth callback):
+  - Power Tiller + Pole (certified, owner Raju): API returns
+    `requiresCertifiedOperator=true`, `canSelfOperate=true`.
+  - Sprayer (non-certified, owner Parameshwara): `canSelfOperate=false`,
+    `requiresCertifiedOperator=false`.
+  - `OPERATOR_ONLY` booking: `toolOwnerId` = Raju Gowda (real), 
+    `operatorFeePerDay` = ₹200, `totalOperatorFee` = ₹200, subtotal = ₹499,
+    total = ₹2,499 (incl. ₹2,000 deposit). Test rows cleaned up.
+  - `SELF_SERVICE_RENTAL` booking (sprayer): owner Parameshwara, no operator
+    fee. Test rows cleaned up.
+- Mode derivation unchanged: `OPERATOR_ONLY → WITH_OPERATOR`,
+  `SELF_SERVICE_RENTAL → SELF_OPERATE` (no persisted mode field).
+
+**Follow-ups:** operator self-operate permission grant UI (tool-owner side);
+real `servicePerformerId` at order time (operator not yet assigned — currently
+placeholder farmer, unchanged Stage-2 item).
+
 ## 2026-08-11 — §11 cancellation policy, self-operate mode, operator auto-fail hard-coded
 
 **What:** Resolved the four flagged §19 step-3 business decisions and hard-coded

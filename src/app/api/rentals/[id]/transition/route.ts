@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { BookingEventActor, BookingStatus } from "@prisma/client"
+import { BookingEventActor, BookingServiceType, BookingStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "@/lib/auth"
 import {
@@ -19,6 +19,8 @@ interface TransitionBody {
   to?: string
   note?: string
   actor?: string
+  /** Owner accept choice (confirmed 2026-08-11): explicit, never implicit. */
+  operatorMode?: "assign_operator" | "self_service"
 }
 
 /** Map the requesting user to the actor role they may legitimately hold on this booking. */
@@ -99,6 +101,7 @@ export async function POST(
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
+      tool: { select: { requiresCertifiedOperator: true } },
       farmer: { select: { id: true, name: true, phone: true } },
       toolOwner: { select: { id: true, name: true, phone: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
@@ -154,6 +157,44 @@ export async function POST(
     options.actor = BookingEventActor.SYSTEM
   }
 
+  // ─── Owner accept — EXPLICIT operator choice (confirmed 2026-08-11) ─────────
+  // No implicit default: if the booking requires an operator, the owner must say
+  // whether they will assign one ("assign_operator") or run it self-service
+  // ("self_service"). Self-service is only lawful for tools that don't require a
+  // certified operator. Accepting self-service converts the booking financials
+  // (removes the operator fee) so the downstream flow is self-operate.
+  let selfServiceAccepted = false
+  if (
+    effectiveTo === BookingStatus.OWNER_ACCEPTED &&
+    booking.status === BookingStatus.OWNER_PENDING &&
+    deriveModeFromServiceType(booking.serviceType) === "WITH_OPERATOR"
+  ) {
+    if (body.operatorMode !== "assign_operator" && body.operatorMode !== "self_service") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Choose how to fulfil this booking: assign an operator, or accept it as self-service.",
+          data: { from: booking.status, to: effectiveTo, actor },
+        },
+        { status: 400 },
+      )
+    }
+    if (body.operatorMode === "self_service") {
+      if (booking.tool.requiresCertifiedOperator) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "This tool requires a certified operator, so it cannot be accepted as self-service. Assign an operator instead, or decline.",
+            data: { from: booking.status, to: effectiveTo, actor },
+          },
+          { status: 400 },
+        )
+      }
+      selfServiceAccepted = true
+    }
+  }
+
   try {
     assertTransition(booking.status, effectiveTo, options)
   } catch (error) {
@@ -184,6 +225,11 @@ export async function POST(
 
   const noteParts: string[] = []
   if (body.note) noteParts.push(body.note)
+  if (selfServiceAccepted) {
+    noteParts.push(
+      `Owner accepted as SELF-SERVICE (explicit choice) — operator fee removed, booking runs self-operate`,
+    )
+  }
   if (autoFailed) {
     noteParts.push(
       `Auto-failed after ${OPERATOR_REJECTION_LIMIT} operator rejections — no operator available; payment refunded in full`,
@@ -200,8 +246,26 @@ export async function POST(
   const result = await prisma.$transaction(async (tx) => {
     const updated = await tx.booking.update({
       where: { id: booking.id },
-      data: { status: effectiveTo },
+      data: {
+        status: effectiveTo,
+        ...(selfServiceAccepted
+          ? {
+              serviceType: BookingServiceType.SELF_SERVICE_RENTAL,
+              operatorFeePerDay: 0,
+              totalOperatorFee: 0,
+              subtotal: booking.totalToolFee,
+              totalAmount: booking.totalToolFee + booking.deliveryFee + booking.platformFee,
+            }
+          : {}),
+      },
     })
+
+    if (selfServiceAccepted && booking.payment) {
+      await tx.payment.update({
+        where: { id: booking.payment.id },
+        data: { amount: booking.totalToolFee + booking.deliveryFee + booking.platformFee },
+      })
+    }
 
     if (cancellationPolicy && booking.payment) {
       await tx.payment.update({
@@ -229,11 +293,23 @@ export async function POST(
 
   // ─── Farmer notification: never silently fail a booking ────────────────────
   let notification: Awaited<ReturnType<typeof sendSmsNotification>> | null = null
-  if (effectiveTo === BookingStatus.FAILED_NO_OPERATOR && booking.farmer.phone) {
-    notification = await sendSmsNotification(
-      booking.farmer.phone,
-      `O~Bele: No operator was available for booking ${booking.bookingRef}. Your payment has been refunded. Please re-book or try again later.`,
-    )
+  if (booking.farmer.phone) {
+    if (effectiveTo === BookingStatus.FAILED_NO_OPERATOR) {
+      notification = await sendSmsNotification(
+        booking.farmer.phone,
+        `O~Bele: No operator was available for booking ${booking.bookingRef}. Your payment has been refunded. Please re-book or try again later.`,
+      )
+    } else if (effectiveTo === BookingStatus.OWNER_ACCEPTED) {
+      notification = await sendSmsNotification(
+        booking.farmer.phone,
+        `O~Bele: The tool owner accepted your booking ${booking.bookingRef}${selfServiceAccepted ? " as self-service." : ". We will assign an operator shortly."}`,
+      )
+    } else if (effectiveTo === BookingStatus.CANCELLED_BY_OWNER) {
+      notification = await sendSmsNotification(
+        booking.farmer.phone,
+        `O~Bele: The tool owner declined your booking ${booking.bookingRef}. Please re-book or choose another tool.`,
+      )
+    }
   }
 
   return NextResponse.json({
@@ -242,6 +318,7 @@ export async function POST(
       booking: result.updated,
       log: result.log,
       autoFailed,
+      selfServiceAccepted,
       cancellationPolicy,
       notification,
       permittedTargets: getPermittedTargets(effectiveTo, options),

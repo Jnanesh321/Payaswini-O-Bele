@@ -2,6 +2,25 @@
 
 ## In Progress
 
+### Change 2 rolled back — refundable deposit + upfront payment restored (2026-08-11)
+- [x] Restored `Tool.deposit`, `Booking.deposit`,
+      `Payment.depositFrozen/depositDeducted/depositRefunded/disputeLocked`
+      (removed `Payment.manualCaptured`); `prisma db push` + `generate` applied
+- [x] Restored upfront Razorpay flow: checkout deposit line, `create-order`
+      (real Razorpay order incl. deposit, `depositFrozen: true`), `verify`
+      (captures payment + booking → `OWNER_PENDING`)
+- [x] Removed Change 2 only additions: `RETURNING_TOOL` payment gate in the
+      transition route, `collect/[bookingId]`, `payments/[bookingId]/cash`,
+      operator Work-Completed pay screen
+- [x] Kept owner work: owner screens/APIs, `owner-sla.ts`, explicit owner-accept
+      `operatorMode` (assign_operator | self_service) with self-service
+      financial conversion; corrected stale SMS wording
+- [x] Owner Earnings: `settled` = `COMPLETED` only; owner ledger + profile
+      `lifetimeEarnings` sum `totalToolFee` (owner share)
+- [ ] Deposit refund execution at inspection/return (Razorpay refund API +
+      marking `depositRefunded`/`depositDeducted`/`disputeLocked`) — fields
+      restored, end-to-end refund still a follow-up
+
 ### Booking/asset model revision — Stage 1 (schema) done
 - [x] Replace Booking's rigid `ownerId`/`operatorId` with `farmerId`,
       `toolId`, `toolOwnerId`, `servicePerformerId`, `serviceType`
@@ -73,15 +92,36 @@
 ## Not Started
 
 ### Booking/asset model revision — Stage 2 (follow-ups from Stage 1)
+- [x] Wire checkout/cart so `create-order` resolves the real `toolOwnerId` and
+      `serviceType` (done in Change 1 — 2026-08-11: server-side owner resolution
+      from `ToolInstance`, `serviceType` carried from the tool-page scenario
+      selector). Remaining: real `servicePerformerId` (operator not yet known at
+      order time — currently placeholder farmer) + link `ToolInstance`(s)
 - [ ] Remove `Tool.availableCount` + `Tool.totalCount`; make tool
       availability a DERIVED count of `ToolInstance` rows by status
-- [ ] Wire checkout/cart so `create-order` resolves the real `toolOwnerId`,
-      `servicePerformerId`, `serviceType` (currently placeholder farmer
-      values) instead of guessing at payment time
 - [ ] Link bookings to specific `ToolInstance`(s) for the QR/asset-scanning
       and custody-chain stages (seed already creates instances; checkout
       currently leaves `toolInstanceId` unset)
 - [ ] Derived-availability query/aggregation endpoint used by store API
+
+### Change 1 — certified-tool scenario selection (self-operate vs operator)
+- [x] `Tool.requiresCertifiedOperator` + `Tool.operatorFeePerDay` (paise)
+- [x] `SelfOperatePermission` model (farmerId ↔ toolOwnerId, VERIFIED unlocks
+      self-operate) + `prisma db push` + seed (Raju → Suresh, VERIFIED)
+- [x] `GET /api/tools/[slug]` resolves listing owner + `canSelfOperate`
+      (session-aware)
+- [x] Tool detail page: scenario selector shown only when the tool requires a
+      certified operator; self-operate hidden without a VERIFIED permission;
+      operator fee added to the estimate; selected `serviceType`
+      (`SELF_SERVICE_RENTAL` vs `OPERATOR_ONLY`) carried through the cart
+- [x] `create-order` uses item `serviceType` + real `toolOwnerId` (resolved
+      from instances, never client-supplied) and fills the operator fee fields
+- [x] Verified end-to-end (Suresh session): tiller/pole → `OPERATOR_ONLY`
+      booking with Raju as owner + ₹200/day operator fee; sprayer →
+      `SELF_SERVICE_RENTAL` with Parameshwara as owner, no operator fee. Test
+      rows cleaned up after each drive.
+- [ ] Follow-up: operator self-operate permission grant UI (tool owner side)
+
 
 ### Locale & region ground rules fixup
 - [ ] Change `defaultLocale` from `"kn"` to `"en"` in:
@@ -130,7 +170,7 @@
 - **None currently.** Prisma schema is applied; the §9 state-machine (incl. the
   confirmed cancellation/fee/self-operate/auto-fail rules from 2026-08-11),
   booking/asset model, and OTP hardening are all live on
-  `localhost:5432/obele`. Next action: wire the Store checkout (Stage 2) so
-  `create-order` resolves real `toolOwnerId` / `servicePerformerId` /
-  `serviceType` and links a `ToolInstance` instead of placeholder farmer
-  values — then the confirmed refund/fee rules run against real data.
+  `localhost:5432/obele`. Change 1 (certified-tool scenario selection) is done —
+  `create-order` now resolves real `toolOwnerId` + `serviceType`; remaining
+  Stage-2 items are real `servicePerformerId` resolution and `ToolInstance`
+  linking for the QR/custody chain.
