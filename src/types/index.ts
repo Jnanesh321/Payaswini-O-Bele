@@ -8,7 +8,7 @@ export type SafeUser = Omit<User, "createdAt" | "updatedAt"> & {
 export interface ToolCard {
   id: string
   name: string
-  nameKn?: string | null
+  translations?: Record<string, { name?: string; description?: string }> | null
   description?: string
   category: string
   images: string[]
@@ -45,7 +45,7 @@ export interface CartItem {
   id: string
   toolId: string
   name: string
-  nameKn?: string
+  translations?: Record<string, { name?: string }> | null
   pricePerDay: number
   deposit: number
   image: string
@@ -55,6 +55,10 @@ export interface CartItem {
   days: number
   totalAmount: number
   discount: number
+  serviceType: "SELF_SERVICE_RENTAL" | "OPERATOR_ONLY"
+  toolOwnerId: string
+  operatorFeePerDay: number
+  totalOperatorFee: number
 }
 
 export interface RentalSummary {
@@ -87,7 +91,7 @@ declare module "next-auth" {
       name?: string | null
       email?: string | null
       image?: string | null
-      role: "FARMER" | "ADMIN"
+      isAdmin: boolean
     }
   }
 }
@@ -95,6 +99,6 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
-    role: "FARMER" | "ADMIN"
+    isAdmin: boolean
   }
 }

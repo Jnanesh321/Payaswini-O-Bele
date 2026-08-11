@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import {
@@ -9,18 +8,18 @@ import {
   Users,
   IndianRupee,
   TrendingUp,
-  AlertTriangle,
   ChevronRight,
   Plus,
 } from "lucide-react"
 import { Button, Card, Badge } from "@/components/ui"
 import { formatPrice } from "@/lib/utils"
+import { useLocale } from "next-intl"
 
 const stats = [
   { label: "Total Tools", value: 24, icon: Package, change: "+2 this month" },
   { label: "Active Rentals", value: 18, icon: ShoppingBag, change: "+5 this week" },
   { label: "Total Users", value: 156, icon: Users, change: "+12 this month" },
-  { label: "Revenue (This Month)", value: 45600, icon: IndianRupee, isPrice: true, change: "+15% vs last month" },
+  { label: "Revenue (This Month)", value: 4560000, icon: IndianRupee, isPrice: true, change: "+15% vs last month" },
 ]
 
 const recentBookings = [
@@ -30,11 +29,13 @@ const recentBookings = [
 ]
 
 export default function AdminDashboard() {
+  const locale = useLocale()
+  const fp = (n: number) => formatPrice(n, locale)
   return (
     <div className="container py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <h1 className="font-heading text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage your rental platform</p>
         </div>
         <Link href="/admin/inventory">
@@ -52,12 +53,12 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
           >
-            <Card className="p-4">
+            <Card className="rounded-2xl p-4">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{item.label}</p>
                   <p className="mt-1 text-2xl font-bold">
-                    {item.isPrice ? formatPrice(item.value) : item.value}
+                    {item.isPrice ? fp(item.value) : item.value}
                   </p>
                   <p className="mt-1 text-xs text-success">{item.change}</p>
                 </div>
@@ -71,9 +72,9 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-6">
+        <Card className="rounded-2xl p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold">Recent Bookings</h2>
+            <h2 className="font-heading font-semibold">Recent Bookings</h2>
             <Link href="/admin/bookings">
               <Button variant="ghost" size="sm" className="gap-1">
                 View All <ChevronRight className="h-4 w-4" />
@@ -91,7 +92,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-muted-foreground">{booking.tool}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold">{formatPrice(booking.amount)}</p>
+                  <p className="text-sm font-semibold">{fp(booking.amount)}</p>
                   <Badge
                     variant={
                       booking.status === "ACTIVE"
@@ -109,8 +110,8 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="mb-4 font-semibold">Quick Actions</h2>
+        <Card className="rounded-2xl p-6">
+          <h2 className="mb-4 font-heading font-semibold">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
             {[
               { href: "/admin/inventory", label: "Inventory", icon: Package },
@@ -119,7 +120,7 @@ export default function AdminDashboard() {
               { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
             ].map((action) => (
               <Link key={action.href} href={action.href}>
-                <div className="flex flex-col items-center gap-2 rounded-xl border border-border p-4 text-center transition-colors hover:bg-card">
+                <div className="flex flex-col items-center gap-2 rounded-2xl border border-border p-4 text-center transition-colors hover:bg-card">
                   <action.icon className="h-6 w-6 text-primary" />
                   <span className="text-sm font-medium">{action.label}</span>
                 </div>

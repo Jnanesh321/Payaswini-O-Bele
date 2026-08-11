@@ -17,7 +17,7 @@ export default async function Hero() {
       <div className="absolute inset-0 bg-black/20" />
 
       <div className="container relative z-10 px-4 py-20 text-center">
-        <h1 className="ent-fade-in-up mx-auto max-w-4xl text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+        <h1 className="ent-fade-in-up mx-auto max-w-4xl font-heading text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
           {t("headline")}
         </h1>
 

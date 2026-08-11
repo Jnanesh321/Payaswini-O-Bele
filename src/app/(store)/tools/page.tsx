@@ -1,16 +1,18 @@
 import { Suspense } from "react"
+import { getTranslations } from "next-intl/server"
 import { Skeleton } from "@/components/ui"
 import { ToolsContent } from "@/components/tools/tools-content"
 
-export default function ToolsPage() {
+export default async function ToolsPage() {
+  const t = await getTranslations("tools")
   return (
     <div className="container py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">
-          ಕೃಷಿ ಸಾಧನಗಳು
+          {t("title")}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Farming Tools — Select the tool you need for your farm
+          {t("subtitle")}
         </p>
       </div>
       <Suspense fallback={<ToolsLoading />}>

@@ -38,7 +38,7 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const transparent = isLanding && !scrolled
+  const transparent = false
 
   return (
     <header

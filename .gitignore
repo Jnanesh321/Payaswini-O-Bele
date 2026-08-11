@@ -45,3 +45,12 @@ dev_out.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android (capacitor) build outputs — source android/ is committed
+android/app/build/
+android/app/.gradle/
+android/.gradle/
+android/build/
+android/local.properties
+*.apk
+*.aab

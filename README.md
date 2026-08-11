@@ -1,6 +1,6 @@
 # 🌾 Payaswini O Bele — Farm Tool Rental Platform
 
-A **production-grade, mobile-first e-commerce website** for renting expensive farming tools to small-scale farmers in Dakshina Karnataka, India.
+A **production-grade, mobile-first e-commerce marketplace** for renting expensive farming tools to small-scale farmers across India. Launches from the Kasaragod (Kerala-Karnataka border) region — built national from day one.
 
 **Built for:** Farmers who need carbon fiber poles (₹50,000–₹70,000 to buy) and other tools at affordable daily rental rates.
 

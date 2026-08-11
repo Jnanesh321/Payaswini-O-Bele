@@ -5,7 +5,7 @@ import Negotiator from "negotiator"
 import { match } from "@formatjs/intl-localematcher"
 
 const locales = ["en", "kn"]
-const defaultLocale = "kn"
+const defaultLocale = "en"
 
 function getLocale(request: NextRequest): string {
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value
@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
 
   const adminPaths = ["/admin"]
   if (adminPaths.some((p) => pathname.startsWith(p))) {
-    if (!token || token.role !== "ADMIN") {
+    if (!token || !token.isAdmin) {
       return NextResponse.redirect(new URL("/", request.url))
     }
   }

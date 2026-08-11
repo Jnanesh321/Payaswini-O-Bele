@@ -5,6 +5,7 @@ export { Input } from "./input"
 export { Badge, badgeVariants } from "./badge"
 export type { BadgeProps } from "./badge"
 export { Skeleton } from "./skeleton"
+export { LeafDivider } from "./leaf-divider"
 export { Select } from "./select"
 export {
   Pagination,

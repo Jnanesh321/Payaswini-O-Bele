@@ -34,8 +34,13 @@
     "deposit": "Deposit",
     "perDay": "/day"
   },
+  "toolOperators": {
+    "title": "Don't have a tool operator? Meet our partners",
+    "subtitle": "Our verified operators provide tools on rent OR skilled labor with tools on wage basis — whatever suits your farm."
+  },
   "testimonials": {
-    "title": "What Our Farmers Say"
+    "title": "What Our Farmers Say",
+    "headline": "Hear from the farming community in Dakshina Kannada"
   },
   "trustBadges": {
     "verifiedTools": "Verified Tools",

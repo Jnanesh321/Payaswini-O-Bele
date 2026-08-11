@@ -11,6 +11,7 @@ interface CartState {
   getItemCount: () => number
   getSubtotal: () => number
   getTotalDeposit: () => number
+  getTotalOperatorFee: () => number
   getTotalDiscount: () => number
   getGrandTotal: () => number
 }
@@ -41,10 +42,11 @@ export const useCartStore = create<CartState>()(
       getItemCount: () => get().items.length,
       getSubtotal: () => get().items.reduce((sum, i) => sum + i.totalAmount, 0),
       getTotalDeposit: () => get().items.reduce((sum, i) => sum + i.deposit, 0),
+      getTotalOperatorFee: () => get().items.reduce((sum, i) => sum + i.totalOperatorFee, 0),
       getTotalDiscount: () => get().items.reduce((sum, i) => sum + i.discount, 0),
       getGrandTotal: () => {
         const state = get()
-        return state.getSubtotal() + state.getTotalDeposit()
+        return state.getSubtotal() + state.getTotalDeposit() + state.getTotalOperatorFee()
       },
     }),
     {

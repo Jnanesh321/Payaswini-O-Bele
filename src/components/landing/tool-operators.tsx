@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useLocale, useTranslations } from "next-intl"
 import {
   MapPin,
   Star,
@@ -77,6 +78,8 @@ const operators = [
 ]
 
 export default function ToolOperators() {
+  const t = useTranslations("toolOperators")
+  const locale = useLocale()
   const [view, setView] = useState<ViewMode>("rent")
 
   const filtered = operators.filter((op) =>
@@ -92,11 +95,11 @@ export default function ToolOperators() {
           viewport={{ once: true }}
           className="mb-4 text-center"
         >
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            ಸಾಧನ ನಿರ್ವಾಹಕರಿಲ್ಲವೇ? ನಮ್ಮ ಪಾಲುದಾರರನ್ನು ನೋಡಿ
+          <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
+            {t("title")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground md:text-base">
-            Don&apos;t have a tool operator? Here are our partners
+            {t("subtitle")}
           </p>
         </motion.div>
 
@@ -170,12 +173,12 @@ export default function ToolOperators() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08, duration: 0.4 }}
-                  className="rounded-xl border border-border bg-bele-cream p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                  className="rounded-2xl border border-border bg-bele-cream p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
                 >
                   <div className="mb-3 flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-foreground">
-                        {op.nameKn}
+                      <h3 className="font-heading font-semibold text-foreground">
+                        {locale === "kn" ? op.nameKn : op.name}
                       </h3>
                       <p className="text-xs text-muted-foreground">
                         {op.name}

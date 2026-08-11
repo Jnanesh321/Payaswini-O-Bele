@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { useLocale, useTranslations } from "next-intl"
 import { Search, Calendar, Truck, ThumbsUp, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui"
 
@@ -43,6 +44,8 @@ const itemVariants = {
 }
 
 export default function HowItWorks() {
+  const t = useTranslations("howItWorks")
+  const locale = useLocale()
   return (
     <section className="bg-bele-cream py-16 md:py-24">
       <div className="container">
@@ -52,12 +55,9 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           className="mb-12 text-center md:mb-16"
         >
-          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?
+          <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
+            {t("title")}
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground md:text-base">
-            How It Works
-          </p>
         </motion.div>
 
         <motion.div
@@ -71,7 +71,7 @@ export default function HowItWorks() {
             <motion.div
               key={step.labelEn}
               variants={itemVariants}
-              className="group relative flex gap-5 rounded-xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md md:p-8"
+              className="group relative flex gap-5 rounded-2xl bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md md:p-8"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-bele-green/10">
                 <step.icon className="h-6 w-6 text-bele-green" />
@@ -81,13 +81,10 @@ export default function HowItWorks() {
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bele-gold text-xs font-bold text-black">
                     {i + 1}
                   </span>
-                  <h3 className="text-base font-semibold text-foreground md:text-lg">
-                    {step.labelKn}
+                  <h3 className="font-heading text-base font-semibold text-foreground md:text-lg">
+                    {locale === "kn" ? step.labelKn : step.labelEn}
                   </h3>
                 </div>
-                <p className="mt-1 text-sm font-medium text-bele-green/80">
-                  {step.labelEn}
-                </p>
                 <p className="mt-1.5 text-sm text-muted-foreground">
                   {step.desc}
                 </p>
@@ -105,7 +102,7 @@ export default function HowItWorks() {
         >
           <Link href="/tools">
             <Button className="bg-bele-gold text-black hover:scale-105 hover:bg-bele-gold/90 px-8 py-6 text-base">
-              ಈಗಲೇ ಆರಂಭಿಸಿ
+              {t("cta")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

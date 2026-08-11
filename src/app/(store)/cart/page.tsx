@@ -6,11 +6,14 @@ import Link from "next/link"
 import { ShoppingCart, Trash2, ArrowRight, ChevronLeft, IndianRupee } from "lucide-react"
 import { Button, Card } from "@/components/ui"
 import { useCartStore } from "@/store/cart"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, getLocaleName } from "@/lib/utils"
+import { useLocale } from "next-intl"
 
 export default function CartPage() {
   const router = useRouter()
-  const { items, removeItem, clearCart, getSubtotal, getTotalDeposit, getGrandTotal, getTotalDiscount } =
+  const locale = useLocale()
+  const fp = (n: number) => formatPrice(n, locale)
+  const { items, removeItem, clearCart, getSubtotal, getTotalDeposit, getTotalOperatorFee, getGrandTotal, getTotalDiscount } =
     useCartStore()
 
   if (items.length === 0) {
@@ -58,27 +61,29 @@ export default function CartPage() {
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      {item.nameKn && (
-                        <p className="text-xs text-muted-foreground">{item.nameKn}</p>
-                      )}
+                      <h3 className="font-semibold">{getLocaleName(item, locale)}</h3>
                     </div>
                     <button onClick={() => removeItem(item.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </button>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <span>{formatPrice(item.pricePerDay)} / day</span>
+                    <span>{fp(item.pricePerDay)} / day</span>
                     <span>{item.days} days</span>
-                    <span>Deposit: {formatPrice(item.deposit)}</span>
+                    <span>Deposit: {fp(item.deposit)}</span>
+                    {item.serviceType === "OPERATOR_ONLY" && (
+                      <span className="text-accent">
+                        Operator: {fp(item.totalOperatorFee)}
+                      </span>
+                    )}
                   </div>
                   {item.discount > 0 && (
                     <div className="mt-1 text-xs text-success">
-                      Discount: {formatPrice(item.discount)}
+                      Discount: {fp(item.discount)}
                     </div>
                   )}
                   <div className="mt-2 font-semibold text-primary">
-                    {formatPrice(item.totalAmount)}
+                    {fp(item.totalAmount)}
                   </div>
                 </div>
               </Card>
@@ -92,25 +97,31 @@ export default function CartPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(getSubtotal())}</span>
+                <span>{fp(getSubtotal())}</span>
               </div>
               {getTotalDiscount() > 0 && (
                 <div className="flex justify-between text-success">
                   <span>Discount</span>
-                  <span>-{formatPrice(getTotalDiscount())}</span>
+                  <span>-{fp(getTotalDiscount())}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Deposit</span>
-                <span>{formatPrice(getTotalDeposit())}</span>
+                <span>{fp(getTotalDeposit())}</span>
               </div>
+              {getTotalOperatorFee() > 0 && (
+                <div className="flex justify-between text-accent">
+                  <span>Operator Fee</span>
+                  <span>{fp(getTotalOperatorFee())}</span>
+                </div>
+              )}
               <div className="border-t border-border pt-3">
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Grand Total</span>
-                  <span className="text-primary">{formatPrice(getGrandTotal())}</span>
+                  <span className="text-primary">{fp(getGrandTotal())}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Deposit of {formatPrice(getTotalDeposit())} is refundable
+                  Deposit of {fp(getTotalDeposit())} is refundable
                 </p>
               </div>
             </div>

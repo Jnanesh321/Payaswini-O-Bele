@@ -15,7 +15,7 @@ export function CTASection() {
           viewport={{ once: true }}
           className="mx-auto max-w-2xl"
         >
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
+          <h2 className="font-heading text-3xl font-bold text-white md:text-4xl">
             Rent Your Farming Tool Today
           </h2>
           <p className="mt-4 text-lg text-white/70">

@@ -1,18 +1,14 @@
 import type { Metadata } from "next"
-import { Inter, Geist } from "next/font/google"
+import { Lora, Nunito } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
 import "./globals.css"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
+import { SiteChrome } from "@/components/layout/site-chrome"
 import { cn } from "@/lib/utils"
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
+const nunito = Nunito({ subsets: ["latin"], variable: "--font-sans" })
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-})
+const lora = Lora({ subsets: ["latin"], variable: "--font-heading" })
 
 export const metadata: Metadata = {
   title: {
@@ -53,12 +49,10 @@ export default async function RootLayout({
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className={cn(inter.variable, "font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang={locale} className={cn(nunito.variable, lora.variable, "font-sans")} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Header />
-          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
         </NextIntlClientProvider>
       </body>
     </html>

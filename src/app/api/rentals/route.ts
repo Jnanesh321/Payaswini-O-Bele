@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const bookings = await prisma.booking.findMany({
-    where: { userId: session.user.id },
+    where: { farmerId: session.user.id },
     include: { tool: true, payment: true },
     orderBy: { createdAt: "desc" },
   })
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const booking = await prisma.booking.create({
-      data: { ...body, userId: session.user.id },
+      data: { ...body, farmerId: session.user.id },
       include: { tool: true, payment: true },
     })
     return NextResponse.json({ success: true, data: booking }, { status: 201 })

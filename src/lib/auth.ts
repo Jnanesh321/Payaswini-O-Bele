@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         const cleaned = credentials.phone.replace(/\D/g, "")
         const user = await prisma.user.findUnique({ where: { phone: cleaned } })
         if (!user) return null
-        return { id: user.id, name: user.name, email: user.email, image: user.image, role: user.role }
+        return { id: user.id, name: user.name, email: user.email, image: user.image, isAdmin: user.isAdmin }
       },
     }),
     GoogleProvider({
@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name
         session.user.email = token.email
         session.user.image = token.picture
-        session.user.role = token.role
+        session.user.isAdmin = token.isAdmin
       }
       return session
     },
@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
             name: dbUser.name,
             email: dbUser.email,
             picture: dbUser.image,
-            role: dbUser.role,
+            isAdmin: dbUser.isAdmin,
           }
         }
       }
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
             name: dbUser.name,
             email: dbUser.email,
             picture: dbUser.image,
-            role: dbUser.role,
+            isAdmin: dbUser.isAdmin,
           }
         }
       }

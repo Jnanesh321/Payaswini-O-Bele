@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     if (expectedSignature !== razorpaySignature) {
       for (const id of bookingIds) {
-        await prisma.payment.update({
+        await prisma.payment.updateMany({
           where: { bookingId: id },
           data: { status: "FAILED" },
         })
@@ -23,14 +23,20 @@ export async function POST(request: NextRequest) {
     }
 
     for (const id of bookingIds) {
-      await prisma.payment.update({
+      const paymentRecord = await prisma.payment.updateMany({
         where: { bookingId: id },
         data: { razorpayPaymentId, status: "CAPTURED", method: "razorpay" },
       })
-      await prisma.booking.update({
+      const booking = await prisma.booking.update({
         where: { id },
-        data: { status: "CONFIRMED" },
+        data: { status: "OWNER_PENDING" },
       })
+      if (booking.orderId) {
+        await prisma.order.update({
+          where: { id: booking.orderId },
+          data: { paymentStatus: "CAPTURED" },
+        })
+      }
     }
 
     return NextResponse.json({ success: true, message: "Payment verified" })

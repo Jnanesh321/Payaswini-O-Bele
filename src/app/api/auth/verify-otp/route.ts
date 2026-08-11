@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { userId: user.id, phone: user.phone, name: user.name, role: user.role },
+      data: { userId: user.id, phone: user.phone, name: user.name, isAdmin: user.isAdmin },
     })
   } catch (error) {
     return NextResponse.json({ success: false, error: "Verification failed" }, { status: 500 })

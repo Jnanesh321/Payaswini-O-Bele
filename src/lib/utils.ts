@@ -5,13 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatPrice(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
+const localeFormatMap: Record<string, { locale: string; currency: string }> = {
+  en: { locale: "en-IN", currency: "INR" },
+  kn: { locale: "kn-IN", currency: "INR" },
+}
+
+export function formatPrice(amount: number, locale = "en"): string {
+  const fmt = localeFormatMap[locale] ?? localeFormatMap.en
+  return new Intl.NumberFormat(fmt.locale, {
     style: "currency",
-    currency: "INR",
+    currency: fmt.currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount / 100)
 }
 
 export function formatDate(date: Date | string): string {
@@ -21,6 +27,22 @@ export function formatDate(date: Date | string): string {
     month: "short",
     year: "numeric",
   }).format(d)
+}
+
+export type ToolTranslations = Record<string, { name?: string; description?: string }>
+
+export function getLocaleName(
+  tool: { name: string; translations?: ToolTranslations | null },
+  locale: string,
+): string {
+  return tool.translations?.[locale]?.name ?? tool.name
+}
+
+export function getLocaleDescription(
+  tool: { description: string; translations?: ToolTranslations | null },
+  locale: string,
+): string {
+  return tool.translations?.[locale]?.description ?? tool.description
 }
 
 export function calculateRentalPrice(

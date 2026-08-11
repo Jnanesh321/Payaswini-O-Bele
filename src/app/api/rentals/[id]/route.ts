@@ -8,7 +8,7 @@ export async function GET(
   const { id } = await params
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { tool: true, payment: true, user: true },
+    include: { tool: true, payment: true, farmer: true },
   })
   if (!booking) {
     return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 })

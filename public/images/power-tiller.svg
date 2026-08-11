@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="96" fill="#FAF7F0"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#2D5016" stroke-width="3" opacity="0.15"/>
+
+  <!-- tilled soil furrows -->
+  <path d="M30 172 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0" stroke="#8B4513" stroke-width="4" fill="none" opacity="0.28" stroke-linecap="round"/>
+
+  <!-- rear wheel -->
+  <circle cx="140" cy="140" r="26" fill="#232323"/>
+  <circle cx="140" cy="140" r="26" fill="none" stroke="#111" stroke-width="2"/>
+  <circle cx="140" cy="140" r="9" fill="#8B4513"/>
+
+  <!-- red engine body -->
+  <rect x="70" y="86" width="58" height="38" rx="10" fill="#C81E1E"/>
+  <rect x="70" y="86" width="58" height="38" rx="10" fill="none" stroke="#8f1414" stroke-width="1.5"/>
+  <!-- gold accent stripe -->
+  <path d="M74 108 L124 96" stroke="#D4A017" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- headlight -->
+  <circle cx="78" cy="98" r="7" fill="#FAF7F0" stroke="#8f1414" stroke-width="1.5"/>
+
+  <!-- handlebars -->
+  <path d="M126 96 L160 66" stroke="#232323" stroke-width="6" stroke-linecap="round"/>
+  <path d="M150 60 h20" stroke="#232323" stroke-width="6" stroke-linecap="round"/>
+  <path d="M132 100 L156 84" stroke="#232323" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- rotary tine guard -->
+  <path d="M96 124 q22 0 22 20 l-44 0 q0 -20 22 -20 z" fill="#232323"/>
+
+  <!-- kickstand -->
+  <path d="M84 124 L74 156" stroke="#8B4513" stroke-width="5" stroke-linecap="round"/>
+</svg>

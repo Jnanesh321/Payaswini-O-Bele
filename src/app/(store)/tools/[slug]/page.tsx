@@ -10,17 +10,24 @@ import {
   ChevronLeft,
   Check,
   Info,
+  User as UserIcon,
+  Hammer,
 } from "lucide-react"
 import { Button, Badge, Card, Skeleton } from "@/components/ui"
 import { useCartStore } from "@/store/cart"
-import { formatPrice, calculateRentalPrice } from "@/lib/utils"
+import { formatPrice, calculateRentalPrice, getLocaleName, getLocaleDescription } from "@/lib/utils"
+import { useLocale } from "next-intl"
+
+interface ToolOwner {
+  id: string
+  name: string
+}
 
 interface ToolDetail {
   id: string
   name: string
-  nameKn?: string
+  translations?: Record<string, { name?: string; description?: string }> | null
   description: string
-  descriptionKn?: string
   pricePerDay: number
   deposit: number
   images: string[]
@@ -29,6 +36,10 @@ interface ToolDetail {
   category: string
   availableCount: number
   specs: Record<string, string>
+  requiresCertifiedOperator: boolean
+  operatorFeePerDay: number
+  toolOwner: ToolOwner | null
+  canSelfOperate: boolean
 }
 
 const renderTiers = [
@@ -38,21 +49,30 @@ const renderTiers = [
   { label: "1 Month", days: 30 },
 ]
 
+type Scenario = "self" | "operator"
+
 export default function ToolDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const locale = useLocale()
+  const fp = (n: number) => formatPrice(n, locale)
   const addItem = useCartStore((s) => s.addItem)
   const [tool, setTool] = useState<ToolDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedDays, setSelectedDays] = useState(1)
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [scenario, setScenario] = useState<Scenario>("self")
 
   useEffect(() => {
     const fetchTool = async () => {
       const res = await fetch(`/api/tools/${params.slug}`)
       const data = await res.json()
       setTool(data.data)
+      // Default to self-operate when permitted (cheaper); otherwise operator.
+      if (data.data?.requiresCertifiedOperator) {
+        setScenario(data.data.canSelfOperate ? "self" : "operator")
+      }
       setLoading(false)
     }
     fetchTool()
@@ -85,6 +105,12 @@ export default function ToolDetailPage() {
     )
   }
 
+  const serviceType: "SELF_SERVICE_RENTAL" | "OPERATOR_ONLY" =
+    tool.requiresCertifiedOperator && scenario === "operator"
+      ? "OPERATOR_ONLY"
+      : "SELF_SERVICE_RENTAL"
+  const operatorFeePerDay = serviceType === "OPERATOR_ONLY" ? tool.operatorFeePerDay : 0
+
   const handleAddToCart = () => {
     const sd = startDate ? new Date(startDate) : new Date()
     const ed = endDate
@@ -95,11 +121,12 @@ export default function ToolDetailPage() {
       sd,
       ed
     )
+    const totalOperatorFee = operatorFeePerDay * pricing.days
     addItem({
       id: crypto.randomUUID(),
       toolId: tool.id,
       name: tool.name,
-      nameKn: tool.nameKn,
+      translations: tool.translations,
       pricePerDay: tool.pricePerDay,
       deposit: tool.deposit,
       image: tool.images[0] || "",
@@ -109,8 +136,17 @@ export default function ToolDetailPage() {
       days: pricing.days,
       totalAmount: pricing.totalAmount,
       discount: pricing.discount,
+      serviceType,
+      toolOwnerId: tool.toolOwner?.id ?? "",
+      operatorFeePerDay,
+      totalOperatorFee,
     })
     router.push("/cart")
+  }
+
+  const scenarioEstimate = () => {
+    const toolFee = tool.pricePerDay * selectedDays
+    return toolFee + operatorFeePerDay * selectedDays
   }
 
   return (
@@ -135,6 +171,11 @@ export default function ToolDetailPage() {
           >
             {tool.isActive ? "Available for Rent" : "Currently Rented"}
           </Badge>
+          {tool.requiresCertifiedOperator && (
+            <Badge variant="accent" className="absolute right-4 top-4 gap-1">
+              <ShieldCheck className="h-3 w-3" /> Certified Operator
+            </Badge>
+          )}
         </motion.div>
 
         <motion.div
@@ -145,10 +186,7 @@ export default function ToolDetailPage() {
           <div>
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold">{tool.name}</h1>
-                {tool.nameKn && (
-                  <p className="text-muted-foreground">{tool.nameKn}</p>
-                )}
+                <h1 className="text-3xl font-bold">{getLocaleName(tool, locale)}</h1>
               </div>
             </div>
 
@@ -156,22 +194,81 @@ export default function ToolDetailPage() {
               <span className="flex items-center gap-1">
                 <Info className="h-4 w-4" /> {tool.category}
               </span>
+              {tool.toolOwner && (
+                <span className="flex items-center gap-1">
+                  <UserIcon className="h-4 w-4" /> Owner: {tool.toolOwner.name}
+                </span>
+              )}
             </div>
           </div>
 
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-bold text-primary">
-              {formatPrice(tool.pricePerDay)}
+              {fp(tool.pricePerDay)}
             </span>
             <span className="text-muted-foreground">/ day</span>
             <span className="ml-4 text-sm text-muted-foreground">
-              Deposit: {formatPrice(tool.deposit)}
+              Deposit: {fp(tool.deposit)}
             </span>
           </div>
 
           <p className="text-muted-foreground leading-relaxed">
-            {tool.descriptionKn || tool.description}
+            {getLocaleDescription(tool, locale)}
           </p>
+
+          {tool.requiresCertifiedOperator && (
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Hammer className="h-4 w-4" /> How do you want to operate this tool?
+              </h3>
+              <div className="grid gap-3">
+                {tool.canSelfOperate && (
+                  <button
+                    onClick={() => setScenario("self")}
+                    className={`rounded-xl border-2 p-4 text-left transition-all ${
+                      scenario === "self"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 font-medium">
+                      <UserIcon className="h-4 w-4" /> Self-Operate
+                      <Check className={`h-4 w-4 ${scenario === "self" ? "text-primary" : "opacity-0"}`} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      You have verified permission from this Tool Owner. No operator fee.
+                    </p>
+                  </button>
+                )}
+                <button
+                  onClick={() => setScenario("operator")}
+                  className={`rounded-xl border-2 p-4 text-left transition-all ${
+                    scenario === "operator"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-medium">
+                    <ShieldCheck className="h-4 w-4" /> Request Operator
+                    <Check className={`h-4 w-4 ${scenario === "operator" ? "text-primary" : "opacity-0"}`} />
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    We dispatch a certified operator. Operator fee{" "}
+                    <span className="font-medium text-foreground">
+                      {fp(tool.operatorFeePerDay)}/day
+                    </span>{" "}
+                    added to your estimate.
+                  </p>
+                </button>
+              </div>
+              {!tool.canSelfOperate && (
+                <p className="text-xs text-muted-foreground">
+                  Self-operation requires a verified grant from this Tool Owner.
+                  Request an operator instead.
+                </p>
+              )}
+            </div>
+          )}
 
           {tool.accessories?.length > 0 && (
             <div>
@@ -233,14 +330,13 @@ export default function ToolDetailPage() {
             {!endDate && (
               <div className="rounded-lg bg-primary/5 p-3 text-sm">
                 <span className="font-medium">Estimated: </span>
-                {formatPrice(
-                  calculateRentalPrice(
-                    tool.pricePerDay,
-                    new Date(),
-                    new Date(Date.now() + selectedDays * 86400000)
-                  ).totalAmount
-                )}{" "}
+                {fp(scenarioEstimate())} {" "}
                 for {selectedDays} day{selectedDays > 1 ? "s" : ""}
+                {operatorFeePerDay > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    {" "}(incl. operator fee {fp(operatorFeePerDay * selectedDays)})
+                  </span>
+                )}
               </div>
             )}
           </div>

@@ -7,14 +7,13 @@ import {
   Package,
   Clock,
   CreditCard,
-  User,
   MapPin,
   ShieldCheck,
   ChevronRight,
-  AlertCircle,
 } from "lucide-react"
 import { Button, Card, Badge, Skeleton } from "@/components/ui"
 import { formatPrice, formatDate } from "@/lib/utils"
+import { useLocale } from "next-intl"
 
 interface RentalItem {
   id: string
@@ -27,6 +26,8 @@ interface RentalItem {
 }
 
 export default function DashboardPage() {
+  const locale = useLocale()
+  const fp = (n: number) => formatPrice(n, locale)
   const [rentals, setRentals] = useState<RentalItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -43,12 +44,10 @@ export default function DashboardPage() {
   const activeRentals = rentals.filter(
     (r) => r.status === "ACTIVE" || r.status === "CONFIRMED"
   )
-  const pastRentals = rentals.filter((r) => r.status === "RETURNED")
-
   return (
     <div className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
+        <h1 className="font-heading text-3xl font-bold">My Dashboard</h1>
         <p className="text-muted-foreground">Manage your account and rentals</p>
       </div>
 
@@ -65,12 +64,12 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
           >
-            <Card className="p-4">
+            <Card className="rounded-2xl p-4">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{item.label}</p>
                   <p className="mt-1 text-2xl font-bold">
-                    {item.isPrice ? formatPrice(item.value as number) : item.value}
+                    {item.isPrice ? fp(item.value as number) : item.value}
                   </p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -84,9 +83,9 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
+          <Card className="rounded-2xl p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-semibold">Active Rentals</h2>
+              <h2 className="font-heading font-semibold">Active Rentals</h2>
               <Link href="/dashboard/rentals">
                 <Button variant="ghost" size="sm" className="gap-1">
                   View All <ChevronRight className="h-4 w-4" />
@@ -138,8 +137,8 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="p-6">
-            <h2 className="mb-4 font-semibold">Quick Links</h2>
+          <Card className="rounded-2xl p-6">
+            <h2 className="mb-4 font-heading font-semibold">Quick Links</h2>
             <div className="space-y-2">
               {[
                 { href: "/dashboard/kyc", label: "KYC Verification", icon: ShieldCheck },

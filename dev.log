@@ -1,0 +1,1538 @@
+
+> payaswini-o-bele@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+✓ Ready in 550ms
+
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `en`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `en`.'
+}
+ GET / 200 in 817ms (next.js: 134ms, proxy.ts: 178ms, application-code: 506ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 79ms (next.js: 6ms, proxy.ts: 6ms, application-code: 67ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 146ms (next.js: 9ms, proxy.ts: 7ms, application-code: 130ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `en`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `en`.'
+}
+ GET / 200 in 88ms (next.js: 8ms, proxy.ts: 8ms, application-code: 72ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 90ms (next.js: 8ms, proxy.ts: 8ms, application-code: 74ms)
+✓ Compiled in 110ms
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 258ms (next.js: 79ms, proxy.ts: 39ms, application-code: 140ms)
+ GET / 200 in 77ms (next.js: 6ms, proxy.ts: 20ms, application-code: 51ms)
+✓ Compiled in 131ms
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 206ms (next.js: 62ms, proxy.ts: 36ms, application-code: 108ms)
+✓ Compiled in 101ms
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 352ms (next.js: 76ms, proxy.ts: 42ms, application-code: 234ms)
+ GET / 200 in 164ms (next.js: 8ms, proxy.ts: 21ms, application-code: 135ms)
+ GET / 200 in 89ms (next.js: 7ms, proxy.ts: 21ms, application-code: 61ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 849ms (next.js: 213ms, proxy.ts: 174ms, application-code: 462ms)
+ GET / 200 in 235ms (next.js: 18ms, proxy.ts: 52ms, application-code: 165ms)
+Error: MISSING_MESSAGE: Could not resolve `testimonials.headline` in messages for locale `kn`.
+    at Testimonials (src\components\landing\testimonials.tsx:59:16)
+  57 |             </h2>
+  58 |             <p className="mt-1 text-sm text-muted-foreground">
+> 59 |               {t("headline")}
+     |                ^
+  60 |             </p>
+  61 |           </div>
+  62 |         </div> {
+  code: 'MISSING_MESSAGE',
+  originalMessage: 'Could not resolve `testimonials.headline` in messages for locale `kn`.'
+}
+ GET / 200 in 767ms (next.js: 234ms, proxy.ts: 113ms, application-code: 420ms)
+✓ Compiled in 261ms
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 200 in 1048ms (next.js: 195ms, proxy.ts: 91ms, application-code: 761ms)
+ GET / 200 in 498ms (next.js: 10ms, proxy.ts: 125ms, application-code: 363ms)
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 200 in 352ms (next.js: 26ms, proxy.ts: 39ms, application-code: 286ms)
+ GET / 200 in 352ms (next.js: 92ms, proxy.ts: 40ms, application-code: 220ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+✓ Compiled in 82ms
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 851ms (next.js: 146ms, proxy.ts: 65ms, application-code: 640ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 818ms (next.js: 137ms, proxy.ts: 130ms, application-code: 551ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 737ms (next.js: 110ms, proxy.ts: 81ms, application-code: 546ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 1016ms (next.js: 119ms, proxy.ts: 81ms, application-code: 816ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 872ms (next.js: 135ms, proxy.ts: 89ms, application-code: 648ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 807ms (next.js: 174ms, proxy.ts: 67ms, application-code: 566ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 803ms (next.js: 131ms, proxy.ts: 76ms, application-code: 597ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 682ms (next.js: 144ms, proxy.ts: 68ms, application-code: 469ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+✓ Compiled in 178ms
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 1025ms (next.js: 123ms, proxy.ts: 139ms, application-code: 763ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+✓ Compiled in 93ms
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 847ms (next.js: 138ms, proxy.ts: 77ms, application-code: 632ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 914ms (next.js: 127ms, proxy.ts: 95ms, application-code: 693ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 971ms (next.js: 154ms, proxy.ts: 76ms, application-code: 740ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 1038ms (next.js: 226ms, proxy.ts: 85ms, application-code: 727ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 830ms (next.js: 178ms, proxy.ts: 68ms, application-code: 584ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 900ms (next.js: 124ms, proxy.ts: 123ms, application-code: 653ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 1106ms (next.js: 137ms, proxy.ts: 67ms, application-code: 902ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 847ms (next.js: 152ms, proxy.ts: 65ms, application-code: 629ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 933ms (next.js: 142ms, proxy.ts: 75ms, application-code: 716ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 881ms (next.js: 114ms, proxy.ts: 69ms, application-code: 698ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 838ms (next.js: 105ms, proxy.ts: 89ms, application-code: 643ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 886ms (next.js: 146ms, proxy.ts: 72ms, application-code: 669ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET /? 500 in 139ms (next.js: 12ms, proxy.ts: 9ms, application-code: 118ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+✓ Compiled in 135ms
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 343ms (next.js: 55ms, proxy.ts: 40ms, application-code: 249ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 286ms (next.js: 50ms, proxy.ts: 28ms, application-code: 209ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 383ms (next.js: 53ms, proxy.ts: 56ms, application-code: 275ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 240ms (next.js: 44ms, proxy.ts: 31ms, application-code: 166ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+⨯ Error [PrismaClientInitializationError]: 
+Invalid `{imported module ./src/lib/prisma.ts}["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await {imported module ./src/lib/prisma.ts}["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at async HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true, {
+  clientVersion: '5.22.0',
+  errorCode: undefined,
+  digest: '2495008161'
+}
+ GET / 500 in 377ms (next.js: 19ms, proxy.ts: 18ms, application-code: 340ms)
+[browser] Uncaught PrismaClientInitializationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany()` invocation in
+C:\PROJECTS\farmer-tool-rental\krishirent\.next\dev\server\chunks\ssr\[root-of-the-server]__0jz858r._.js:1199:165
+
+  1196 ;
+  1197 ;
+  1198 async function HomePage() {
+→ 1199     const featuredTools = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].tool.findMany(
+Authentication failed against database server at `localhost`, the provided database credentials for `user` are not valid.
+
+Please make sure to provide valid database credentials for the database server at `localhost`.
+    at <unknown> (src\app\page.tsx:11:43)
+    at  HomePage (src\app\page.tsx:11:25)
+   9 |
+  10 | export default async function HomePage() {
+> 11 |   const featuredTools = await prisma.tool.findMany({
+     |                                           ^
+  12 |     where: { isFeatured: true, isActive: true },
+  13 |     select: {
+  14 |       id: true,
+  Reload env: .env.local
+  Reload env: .env

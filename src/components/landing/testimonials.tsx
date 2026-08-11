@@ -52,7 +52,7 @@ export default async function Testimonials() {
       <div className="container">
         <div className="ent-fade-in-up mb-10 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+            <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
               {t("title")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -67,7 +67,7 @@ export default async function Testimonials() {
               key={i}
               className={`${i === 0 ? "ent-fade-in-up" : `ent-fade-in-up-d${i}`} w-[320px] shrink-0 snap-start md:w-[360px]`}
             >
-              <Card className="relative h-full p-6">
+              <Card className="relative h-full rounded-2xl p-6">
                 <Quote className="absolute right-4 top-4 h-8 w-8 text-bele-gold/20" />
                 <div className="mb-3 flex gap-1">
                   {Array.from({ length: 5 }).map((_, j) => (

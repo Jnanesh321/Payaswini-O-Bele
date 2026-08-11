@@ -1,10 +1,12 @@
 import { getRequestConfig } from "next-intl/server"
+import { headers } from "next/headers"
 import { routing } from "./routing"
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  const requested = await requestLocale
-  const locale = routing.locales.includes(requested as "en" | "kn")
-    ? (requested as "en" | "kn")
+export default getRequestConfig(async () => {
+  const headersList = await headers()
+  const localeHeader = headersList.get("X-NEXT-INTL-LOCALE")
+  const locale = routing.locales.includes(localeHeader as "en" | "kn")
+    ? (localeHeader as "en" | "kn")
     : routing.defaultLocale
 
   return {

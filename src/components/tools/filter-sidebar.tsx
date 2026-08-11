@@ -8,7 +8,6 @@ import type { ToolFilters } from "@/types"
 interface Category {
   id: string
   name: string
-  nameKn?: string | null
   slug: string
   _count?: { tools: number }
 }
@@ -54,7 +53,7 @@ export function FilterSidebar({ filters, onFiltersChange, open, onClose }: Filte
         `}
       >
         <div className="mb-6 flex items-center justify-between lg:hidden">
-          <h3 className="font-semibold text-foreground">Filters</h3>
+          <h3 className="font-heading font-semibold text-foreground">Filters</h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
@@ -72,7 +71,7 @@ export function FilterSidebar({ filters, onFiltersChange, open, onClose }: Filte
               <option value="">All Categories</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.nameKn || cat.name}
+                  {cat.name}
                   {cat._count ? ` (${cat._count.tools})` : ""}
                 </option>
               ))}

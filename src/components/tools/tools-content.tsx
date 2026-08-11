@@ -39,8 +39,12 @@ export function ToolsContent() {
     setPage(1)
   }
 
+  const TOOLS_FETCH_TIMEOUT_MS = 8000
+
   useEffect(() => {
     let cancelled = false
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), TOOLS_FETCH_TIMEOUT_MS)
 
     async function fetchTools() {
       setLoading(true)
@@ -55,7 +59,7 @@ export function ToolsContent() {
       if (filters.available) params.set("available", filters.available)
 
       try {
-        const res = await fetch(`/api/tools?${params}`)
+        const res = await fetch(`/api/tools?${params}`, { signal: controller.signal })
         const json = await res.json()
         if (cancelled) return
         if (json.success) {
@@ -63,13 +67,19 @@ export function ToolsContent() {
           if (json.meta) setMeta(json.meta as PaginationMeta)
         }
       } catch {
+        // Timeout, network failure, or abort-on-unmount: fall back to an empty
+        // list instead of hanging in the loading state forever.
         if (!cancelled) setTools([])
       }
       if (!cancelled) setLoading(false)
     }
 
     fetchTools()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+      controller.abort()
+    }
   }, [debouncedSearch, sortBy, page, filters, meta.limit])
 
   return (
@@ -101,7 +111,7 @@ export function ToolsContent() {
             >
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-[4/3] rounded-xl" />
+                  <Skeleton className="aspect-[4/3] rounded-2xl" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-4 w-1/3" />
@@ -117,7 +127,7 @@ export function ToolsContent() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center py-20"
             >
-              <p className="text-lg font-medium text-foreground">No tools found</p>
+              <p className="font-heading text-lg font-medium text-foreground">No tools found</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Try adjusting your filters or search term
               </p>

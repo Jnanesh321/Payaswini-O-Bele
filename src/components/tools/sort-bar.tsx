@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Search, SlidersHorizontal } from "lucide-react"
 import { Button, Input, Select } from "@/components/ui"
 
@@ -19,6 +20,7 @@ export function SortBar({
   totalResults,
   onToggleFilters,
 }: SortBarProps) {
+  const t = useTranslations("tools")
   const [input, setInput] = useState("")
 
   useEffect(() => {
@@ -31,17 +33,17 @@ export function SortBar({
       <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search tools… ಹುಡುಕಿ"
+          placeholder={t("searchPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           className="pl-9"
         />
       </div>
       <Select value={sortBy} onChange={(e) => onSortChange(e.target.value)}>
-        <option value="popular">ಜನಪ್ರಿಯ / Popular</option>
-        <option value="price_asc">ಕಡಿಮೆ ಬೆಲೆ / Price Low</option>
-        <option value="price_desc">ಹೆಚ್ಚಿನ ಬೆಲೆ / Price High</option>
-        <option value="newest">ಹೊಸದು / Newest</option>
+        <option value="popular">{t("sortPopular")}</option>
+        <option value="price_asc">{t("sortPriceLow")}</option>
+        <option value="price_desc">{t("sortPriceHigh")}</option>
+        <option value="newest">{t("sortNewest")}</option>
       </Select>
       <Button
         variant="outline"
@@ -53,7 +55,7 @@ export function SortBar({
       </Button>
       {totalResults > 0 && (
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {totalResults} result{totalResults !== 1 ? "s" : ""}
+          {totalResults} {totalResults === 1 ? t("result") : t("results")}
         </span>
       )}
     </div>

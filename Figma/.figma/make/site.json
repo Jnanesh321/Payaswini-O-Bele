@@ -1,0 +1,10 @@
+{
+  "description": "Displays detailed job info for service marketplace operators, enabling quick review and decision-making with accept or decline options.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -7,6 +7,7 @@ import { MapPin, Truck, ShieldCheck, Loader2, CreditCard, IndianRupee } from "lu
 import { Button, Card, Input } from "@/components/ui"
 import { useCartStore } from "@/store/cart"
 import { formatPrice } from "@/lib/utils"
+import { useLocale } from "next-intl"
 
 declare global {
   interface Window {
@@ -28,7 +29,9 @@ function loadRazorpay(): Promise<void> {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, getSubtotal, getTotalDeposit, getGrandTotal, clearCart } = useCartStore()
+  const locale = useLocale()
+  const fp = (n: number) => formatPrice(n, locale)
+  const { items, getSubtotal, getTotalDeposit, getTotalOperatorFee, getGrandTotal, clearCart } = useCartStore()
   const [loading, setLoading] = useState(false)
   const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("delivery")
   const [address, setAddress] = useState({
@@ -58,6 +61,9 @@ export default function CheckoutPage() {
             toolId: i.toolId,
             startDate: i.startDate,
             endDate: i.endDate,
+            serviceType: i.serviceType,
+            operatorFeePerDay: i.operatorFeePerDay,
+            totalOperatorFee: i.totalOperatorFee,
           })),
           deliveryCharge,
         }),
@@ -216,18 +222,24 @@ export default function CheckoutPage() {
                   <span className="text-muted-foreground truncate max-w-[180px]">
                     {item.name} x{item.days}d
                   </span>
-                  <span>{formatPrice(item.totalAmount)}</span>
+                  <span>{fp(item.totalAmount)}</span>
                 </div>
               ))}
             </div>
             <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(getSubtotal())}</span>
+                <span>{fp(getSubtotal())}</span>
               </div>
+              {getTotalOperatorFee() > 0 && (
+                <div className="flex justify-between text-accent">
+                  <span className="text-muted-foreground">Operator Fee</span>
+                  <span>{fp(getTotalOperatorFee())}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Deposit (Refundable)</span>
-                <span>{formatPrice(getTotalDeposit())}</span>
+                <span>{fp(getTotalDeposit())}</span>
               </div>
               {deliveryType === "delivery" && (
                 <div className="flex justify-between">
@@ -237,7 +249,7 @@ export default function CheckoutPage() {
               )}
               <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
                 <span>Total</span>
-                <span className="text-primary">{formatPrice(getGrandTotal())}</span>
+                <span className="text-primary">{fp(getGrandTotal())}</span>
               </div>
             </div>
             <Button
@@ -251,7 +263,7 @@ export default function CheckoutPage() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  Pay {formatPrice(getGrandTotal())}
+                  Pay {fp(getGrandTotal())}
                 </>
               )}
             </Button>

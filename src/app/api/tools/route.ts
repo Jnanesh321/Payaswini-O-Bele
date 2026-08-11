@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
-        { nameKn: { contains: search, mode: "insensitive" } },
       ]
     }
     if (minPrice || maxPrice) {

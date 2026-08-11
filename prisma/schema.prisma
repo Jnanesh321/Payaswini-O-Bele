@@ -9,9 +9,26 @@ datasource db {
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
-enum UserRole {
+enum CapabilityType {
   FARMER
-  ADMIN
+  TOOL_OWNER
+  OPERATOR
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  SUSPENDED
+  REVOKED
+}
+
+enum BookingServiceType {
+  SELF_SERVICE_RENTAL
+  SELF_SERVICE_OWN_TOOL
+  OPERATOR_ONLY
+  OWNER_OPERATED
+  FULL_LOGISTICS
 }
 
 enum ToolCategory {
@@ -27,12 +44,38 @@ enum ToolCategory {
 }
 
 enum BookingStatus {
-  PENDING
-  CONFIRMED
-  ACTIVE
-  RETURNED
-  CANCELLED
-  OVERDUE
+  REQUESTED
+  OWNER_PENDING
+  OWNER_ACCEPTED
+  OPERATOR_PENDING
+  OPERATOR_ASSIGNED
+  OPERATOR_ACCEPTED
+  FETCHING_TOOL
+  TOOL_COLLECTED
+  TRAVELLING_TO_FARM
+  ARRIVED
+  WORK_STARTED
+  WORK_PAUSED
+  WORK_RESUMED
+  WORK_COMPLETED
+  RETURNING_TOOL
+  TOOL_RETURNED
+  INSPECTION
+  COMPLETED
+  CANCELLED_BY_FARMER
+  CANCELLED_BY_OWNER
+  CANCELLED_BY_OPERATOR
+  CANCELLED_BY_PLATFORM
+  FAILED_NO_OPERATOR
+  DISPUTED
+}
+
+enum BookingEventActor {
+  FARMER
+  TOOL_OWNER
+  OPERATOR
+  ADMIN
+  SYSTEM
 }
 
 enum PaymentStatus {
@@ -50,6 +93,26 @@ enum DeliveryStatus {
   RETURNED
 }
 
+enum ToolInstanceStatus {
+  AVAILABLE
+  MAINTENANCE
+  RESERVED
+  HANDED_OVER
+  IN_USE
+  RETURNED
+  INSPECTION
+  LOST
+  DAMAGED
+  RETIRED
+}
+
+enum HandoverType {
+  PICKUP_FROM_OWNER
+  DELIVERY_TO_FARMER
+  RETURN_FROM_FARMER
+  RETURN_TO_OWNER
+}
+
 // ─── User ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -58,20 +121,30 @@ model User {
   phone           String   @unique
   email           String?  @unique
   passwordHash    String?
-  role            UserRole @default(FARMER)
+  isAdmin         Boolean  @default(false)
   district        String?
   taluk           String?
   village         String?
   pincode         String?
   phoneVerified   Boolean  @default(false)
   aadhaarVerified Boolean  @default(false)
-  preferredLang   String   @default("kn")
+  preferredLang   String   @default("en")
   image           String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  bookings   Booking[]
-  reviews    Review[]
+  orders                 Order[]
+  bookings               Booking[]         @relation("BookingFarmer")
+  toolOwnerBookings      Booking[]         @relation("BookingToolOwner")
+  performedBookings      Booking[]         @relation("BookingPerformer")
+  reviews                Review[]
+  stateLogsTriggered     BookingStateLog[] @relation("BookingStateLogActor")
+  handoversTriggered     HandoverLog[]     @relation("HandoverActor")
+  capabilities           UserCapability[]
+  ownedToolInstances     ToolInstance[]    @relation("ToolInstanceOwner")
+  custodiedToolInstances ToolInstance[]    @relation("ToolInstanceCustodian")
+  grantedSelfOperate     SelfOperatePermission[] @relation("SelfOperateGrantee")
+  receivedSelfOperate    SelfOperatePermission[] @relation("SelfOperateGrantor")
 
   accounts Account[]
   sessions Session[]
@@ -123,13 +196,13 @@ model VerificationToken {
 // ─── OTP Requests ───────────────────────────────────────────────────────────
 
 model OtpRequest {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   phone      String
   otp        String
   expiresAt  DateTime
   verifiedAt DateTime?
-  attempts   Int      @default(0)
-  createdAt  DateTime @default(now())
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
   ip         String?
 
   @@index([phone, otp])
@@ -140,12 +213,12 @@ model OtpRequest {
 // ─── Rate Limit ──────────────────────────────────────────────────────────────
 
 model RateLimit {
-  id        String   @id @default(cuid())
-  key       String   // "phone:9876543210" or "ip:127.0.0.1"
-  count     Int      @default(1)
+  id          String   @id @default(cuid())
+  key         String
+  count       Int      @default(1)
   windowStart DateTime
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
 
   @@unique([key, windowStart])
   @@index([key, windowStart])
@@ -153,15 +226,57 @@ model RateLimit {
   @@map("rate_limits")
 }
 
+// ─── User Capability Profiles (multi-role) ─────────────────────────────────
+
+model UserCapability {
+  id         String             @id @default(cuid())
+  userId     String
+  type       CapabilityType
+  status     VerificationStatus @default(UNVERIFIED)
+  verifiedAt DateTime?
+  deniedAt   DateTime?
+  notes      String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([type, status])
+  @@map("user_capabilities")
+}
+
+// ─── Self-Operate Permission (certified-tool access grant) ───────────────
+// A Tool Owner grants a specific Farmer the right to self-operate their
+// certified tools (Change 1 scenario selection). Verified grants unlock the
+// self-operate option on the tool detail page; without one, only the
+// request-operator scenario is offered for certified tools.
+
+model SelfOperatePermission {
+  id         String             @id @default(cuid())
+  farmerId   String
+  toolOwnerId String
+  status     VerificationStatus @default(UNVERIFIED)
+  verifiedAt DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  farmer   User @relation("SelfOperateGrantor", fields: [farmerId], references: [id], onDelete: Cascade)
+  toolOwner User @relation("SelfOperateGrantee", fields: [toolOwnerId], references: [id])
+
+  @@unique([farmerId, toolOwnerId])
+  @@index([toolOwnerId])
+  @@map("self_operate_permissions")
+}
+
 // ─── Tool ───────────────────────────────────────────────────────────────────
 
 model Tool {
   id                   String       @id @default(cuid())
   name                 String
-  nameKn               String?
+  translations         Json?
   slug                 String       @unique
   description          String       @db.Text
-  descriptionKn        String?
   category             ToolCategory @default(OTHER)
   images               String[]
   thumbnailUrl         String?
@@ -169,7 +284,9 @@ model Tool {
   pricePerWeek         Int?
   pricePerSeason       Int?
   deposit              Int
+  // DEPRECATED: tool availability must be DERIVED from ToolInstance rows & bookings
   availableCount       Int          @default(0)
+  // DEPRECATED: count equals ToolInstance rows
   totalCount           Int          @default(0)
   minRentalDays        Int          @default(1)
   maxRentalDays        Int          @default(30)
@@ -180,52 +297,172 @@ model Tool {
   deliveryRadiusKm     Int          @default(50)
   freeDeliveryRadiusKm Int          @default(20)
   deliveryChargePerKm  Int?         @default(0)
+  requiresCertifiedOperator Boolean @default(false)
+  operatorFeePerDay     Int          @default(0)
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
-  bookings Booking[]
-  reviews  Review[]
+  bookings  Booking[]
+  reviews   Review[]
+  instances ToolInstance[]
 
   @@map("tools")
 }
 
-// ─── Booking (was Rental) ───────────────────────────────────────────────────
+// ─── Tool Instance (individual physical asset) ──────────────────────────────
+
+model ToolInstance {
+  id                 String             @id @default(cuid())
+  assetCode          String             @unique
+  toolId             String
+  ownerId            String
+  status             ToolInstanceStatus @default(AVAILABLE)
+  currentCustodianId String?
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  tool         Tool          @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  owner        User          @relation("ToolInstanceOwner", fields: [ownerId], references: [id])
+  custodian    User?         @relation("ToolInstanceCustodian", fields: [currentCustodianId], references: [id])
+  bookings     Booking[]
+  handoverLogs HandoverLog[]
+
+  @@index([toolId, status])
+  @@index([ownerId])
+  @@index([currentCustodianId])
+  @@map("tool_instances")
+}
+
+// ─── Order (Parent Checkout Financial Container) ────────────────────────────
+
+model Order {
+  id              String        @id @default(cuid())
+  orderRef        String        @unique
+  userId          String
+  totalAmount     Int
+  paymentStatus   PaymentStatus @default(PENDING)
+  razorpayOrderId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  bookings Booking[]
+  payments Payment[]
+
+  @@index([userId])
+  @@index([paymentStatus])
+  @@map("orders")
+}
+
+// ─── Booking ────────────────────────────────────────────────────────────────
 
 model Booking {
-  id                String         @id @default(cuid())
-  bookingRef        String         @unique
-  userId            String
-  toolId            String
-  startDate         DateTime
-  endDate           DateTime
-  totalDays         Int
-  pricePerDay       Int
-  subtotal          Int
-  deposit           Int
-  deliveryCharge    Int            @default(0)
+  id                 String             @id @default(cuid())
+  bookingRef         String             @unique
+  orderId            String
+  farmerId           String
+  toolId             String
+  toolInstanceId     String?
+  toolOwnerId        String
+  servicePerformerId String
+  serviceType        BookingServiceType
+  startDate          DateTime
+  endDate            DateTime
+  totalDays          Int
+
+  // Explicit Financial Breakdown (Domain Rule 8)
+  toolFeePerDay     Int @default(0)
+  operatorFeePerDay Int @default(0)
+  totalToolFee      Int @default(0)
+  totalOperatorFee  Int @default(0)
+  deliveryFee       Int @default(0)
+  deposit           Int @default(0)
+  platformFee       Int @default(0)
   totalAmount       Int
-  status            BookingStatus  @default(PENDING)
-  deliveryStatus    DeliveryStatus @default(SCHEDULED)
-  deliveryAddress   String?
-  deliveryDistrict  String?
-  deliveryTaluk     String?
-  deliveryPincode   String?
-  notes             String?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
 
-  user    User     @relation(fields: [userId], references: [id])
-  tool    Tool     @relation(fields: [toolId], references: [id])
-  payment Payment?
+  // Legacy/compatibility financial fields
+  pricePerDay Int @default(0)
+  subtotal    Int @default(0)
 
+  status           BookingStatus  @default(REQUESTED)
+  deliveryStatus   DeliveryStatus @default(SCHEDULED)
+  deliveryAddress  String?
+  deliveryDistrict String?
+  deliveryTaluk    String?
+  deliveryPincode  String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  order            Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  farmer           User          @relation("BookingFarmer", fields: [farmerId], references: [id])
+  toolOwner        User          @relation("BookingToolOwner", fields: [toolOwnerId], references: [id])
+  servicePerformer User          @relation("BookingPerformer", fields: [servicePerformerId], references: [id])
+  tool             Tool          @relation(fields: [toolId], references: [id])
+  toolInstance     ToolInstance? @relation(fields: [toolInstanceId], references: [id])
+  payment          Payment?
+
+  stateLogs    BookingStateLog[]
+  handoverLogs HandoverLog[]
+
+  @@index([toolId, startDate, endDate, status])
+  @@index([toolInstanceId, startDate, endDate])
+  @@index([farmerId])
+  @@index([toolOwnerId])
+  @@index([servicePerformerId])
+  @@index([orderId])
   @@map("bookings")
 }
 
-// ─── Payment ────────────────────────────────────────────────────────────────
+// ─── Handover Log (Physical Custody Evidence, Domain Rule 9 & 10) ───────────
+
+model HandoverLog {
+  id             String       @id @default(cuid())
+  bookingId      String
+  toolInstanceId String
+  actorId        String
+  handoverType   HandoverType
+  photos         String[]
+  conditionGrade String       @default("GOOD")
+  notes          String?
+  createdAt      DateTime     @default(now())
+
+  booking      Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  toolInstance ToolInstance @relation(fields: [toolInstanceId], references: [id])
+  actorUser    User         @relation("HandoverActor", fields: [actorId], references: [id])
+
+  @@index([bookingId])
+  @@index([toolInstanceId])
+  @@index([actorId])
+  @@map("handover_logs")
+}
+
+// ─── Booking State Log (audit trail) ────────────────────────────────────────
+
+model BookingStateLog {
+  id        String            @id @default(cuid())
+  bookingId String
+  fromState BookingStatus
+  toState   BookingStatus
+  actor     BookingEventActor
+  actorId   String?
+  note      String?
+  createdAt DateTime          @default(now())
+
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actorUser User?   @relation("BookingStateLogActor", fields: [actorId], references: [id])
+
+  @@index([bookingId, createdAt])
+  @@map("booking_state_logs")
+}
+
+// ─── Payment (Dispute & Deposit Hold Support, Domain Rule 11) ───────────────
 
 model Payment {
   id                String        @id @default(cuid())
-  bookingId         String        @unique
+  bookingId         String?       @unique
+  orderId           String?
   razorpayOrderId   String?
   razorpayPaymentId String?
   amount            Int
@@ -234,10 +471,23 @@ model Payment {
   vpa               String?
   webhookVerified   Boolean       @default(false)
   webhookReceivedAt DateTime?
-  createdAt         DateTime      @default(now())
 
-  booking Booking @relation(fields: [bookingId], references: [id])
+  // Financial holds & dispute extensions
+  depositFrozen   Boolean @default(false)
+  depositDeducted Int     @default(0)
+  depositRefunded Int     @default(0)
+  disputeLocked   Boolean @default(false)
 
+  // Cancellation/refund accounting (MVP §11 policy — see booking-state-machine.ts)
+  refundAmount   Int @default(0) // paise returned to the farmer
+  cancellationFee Int @default(0) // paise withheld for operator compensation
+
+  createdAt DateTime @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  order   Order?   @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
   @@map("payments")
 }
 
