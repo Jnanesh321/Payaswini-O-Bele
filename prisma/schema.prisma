@@ -477,6 +477,8 @@ model Payment {
   depositDeducted Int     @default(0)
   depositRefunded Int     @default(0)
   disputeLocked   Boolean @default(false)
+  // Razorpay refund entity id for the deposit resolution (reconciliation/idempotency)
+  depositRefundId String?
 
   // Cancellation/refund accounting (MVP §11 policy — see booking-state-machine.ts)
   refundAmount   Int @default(0) // paise returned to the farmer
