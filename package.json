@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
@@ -16,6 +16,7 @@
     "cap:open": "cap open android",
     "cap:run": "cap run android",
     "cap:build": "cap sync android && cd android && gradlew.bat assembleDebug",
+    "cap:build:release": "cap sync android && cd android && gradlew.bat assembleRelease",
     "postinstall": "prisma generate"
   },
   "prisma": {
