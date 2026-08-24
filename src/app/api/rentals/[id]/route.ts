@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { getBookingById, updateBooking } from "@/server/services/bookings"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: { tool: true, payment: true, farmer: true },
-  })
+  const booking = await getBookingById(id)
   if (!booking) {
     return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 })
   }
@@ -18,13 +15,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
   const body = await request.json()
-  const booking = await prisma.booking.update({
-    where: { id },
-    data: body,
-  })
+  const booking = await updateBooking(id, body)
   return NextResponse.json({ success: true, data: booking })
 }

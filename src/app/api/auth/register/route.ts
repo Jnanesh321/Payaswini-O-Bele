@@ -1,32 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { registerUser, AuthServiceError } from "@/server/services/auth"
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, phone, address } = await request.json()
-    const cleaned = phone?.replace(/\D/g, "")
-    if (!cleaned || cleaned.length < 10) {
-      return NextResponse.json({ success: false, error: "Invalid phone number" }, { status: 400 })
-    }
-    if (!name?.trim()) {
-      return NextResponse.json({ success: false, error: "Name is required" }, { status: 400 })
-    }
-
-    const existing = await prisma.user.findUnique({ where: { phone: cleaned } })
-    if (existing) {
-      return NextResponse.json({ success: false, error: "Phone already registered" }, { status: 409 })
-    }
-
-    await prisma.user.create({
-      data: {
-        name: name.trim(),
-        phone: cleaned,
-        phoneVerified: false,
-      },
-    })
-
-    return NextResponse.json({ success: true, message: "Account created. Verify OTP to login." }, { status: 201 })
+    const body = await request.json()
+    const result = await registerUser(body)
+    return NextResponse.json({ success: true, ...result }, { status: 201 })
   } catch (error) {
+    if (error instanceof AuthServiceError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     return NextResponse.json({ success: false, error: "Registration failed" }, { status: 500 })
   }
 }

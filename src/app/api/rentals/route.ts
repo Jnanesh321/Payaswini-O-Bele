@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import { getServerSession } from "@/lib/auth"
+import { listFarmerBookings, createBooking } from "@/server/services/bookings"
 
 export async function GET() {
   const session = await getServerSession()
@@ -8,12 +8,7 @@ export async function GET() {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const bookings = await prisma.booking.findMany({
-    where: { farmerId: session.user.id },
-    include: { tool: true, payment: true },
-    orderBy: { createdAt: "desc" },
-  })
-
+  const bookings = await listFarmerBookings(session.user.id)
   return NextResponse.json({ success: true, data: bookings })
 }
 
@@ -25,10 +20,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const booking = await prisma.booking.create({
-      data: { ...body, farmerId: session.user.id },
-      include: { tool: true, payment: true },
-    })
+    const booking = await createBooking(session.user.id, body)
     return NextResponse.json({ success: true, data: booking }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ success: false, error: "Failed to create booking" }, { status: 500 })

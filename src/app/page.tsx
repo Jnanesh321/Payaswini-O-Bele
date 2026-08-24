@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/server/db/prisma"
 import type { ToolTranslations } from "@/lib/utils"
 import Hero from "@/components/landing/hero"
 import Stats from "@/components/landing/stats"

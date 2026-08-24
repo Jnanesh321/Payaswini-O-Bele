@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import { getServerSession } from "@/lib/auth"
+import { getUserProfile, updateUserProfile } from "@/server/services/users"
 
 export async function GET() {
   const session = await getServerSession()
@@ -8,11 +8,7 @@ export async function GET() {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: { bookings: { include: { tool: true } } },
-  })
-
+  const user = await getUserProfile(session.user.id)
   return NextResponse.json({ success: true, data: user })
 }
 
@@ -24,10 +20,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
-      data: body,
-    })
+    const user = await updateUserProfile(session.user.id, body)
     return NextResponse.json({ success: true, data: user })
   } catch (error) {
     return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 })

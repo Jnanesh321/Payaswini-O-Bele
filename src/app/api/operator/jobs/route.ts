@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "@/lib/auth"
-import { listOwnerRequests, OwnerServiceError } from "@/server/services/owners"
+import { listOperatorJobs } from "@/server/services/operators"
 
 export async function GET() {
   const session = await getServerSession()
@@ -8,6 +8,6 @@ export async function GET() {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const data = await listOwnerRequests(session.user.id)
+  const data = await listOperatorJobs(session.user.id)
   return NextResponse.json({ success: true, data })
 }

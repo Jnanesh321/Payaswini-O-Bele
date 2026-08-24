@@ -46,11 +46,45 @@ krishirent/
     │       ├── en.json          — English translations
     │       └── kn.json          — Kannada translations
 
-    ├── lib/
-    │   ├── auth.ts              — NextAuth v5 config (credentials provider, JWT)
-    │   ├── prisma.ts            — Singleton Prisma client instance
-    │   ├── rate-limit.ts        — Sliding-window rate limiter (Prisma-backed)
-    │   └── utils.ts             — cn() helper, formatPrice(), formatDate()
+    ├── lib/                     — Shared code (safe for both server & client)
+    │   ├── booking-status.ts    — Booking status labels & badge variants (SHARED)
+    │   ├── platform.ts          — Capacitor native platform detection (CLIENT)
+    │   ├── utils.ts             — cn(), formatPrice(), formatDate() (SHARED)
+    │   │
+    │   │  ── Re-exports below (backward compat, point to src/server/) ──
+    │   ├── auth.ts              — Re-exports from @/server/lib/auth
+    │   ├── booking-actor.ts     — Re-exports from @/server/lib/booking-actor
+    │   ├── booking-pricing.ts   — Re-exports from @/server/lib/booking-pricing
+    │   ├── booking-state-machine.ts — Re-exports from @/server/lib/booking-state-machine
+    │   ├── deposit-resolution.ts — Re-exports from @/server/lib/deposit-resolution
+    │   ├── owner-sla.ts         — Re-exports from @/server/lib/owner-sla
+    │   ├── prisma.ts            — Re-exports from @/server/db/prisma
+    │   ├── rate-limit.ts        — Re-exports from @/server/lib/rate-limit
+    │   └── sms.ts               — Re-exports from @/server/lib/sms
+
+    ├── server/                  — Backend-only code (NEVER imported by "use client")
+    │   ├── db/
+    │   │   └── prisma.ts        — Singleton Prisma client instance
+    │   │
+    │   ├── lib/                 — Backend-only utilities
+    │   │   ├── auth.ts          — NextAuth v5 config (credentials provider, JWT)
+    │   │   ├── booking-actor.ts — Maps user to booking actor role (FARMER/OWNER/OPERATOR)
+    │   │   ├── booking-pricing.ts — Server-authoritative pricing engine (C2 trust boundary)
+    │   │   ├── booking-state-machine.ts — §9 state machine, transitions, cancellation policy
+    │   │   ├── deposit-resolution.ts — Refundable deposit lifecycle (idempotent)
+    │   │   ├── owner-sla.ts     — 4-hour owner response SLA + auto-cancel
+    │   │   ├── rate-limit.ts    — Sliding-window rate limiter (Prisma-backed)
+    │   │   └── sms.ts           — MSG91 OTP & transactional SMS
+    │   │
+    │   └── services/            — Business logic (one file per domain)
+    │       ├── admin.ts         — Admin assignment dashboard
+    │       ├── auth.ts          — Register, send OTP, verify OTP
+    │       ├── bookings.ts     — Booking CRUD, state transitions, deposit resolution, operator assignment
+    │       ├── operators.ts     — Operator jobs listing & earnings
+    │       ├── owners.ts        — Owner requests, equipment, profile, earnings
+    │       ├── payments.ts      — Razorpay order creation, payment verification
+    │       ├── tools.ts         — Tool CRUD, categories, search/filter
+    │       └── users.ts         — User profile get/update
 
     ├── hooks/                   — React hooks (empty)
     ├── store/
@@ -134,22 +168,51 @@ krishirent/
     │   │   └── page.tsx             — How it works page
     │   │
     │   └── api/                 — API routes (REST, no locale prefix)
+    │       │                       Each route.ts is a THIN wrapper: parse → auth →
+    │       │                       call ONE service function → return response.
+    │       │                       All business logic lives in src/server/services/.
     │       ├── auth/
     │       │   ├── [...nextauth]/route.ts  — NextAuth handler
     │       │   ├── send-otp/route.ts       — Send OTP (rate-limited)
-    │       │   ├── verify-otp/route.ts     — Verify OTP (rate-limited, no auto-register)
+    │       │   ├── verify-otp/route.ts     — Verify OTP (rate-limited)
     │       │   └── register/route.ts       — Create user account
     │       ├── categories/route.ts         — Tool categories
     │       ├── tools/
     │       │   ├── route.ts                — List tools (filtered, paginated)
     │       │   └── [slug]/route.ts         — Single tool detail
     │       ├── rentals/
-    │       │   ├── route.ts                — CRUD rentals
-    │       │   └── [id]/route.ts           — Single rental
-    │       ├── payments/route.ts           — Payment records
+    │       │   ├── route.ts                — List/create farmer bookings
+    │       │   └── [id]/
+    │       │       ├── route.ts            — Get/update single booking
+    │       │       ├── transition/
+    │       │       │   └── route.ts        — Booking state machine transitions
+    │       │       ├── deposit-resolution/
+    │       │       │   └── route.ts        — Resolve refundable deposit
+    │       │       └── assign-operator/
+    │       │           └── route.ts        — Admin operator assignment
+    │       ├── payments/route.ts           — Create payment record
     │       ├── razorpay/
     │       │   ├── create-order/route.ts   — Razorpay order creation
     │       │   └── verify/route.ts         — Razorpay webhook verification
     │       ├── users/route.ts              — User profile CRUD
-    │       └── upload/                     — File upload (empty)
+    │       ├── owner/
+    │       │   ├── requests/route.ts       — Owner pending bookings
+    │       │   ├── equipment/
+    │       │   │   ├── route.ts            — Owner equipment summary
+    │       │   │   └── [toolId]/route.ts   — Toggle tool availability
+    │       │   ├── profile/route.ts        — Owner profile + stats
+    │       │   └── earnings/route.ts       — Owner earnings summary
+    │       ├── operator/
+    │       │   ├── jobs/route.ts           — Operator assigned bookings
+    │       │   └── earnings/route.ts       — Operator earnings summary
+    │       └── admin/
+    │           └── assignments/route.ts    — Admin assignment dashboard
 ```
+
+## Architecture Rules
+
+1. **`src/server/`** = backend-only. Never imported by any `"use client"` component.
+2. **`src/lib/`** = shared code (safe for both server & client). Contains `booking-status.ts`, `utils.ts`, `platform.ts`, plus backward-compat re-exports pointing to `src/server/`.
+3. **`src/app/api/`** = thin route wrappers. Each route.ts should be ≤15-20 lines of logic: parse request → check auth → call ONE service function → return response.
+4. **`src/server/services/`** = one file per domain. Contains all business logic (state machines, pricing, validation, database queries).
+5. **`src/server/lib/`** = backend-only utilities (sms, rate-limit, booking-state-machine, etc.).

@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "@/lib/auth"
-import { getBookingWithTransitions, transitionBooking, TransitionError } from "@/server/services/bookings"
+import { assignOperator, TransitionError } from "@/server/services/bookings"
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params
-  const booking = await getBookingWithTransitions(id)
-  if (!booking) {
-    return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 })
-  }
-  return NextResponse.json({ success: true, data: booking })
-}
-
+/**
+ * POST /api/rentals/[id]/assign-operator — Admin manual operator assignment
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -22,27 +13,36 @@ export async function POST(
   if (!session?.user) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
+  if (!session.user.isAdmin) {
+    return NextResponse.json({ success: false, error: "Forbidden — admin only" }, { status: 403 })
+  }
 
   const { id } = await params
-  let body: { to?: string; note?: string; actor?: string; operatorMode?: "assign_operator" | "self_service" } = {}
+  let operatorId: unknown
   try {
-    body = await request.json()
+    const body = await request.json()
+    operatorId = body?.operatorId
   } catch {
     return NextResponse.json({ success: false, error: "Invalid JSON body" }, { status: 400 })
   }
+  if (typeof operatorId !== "string" || !operatorId) {
+    return NextResponse.json(
+      { success: false, error: "Missing or invalid `operatorId`" },
+      { status: 400 },
+    )
+  }
 
   try {
-    const result = await transitionBooking({
+    const result = await assignOperator({
       bookingId: id,
       userId: session.user.id,
-      isAdmin: session.user.isAdmin,
-      body,
+      operatorId,
     })
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
     if (error instanceof TransitionError) {
       return NextResponse.json(
-        { success: false, error: error.message, data: error.data },
+        { success: false, error: error.message, ...(error.data ? { data: error.data } : {}) },
         { status: error.statusCode },
       )
     }

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "@/lib/auth"
-import { listOwnerRequests, OwnerServiceError } from "@/server/services/owners"
+import { getAdminAssignments } from "@/server/services/admin"
 
 export async function GET() {
   const session = await getServerSession()
   if (!session?.user) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
+  if (!session.user.isAdmin) {
+    return NextResponse.json({ success: false, error: "Forbidden — admin only" }, { status: 403 })
+  }
 
-  const data = await listOwnerRequests(session.user.id)
+  const data = await getAdminAssignments()
   return NextResponse.json({ success: true, data })
 }
