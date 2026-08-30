@@ -3,6 +3,7 @@ import { Lora, Nunito } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
 import "./globals.css"
+import { SessionProvider } from "@/components/providers/session-provider"
 import { SiteChrome } from "@/components/layout/site-chrome"
 import { cn } from "@/lib/utils"
 
@@ -51,9 +52,11 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={cn(nunito.variable, lora.variable, "font-sans")} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <SiteChrome>{children}</SiteChrome>
-        </NextIntlClientProvider>
+        <SessionProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <SiteChrome>{children}</SiteChrome>
+          </NextIntlClientProvider>
+        </SessionProvider>
       </body>
     </html>
   )

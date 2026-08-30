@@ -5,19 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-const localeFormatMap: Record<string, { locale: string; currency: string }> = {
-  en: { locale: "en-IN", currency: "INR" },
-  kn: { locale: "kn-IN", currency: "INR" },
-}
+import { REGION_CONFIG, formatRegionalPrice } from "./region"
 
 export function formatPrice(amount: number, locale = "en"): string {
-  const fmt = localeFormatMap[locale] ?? localeFormatMap.en
-  return new Intl.NumberFormat(fmt.locale, {
-    style: "currency",
-    currency: fmt.currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount / 100)
+  return formatRegionalPrice(amount, locale)
 }
 
 export function formatDate(date: Date | string): string {

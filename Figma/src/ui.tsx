@@ -43,18 +43,63 @@ export function PhoneFrame({
 }) {
   return (
     <div style={{
-      width: 390,
+      width: 412,
       backgroundColor: P.bg,
-      border: `2px solid ${P.brown}`,
-      borderRadius: 36,
+      border: '11px solid #1C1208',
+      borderRadius: 44,
       overflow: 'hidden',
-      boxShadow: '0 8px 40px rgba(45,80,22,0.18)',
+      boxShadow: '0 25px 60px -15px rgba(28, 18, 8, 0.4), 0 0 50px rgba(45, 80, 22, 0.15)',
       flexShrink: 0,
+      position: 'relative',
     }}>
+      {/* Top Dynamic Island / Speaker notch */}
+      <div style={{
+        position: 'absolute',
+        top: 6,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 100,
+        height: 18,
+        backgroundColor: '#000000',
+        borderRadius: 10,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: 'inset 0 0 2px rgba(255,255,255,0.2)',
+      }}>
+        {/* Mock camera lens */}
+        <div style={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          backgroundColor: '#1a1a3a',
+          marginRight: 60,
+        }} />
+      </div>
+
       {/* Status bar */}
-      <div style={{ height: 24, backgroundColor: headerBg }} />
+      <div style={{
+        height: 32,
+        backgroundColor: headerBg,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        padding: '0 24px 4px',
+        fontSize: 10,
+        color: 'rgba(255, 255, 255, 0.85)',
+        fontFamily: F.body,
+        fontWeight: 600,
+      }}>
+        <span>09:41</span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+
       {/* Nav bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 18px', backgroundColor: headerBg }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px 14px', backgroundColor: headerBg }}>
         {onBack ? (
           <button onClick={onBack} style={iconBtnStyle}>←</button>
         ) : (
@@ -69,8 +114,25 @@ export function PhoneFrame({
       <div style={{ backgroundColor: headerBg, paddingBottom: 2 }}>
         <div style={{ backgroundColor: P.bg, borderRadius: '12px 12px 0 0', height: 12 }} />
       </div>
-      <div style={{ overflowY: 'auto', maxHeight: 680 }}>
+      <div style={{ overflowY: 'auto', maxHeight: 630, scrollbarWidth: 'thin' }}>
         {children}
+      </div>
+      {/* Bottom screen margin & Home Indicator */}
+      <div style={{
+        backgroundColor: P.bgCard,
+        height: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTop: `1px solid ${P.bgMuted}`,
+      }}>
+        <div style={{
+          width: 120,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: P.textMuted,
+          opacity: 0.6,
+        }} />
       </div>
     </div>
   )
@@ -98,7 +160,7 @@ export function Section({ label, children, style }: { label: string; children: R
 // ── Card ────────────────────────────────────────────────────────────────
 export function Card({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
-    <div style={{ backgroundColor: P.bgCard, border: `1px solid ${P.border}`, borderRadius: 18, padding: '14px 14px', ...style }}>
+    <div className="card-interactive" style={{ backgroundColor: P.bgCard, border: `1px solid ${P.border}`, borderRadius: 18, padding: '14px 14px', ...style }}>
       {children}
     </div>
   )
@@ -143,12 +205,11 @@ export function InfoBlock({ icon, top, bottom }: { icon: string; top: string; bo
 // ── Primary / secondary action buttons ─────────────────────────────────
 export function PrimaryBtn({ children, onClick, style }: { children: ReactNode; onClick?: () => void; style?: CSSProperties }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className="btn-primary" style={{
       width: '100%', padding: '14px 0', border: 'none', borderRadius: 20,
       background: `linear-gradient(135deg, ${P.gold} 0%, ${P.goldLight} 100%)`,
       color: P.green, fontSize: 14, fontWeight: 700, fontFamily: F.body,
-      cursor: 'pointer', letterSpacing: '0.02em',
-      boxShadow: `0 3px 12px rgba(212,160,23,0.45)`, ...style,
+      cursor: 'pointer', letterSpacing: '0.02em', ...style,
     }}>
       {children}
     </button>
@@ -157,7 +218,7 @@ export function PrimaryBtn({ children, onClick, style }: { children: ReactNode; 
 
 export function SecondaryBtn({ children, onClick, style }: { children: ReactNode; onClick?: () => void; style?: CSSProperties }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className="btn-secondary" style={{
       width: '100%', padding: '13px 0', border: `1.5px solid ${P.borderBrown}`,
       borderRadius: 20, backgroundColor: P.bgCard, color: P.textMid,
       fontSize: 14, fontWeight: 700, fontFamily: F.body, cursor: 'pointer', ...style,
@@ -199,7 +260,7 @@ export function ListRow({ icon, title, sub, right, onClick }: {
   icon?: string; title: string; sub?: string; right?: ReactNode; onClick?: () => void
 }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className={onClick ? "list-row-interactive" : ""} style={{
       width: '100%', display: 'flex', alignItems: 'center', gap: 12,
       padding: '12px 14px', backgroundColor: P.bgCard, border: `1px solid ${P.border}`,
       borderRadius: 16, cursor: onClick ? 'pointer' : 'default', textAlign: 'left',
@@ -209,7 +270,7 @@ export function ListRow({ icon, title, sub, right, onClick }: {
         <div style={{ fontSize: 13, fontFamily: F.body, fontWeight: 600, color: P.text }}>{title}</div>
         {sub && <div style={{ fontSize: 11, fontFamily: F.body, color: P.textMuted, marginTop: 2 }}>{sub}</div>}
       </div>
-      {right ?? (onClick && <span style={{ color: P.textMuted, fontSize: 14 }}>›</span>)}
+      {right ?? (onClick && <span className="alert-chevron" style={{ color: P.textMuted, fontSize: 14 }}>›</span>)}
     </button>
   )
 }

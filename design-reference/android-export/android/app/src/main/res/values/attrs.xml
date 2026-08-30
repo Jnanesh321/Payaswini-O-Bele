@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="designRootWidth" format="float" />
+    <attr name="designRootHeight" format="float" />
+    <attr name="designItemWidth" format="float" />
+    <attr name="designItemHeight" format="float" />
+    <attr name="designItemScaleWidthByHeight" format="boolean" />
+    <attr name="designWideWidthFactor" format="float" />
+    <attr name="designFillDeviceWidth" format="boolean" />
+    <attr name="designExtendToTop" format="boolean" />
+    <attr name="designExtendToBottom" format="boolean" />
+    <attr name="designAutoSizeMinTextSize" format="float" />
+    <attr name="designAutoSizeMaxTextSize" format="float" />
+</resources>

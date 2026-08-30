@@ -36,7 +36,7 @@ export default function EarningsScreen({ navigate }: { navigate: NavFn }) {
           <div style={{ fontSize: 11, fontFamily: F.body, opacity: 0.75, marginTop: 4 }}>
             Net earnings · {RECENT.length} jobs completed
           </div>
-          <PrimaryBtn onClick={() => {}} style={{ marginTop: 16, backgroundColor: P.goldLight, color: P.green, boxShadow: 'none' }}>
+          <PrimaryBtn onClick={() => {}} style={{ marginTop: 16, background: `linear-gradient(135deg, ${P.gold} 0%, ${P.goldLight} 100%)`, color: P.green }}>
             Withdraw to Bank Account
           </PrimaryBtn>
         </div>
@@ -62,12 +62,17 @@ export default function EarningsScreen({ navigate }: { navigate: NavFn }) {
                 { m: 'Aug', pct: 0.90 },
               ].map(b => (
                 <div key={b.m} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: '100%', borderRadius: '6px 6px 0 0',
-                    height: `${b.pct * 52}px`,
-                    backgroundColor: b.m === 'Aug' ? P.gold : P.greenMuted,
-                    border: `1px solid ${b.m === 'Aug' ? P.gold : P.border}`,
-                  }} />
+                  <div
+                    className="card-interactive"
+                    style={{
+                      width: '100%', borderRadius: '6px 6px 0 0',
+                      height: `${b.pct * 52}px`,
+                      backgroundColor: b.m === 'Aug' ? P.gold : P.greenMuted,
+                      border: `1px solid ${b.m === 'Aug' ? P.gold : P.border}`,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                  />
                   <span style={{ fontSize: 9, fontFamily: F.body, color: P.textMuted }}>{b.m}</span>
                 </div>
               ))}

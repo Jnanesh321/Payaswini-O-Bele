@@ -34,6 +34,10 @@ export default function CheckoutPage() {
   const { items, getSubtotal, getTotalDeposit, getTotalOperatorFee, getGrandTotal, clearCart } = useCartStore()
   const [loading, setLoading] = useState(false)
   const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("delivery")
+  // Display mirror of the server-side flat delivery fee (₹50). The server is
+  // authoritative for the charge (C2); this only keeps the shown total honest.
+  const deliveryDisplayFee = deliveryType === "delivery" ? 5000 : 0
+  const payTotal = getGrandTotal() + deliveryDisplayFee
   const [address, setAddress] = useState({
     line1: "",
     line2: "",
@@ -47,25 +51,19 @@ export default function CheckoutPage() {
     try {
       await loadRazorpay()
 
-      const deliveryCharge = deliveryType === "delivery" ? 5000 : 0
-
+      // The server treats this as a booking REQUEST and recomputes every amount
+      // itself (C2) — no price/deposit/operator/delivery money values are sent.
       const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          deliveryType,
           items: items.map((i) => ({
-            ...i,
-            totalDays: i.days,
-            pricePerDay: i.pricePerDay,
-            totalAmount: i.totalAmount,
             toolId: i.toolId,
             startDate: i.startDate,
             endDate: i.endDate,
             serviceType: i.serviceType,
-            operatorFeePerDay: i.operatorFeePerDay,
-            totalOperatorFee: i.totalOperatorFee,
           })),
-          deliveryCharge,
         }),
       })
       const { data } = await res.json()
@@ -244,12 +242,12 @@ export default function CheckoutPage() {
               {deliveryType === "delivery" && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery</span>
-                  <span>Calculated later</span>
+                  <span>{fp(deliveryDisplayFee)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
                 <span>Total</span>
-                <span className="text-primary">{fp(getGrandTotal())}</span>
+                <span className="text-primary">{fp(payTotal)}</span>
               </div>
             </div>
             <Button
@@ -263,7 +261,7 @@ export default function CheckoutPage() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  Pay {fp(getGrandTotal())}
+                  Pay {fp(payTotal)}
                 </>
               )}
             </Button>

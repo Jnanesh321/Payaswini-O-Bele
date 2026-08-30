@@ -33,8 +33,7 @@ const tools = [
     pricePerWeek: inr(1499),
     pricePerSeason: inr(4999),
     deposit: inr(2000),
-    availableCount: 8,
-    totalCount: 10,
+
     minRentalDays: 1,
     maxRentalDays: 90,
     specs: {
@@ -71,8 +70,7 @@ const tools = [
     pricePerDay: inr(149),
     pricePerWeek: inr(749),
     deposit: inr(1000),
-    availableCount: 10,
-    totalCount: 10,
+
     minRentalDays: 1,
     maxRentalDays: 14,
     specs: {
@@ -106,8 +104,7 @@ const tools = [
     pricePerDay: inr(599),
     pricePerWeek: inr(2999),
     deposit: inr(5000),
-    availableCount: 4,
-    totalCount: 4,
+
     minRentalDays: 1,
     maxRentalDays: 14,
     specs: {
@@ -138,6 +135,7 @@ async function main() {
     await prisma.otpRequest.deleteMany();
     await prisma.toolInstance.deleteMany();
     await prisma.tool.deleteMany();
+    await prisma.selfOperatePermission.deleteMany();
     await prisma.userCapability.deleteMany();
     await prisma.user.deleteMany();
     console.log("🗑  Cleared existing seed data\n");

@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import Link from "next/link"
-import { Sprout, Phone, Loader2, CheckCircle } from "lucide-react"
-import { Button, Input, Card } from "@/components/ui"
+import Image from "next/image"
+import { Loader2, CheckCircle2, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,15 +16,22 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [sent, setSent] = useState(false)
 
+  const cleanPhone = phone.replace(/\D/g, "")
+  const isPhoneValid = cleanPhone.length === 10
+
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isPhoneValid) {
+      setError("Please enter a valid 10-digit phone number")
+      return
+    }
     setLoading(true)
     setError("")
     try {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone: cleanPhone }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -33,7 +39,7 @@ export default function LoginPage() {
         return
       }
       setSent(true)
-      const params = new URLSearchParams({ phone: phone.replace(/\D/g, ""), callbackUrl })
+      const params = new URLSearchParams({ phone: cleanPhone, callbackUrl })
       router.push(`/verify-otp?${params}`)
     } catch {
       setError("Network error. Please try again.")
@@ -43,86 +49,125 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#FAF7F0] flex flex-col items-center justify-center p-4 font-sans text-[#1C1208]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-[390px] bg-[#FAF7F0] min-h-[85vh] flex flex-col justify-between"
       >
-        <Card className="p-8">
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <Sprout className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold">Login</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
+        {/* Brand Header */}
+        <div className="pt-6 text-center">
+          <div className="relative w-12 h-12 mx-auto mb-3">
+            <Image
+              src="/images/brand-badge.webp"
+              alt="O~Bele Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-[30px] font-bold text-[#143626] font-heading leading-tight tracking-tight">
+            O~Bele
+          </h1>
+          <p className="text-[13px] text-[#6B706E] font-sans font-medium tracking-wide">
+            Farm tools, shared.
+          </p>
+        </div>
+
+        {/* Scenic Illustration */}
+        <div className="relative w-full h-[130px] my-6 rounded-2xl overflow-hidden shadow-sm">
+          <Image
+            src="/images/scenic-illustration.webp"
+            alt="Scenic Farm Illustration"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        {/* Input Card */}
+        <div className="bg-white rounded-2xl p-6 border border-[#D5D9C9] shadow-[0_4px_12px_rgba(45,80,22,0.03)] flex-1 flex flex-col justify-between">
+          <div>
+            <h2 className="text-[21px] font-bold text-[#143626] font-heading tracking-tight leading-snug">
+              Verify your phone number
+            </h2>
+            <p className="text-[13px] text-[#6B706E] font-sans mt-2 leading-relaxed font-medium">
+              Enter your mobile number to receive a 6-digit verification code.
+            </p>
+
+            <form onSubmit={handlePhoneLogin} className="mt-6">
+              <div>
+                <label className="text-[11px] font-bold text-[#6B706E] tracking-wider uppercase block" htmlFor="phone">
+                  Phone Number
+                </label>
+                <div className="flex items-center bg-[#FDFBF7] border border-[#D5D9C9] rounded-xl px-4 py-3 mt-2 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
+                  <span className="text-[15px] font-bold text-[#6B706E] tracking-tight">
+                    +91
+                  </span>
+                  <div className="h-4 w-[1px] bg-[#D5D9C9] mx-3" />
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="98450 12345"
+                    className="bg-transparent border-0 outline-none p-0 text-[15px] font-bold text-[#1F2421] w-full placeholder-[#98A2B3] focus:ring-0 focus:outline-none"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                  {isPhoneValid && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="ml-2 text-[#3D6B1F]"
+                    >
+                      <CheckCircle2 className="h-5 w-5 fill-[#3D6B1F] text-white" />
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs text-[#C0392B] font-semibold mt-3"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </form>
           </div>
 
-          <form onSubmit={handlePhoneLogin} className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" htmlFor="phone">
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+91 9876543210"
-                  className="pl-10"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+          {/* Sticky Bottom Actions */}
+          <div className="mt-8 pt-4 border-t border-[#F2ECE1]">
+            <p className="text-[11px] text-[#6B706E] text-center font-medium leading-normal">
+              By continuing, you agree to O~Bele&apos;s{" "}
+              <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                Terms of Service
+              </span>{" "}
+              &{" "}
+              <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                Privacy Policy
+              </span>.
+            </p>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <Button type="submit" className="w-full" size="lg" disabled={loading || sent}>
+            <Button
+              onClick={handlePhoneLogin}
+              className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
+              disabled={loading || sent || !isPhoneValid}
+            >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : sent ? (
-                <>
-                  <CheckCircle className="h-4 w-4" /> OTP Sent
-                </>
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
               ) : (
-                "Get OTP"
+                <>
+                  <span className="text-[15px] tracking-wide">Verify & Continue</span>
+                  <ArrowRight className="h-[18px] w-[18px] stroke-[2.5]" />
+                </>
               )}
             </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
-            </div>
           </div>
-
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            size="lg"
-            onClick={() => signIn("google", { callbackUrl })}
-          >
-            <svg className="h-5 w-5" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </Button>
-
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
-              Register
-            </Link>
-          </p>
-        </Card>
+        </div>
       </motion.div>
     </div>
   )

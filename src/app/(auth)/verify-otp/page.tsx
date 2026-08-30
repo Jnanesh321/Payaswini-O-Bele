@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { motion } from "framer-motion"
-import { Sprout, ArrowLeft, Loader2 } from "lucide-react"
-import { Button, Card } from "@/components/ui"
+import Image from "next/image"
+import { Loader2, ArrowRight, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui"
 
 export default function VerifyOTPPage() {
   const router = useRouter()
@@ -15,21 +16,50 @@ export default function VerifyOTPPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [timer, setTimer] = useState(30)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  // Format phone number nicely (e.g. 98450 12345)
+  const formattedPhone = phone.length === 10
+    ? `${phone.slice(0, 5)} ${phone.slice(5)}`
+    : phone
+
+  // Countdown timer for Resend OTP
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1)
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [timer])
+
   const handleChange = (index: number, value: string) => {
-    if (value.length > 1) return
+    // Only accept numeric inputs
+    if (value && !/^\d$/.test(value)) return
+
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
+    
+    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
+    if (e.key === "Backspace") {
+      if (!otp[index] && index > 0) {
+        const newOtp = [...otp]
+        newOtp[index - 1] = ""
+        setOtp(newOtp)
+        inputRefs.current[index - 1]?.focus()
+      } else {
+        const newOtp = [...otp]
+        newOtp[index] = ""
+        setOtp(newOtp)
+      }
     }
   }
 
@@ -51,8 +81,21 @@ export default function VerifyOTPPage() {
         setError(data.error || "Invalid OTP")
         return
       }
+      
       const result = await signIn("phone", { phone, redirect: false })
       if (result?.ok) {
+        // Query capability state to see if they need onboarding
+        try {
+          const capRes = await fetch("/api/user/capabilities")
+          const capData = await capRes.json()
+          if (capData.success && !capData.hasCapabilities) {
+            router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+            router.refresh()
+            return
+          }
+        } catch (err) {
+          console.error("Failed to check capabilities:", err)
+        }
         router.push(callbackUrl)
         router.refresh()
       } else {
@@ -75,6 +118,7 @@ export default function VerifyOTPPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
       })
+      setTimer(30)
     } catch {
       setError("Failed to resend OTP")
     } finally {
@@ -84,79 +128,173 @@ export default function VerifyOTPPage() {
 
   if (!phone) {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center px-4 py-12">
-        <Card className="p-8 text-center max-w-md">
-          <p className="text-muted-foreground mb-4">No phone number provided.</p>
-          <Button onClick={() => router.push("/login")}>Go to Login</Button>
-        </Card>
+      <div className="min-h-screen bg-[#FAF7F0] flex items-center justify-center p-4 font-sans text-[#1C1208]">
+        <div className="bg-white rounded-2xl p-8 border border-[#D5D9C9] text-center max-w-sm w-full shadow-sm">
+          <p className="text-[#6B706E] mb-6 font-semibold">No phone number provided.</p>
+          <Button
+            onClick={() => router.push("/login")}
+            className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-12 rounded-xl"
+          >
+            Go to Login
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#FAF7F0] flex flex-col items-center justify-center p-4 font-sans text-[#1C1208]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-[390px] bg-[#FAF7F0] min-h-[85vh] flex flex-col justify-between"
       >
-        <Card className="p-8">
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <Sprout className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold">Verify OTP</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Enter the OTP sent to <span className="font-medium">+91 {phone}</span>
+        {/* Brand Header */}
+        <div className="pt-6 text-center">
+          <div className="relative w-12 h-12 mx-auto mb-3">
+            <Image
+              src="/images/brand-badge.webp"
+              alt="O~Bele Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-[30px] font-bold text-[#143626] font-heading leading-tight tracking-tight">
+            O~Bele
+          </h1>
+          <p className="text-[13px] text-[#6B706E] font-sans font-medium tracking-wide">
+            Farm tools, shared.
+          </p>
+        </div>
+
+        {/* Scenic Illustration */}
+        <div className="relative w-full h-[130px] my-6 rounded-2xl overflow-hidden shadow-sm">
+          <Image
+            src="/images/scenic-illustration.webp"
+            alt="Scenic Farm Illustration"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        {/* Input Card */}
+        <div className="bg-white rounded-2xl p-6 border border-[#D5D9C9] shadow-[0_4px_12px_rgba(45,80,22,0.03)] flex-1 flex flex-col justify-between">
+          <div>
+            <h2 className="text-[21px] font-bold text-[#143626] font-heading tracking-tight leading-snug">
+              Verify OTP
+            </h2>
+            <p className="text-[13px] text-[#6B706E] font-sans mt-2 leading-relaxed font-medium">
+              Enter the OTP sent to <span className="font-bold text-[#143626]">+91 {formattedPhone}</span>
             </p>
+
+            {/* Verification label and change number */}
+            <div className="flex items-center justify-between mt-6">
+              <label className="text-[11px] font-bold text-[#6B706E] tracking-wider uppercase">
+                Verification Code
+              </label>
+              <button
+                onClick={() => router.push(`/login?phone=${phone}&callbackUrl=${callbackUrl}`)}
+                className="text-[12px] font-bold text-[#C85A32] hover:underline inline-flex items-center gap-1 focus:outline-none"
+              >
+                <ArrowLeft className="h-3 w-3" /> Change
+              </button>
+            </div>
+
+            {/* Digit boxes */}
+            <div className="flex justify-between gap-1.5 mt-2.5">
+              {otp.map((digit, i) => {
+                const isActive = otp.findIndex((val) => val === "") === i
+                return (
+                  <div
+                    key={i}
+                    onClick={() => inputRefs.current[i]?.focus()}
+                    className="relative flex-1 aspect-square max-h-[46px] min-h-[40px] bg-white border border-[#D5D9C9] rounded-xl flex items-center justify-center cursor-text transition-all focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016]"
+                  >
+                    <input
+                      ref={(el) => {
+                        inputRefs.current[i] = el
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleChange(i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(i, e)}
+                      className="absolute inset-0 w-full h-full text-center text-[20px] font-bold text-[#143626] bg-transparent border-0 outline-none p-0 focus:ring-0 focus:outline-none"
+                    />
+                    {/* Flashing Caret if active and empty */}
+                    {isActive && !digit && (
+                      <motion.div
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        className="w-[2dp] h-5 bg-[#C85A32] rounded"
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Resend Timer Info */}
+            <div className="flex items-center justify-between mt-6 text-[13px] text-[#6B706E]">
+              <span className="font-medium">Didn&apos;t receive the OTP?</span>
+              {timer > 0 ? (
+                <span className="font-bold text-[#C85A32]">
+                  Resend in 0:{timer < 10 ? `0${timer}` : timer}
+                </span>
+              ) : (
+                <button
+                  onClick={handleResend}
+                  className="font-bold text-[#C85A32] hover:underline focus:outline-none"
+                >
+                  Resend OTP
+                </button>
+              )}
+            </div>
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-[#C0392B] font-semibold mt-4 text-center"
+              >
+                {error}
+              </motion.p>
+            )}
           </div>
 
-          <div className="flex justify-center gap-2 mb-6">
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => { inputRefs.current[i] = el }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(i, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(i, e)}
-                className="flex h-14 w-12 items-center justify-center rounded-lg border border-border bg-background text-center text-xl font-bold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            ))}
-          </div>
+          {/* Sticky Bottom Actions */}
+          <div className="mt-8 pt-4 border-t border-[#F2ECE1]">
+            <p className="text-[11px] text-[#6B706E] text-center font-medium leading-normal">
+              By continuing, you agree to O~Bele&apos;s{" "}
+              <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                Terms of Service
+              </span>{" "}
+              &{" "}
+              <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                Privacy Policy
+              </span>.
+            </p>
 
-          {error && <p className="text-sm text-destructive text-center mb-4">{error}</p>}
-
-          <Button
-            onClick={handleVerify}
-            className="w-full"
-            size="lg"
-            disabled={otp.some((d) => !d) || loading}
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify"}
-          </Button>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={handleResend}
-              disabled={loading}
-              className="text-sm text-primary hover:underline disabled:opacity-50"
+            <Button
+              onClick={handleVerify}
+              className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
+              disabled={otp.some((d) => !d) || loading}
             >
-              Resend OTP
-            </button>
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
+              ) : (
+                <>
+                  <span className="text-[15px] tracking-wide">Verify & Continue</span>
+                  <ArrowRight className="h-[18px] w-[18px] stroke-[2.5]" />
+                </>
+              )}
+            </Button>
           </div>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => router.push("/login")}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-            >
-              <ArrowLeft className="h-3 w-3" /> Change phone number
-            </button>
-          </div>
-        </Card>
+        </div>
       </motion.div>
     </div>
   )

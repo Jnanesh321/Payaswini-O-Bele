@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f_collect_cash_payment">
+
+    <in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:designRootWidth="390"
+        app:designRootHeight="844"
+        app:designAutoSizeMinTextSize="1.0"
+        app:designAutoSizeMaxTextSize="1.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/f_collect_cash_payment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_f_collect_cash_payment" >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_top_content"
+                android:layout_width="match_parent"
+                android:layout_height="512dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_status_bar4"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="0dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_status_icons1"
+                        android:layout_width="80dp"
+                        android:layout_height="20dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="286dp"
+                        android:layout_marginTop="12dp" >
+
+                        <ImageView
+                            android:id="@+id/f_ios_signal4"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_ios_signal4"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null" />
+
+                        <ImageView
+                            android:id="@+id/f_ios_wifi_signal4"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="26dp"
+                            android:src="@drawable/img_f_ios_wifi_signal4"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null" />
+
+                        <ImageView
+                            android:id="@+id/f_ios_battery_full4"
+                            android:layout_width="28dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="52dp"
+                            android:src="@drawable/img_f_ios_battery_full4"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <TextView
+                        android:id="@+id/tv_9414"
+                        android:layout_width="27dp"
+                        android:layout_height="17dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="13.5dp"
+                        android:text="@string/s_941"
+                        android:textSize="13dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_9414" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_nav_bar1"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/f_status_bar4"
+                    android:layout_marginTop="0dp" >
+
+                    <ImageView
+                        android:id="@+id/f_back_icon_container"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="8dp"
+                        android:src="@drawable/img_f_back_icon_container"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null"
+                        android:clipToOutline="true"
+                        android:background="@drawable/shape_f_back_icon_container_circle" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame133"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="330dp"
+                        android:layout_marginTop="8dp" />
+
+                    <TextView
+                        android:id="@+id/tv_collect_payment"
+                        android:layout_width="144dp"
+                        android:layout_height="22dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="17dp"
+                        android:text="@string/collect_payment"
+                        android:textSize="17dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_collect_payment" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_main_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="412dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/f_nav_bar1"
+                    android:layout_marginTop="0dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_status_badge"
+                        android:layout_width="148dp"
+                        android:layout_height="26dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/bg_f_status_badge" >
+
+                        <TextView
+                            android:id="@+id/tv_work_completed"
+                            android:layout_width="112dp"
+                            android:layout_height="14dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/work_completed_2"
+                            android:textSize="11dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_work_completed" />
+
+                        <View
+                            android:id="@+id/ellipse_ellipse2"
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="12dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_ellipse_ellipse2" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_amount_hero"
+                        android:layout_width="350dp"
+                        android:layout_height="146dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_f_amount_hero"
+                        app:layout_constraintTop_toBottomOf="@id/f_status_badge"
+                        android:layout_marginTop="24dp" >
+
+                        <View
+                            android:id="@+id/ellipse_ellipse3"
+                            android:layout_width="90dp"
+                            android:layout_height="120dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="260dp"
+                            android:background="@drawable/bg_ellipse_ellipse3" />
+
+                        <TextView
+                            android:id="@+id/tv_total_amount_due1"
+                            android:layout_width="302dp"
+                            android:layout_height="16dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="32dp"
+                            android:text="@string/total_amount_due_2"
+                            android:textSize="12dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_total_amount_due1" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_rupee_stack"
+                            android:layout_width="249dp"
+                            android:layout_height="58dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="24dp"
+                            app:layout_constraintTop_toBottomOf="@id/tv_total_amount_due1"
+                            android:layout_marginTop="8dp" >
+
+                            <TextView
+                                android:id="@+id/tv_4800"
+                                android:layout_width="159dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp"
+                                android:text="@string/s_4800"
+                                android:textSize="45dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_4800" />
+
+                            <TextView
+                                android:id="@+id/tv_due_in_cash"
+                                android:layout_width="82dp"
+                                android:layout_height="19dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="167dp"
+                                android:layout_marginTop="30dp"
+                                android:text="@string/due_in_cash"
+                                android:textSize="15dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_due_in_cash" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_summary_card"
+                        android:layout_width="350dp"
+                        android:layout_height="176dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_f_summary_card"
+                        app:layout_constraintTop_toBottomOf="@id/f_amount_hero"
+                        android:layout_marginTop="24dp" >
+
+                        <TextView
+                            android:id="@+id/tv_rental_summary"
+                            android:layout_width="310dp"
+                            android:layout_height="19dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="20dp"
+                            android:text="@string/rental_summary"
+                            android:textSize="15dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_rental_summary" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_divider"
+                            android:layout_width="310dp"
+                            android:layout_height="1dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="20dp"
+                            android:background="@color/color_f_divider"
+                            app:layout_constraintTop_toBottomOf="@id/tv_rental_summary"
+                            android:layout_marginTop="16dp" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_summary_rows"
+                            android:layout_width="310dp"
+                            android:layout_height="84dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="20dp"
+                            app:layout_constraintTop_toBottomOf="@id/f_divider"
+                            android:layout_marginTop="16dp" >
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_tool_row1"
+                                android:layout_width="match_parent"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp" >
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/f_tool_label_group"
+                                    android:layout_width="99dp"
+                                    android:layout_height="match_parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent" >
+
+                                    <ImageView
+                                        android:id="@+id/f_tractor1"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginTop="0dp"
+                                        android:src="@drawable/img_f_tractor1"
+                                        android:scaleType="centerInside"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/tv_equipment"
+                                        android:layout_width="69dp"
+                                        android:layout_height="17dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginStart="30dp"
+                                        android:layout_marginTop="1.5dp"
+                                        android:text="@string/equipment"
+                                        android:textSize="13dp"
+                                        android:includeFontPadding="false"
+                                        android:gravity="start|center_vertical"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@color/color_text_tv_equipment" />
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_kubota_paddy_harvester"
+                                    android:layout_width="158dp"
+                                    android:layout_height="17dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginStart="152dp"
+                                    android:layout_marginTop="1.5dp"
+                                    android:text="@string/kubota_paddy_harvester"
+                                    android:textSize="13dp"
+                                    android:includeFontPadding="false"
+                                    android:textStyle="bold"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_kubota_paddy_harvester" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_duration_row"
+                                android:layout_width="match_parent"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/f_tool_row1"
+                                android:layout_marginTop="12dp" >
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/f_duration_label_group"
+                                    android:layout_width="85dp"
+                                    android:layout_height="match_parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent" >
+
+                                    <ImageView
+                                        android:id="@+id/f_clock"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginTop="0dp"
+                                        android:src="@drawable/img_f_clock"
+                                        android:scaleType="centerInside"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/tv_duration"
+                                        android:layout_width="55dp"
+                                        android:layout_height="17dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginStart="30dp"
+                                        android:layout_marginTop="1.5dp"
+                                        android:text="@string/duration"
+                                        android:textSize="13dp"
+                                        android:includeFontPadding="false"
+                                        android:gravity="start|center_vertical"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@color/color_text_tv_duration" />
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_4_hours_standard_crop"
+                                    android:layout_width="159dp"
+                                    android:layout_height="17dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginStart="151dp"
+                                    android:layout_marginTop="1.5dp"
+                                    android:text="@string/s_4_hours_standard_crop"
+                                    android:textSize="13dp"
+                                    android:includeFontPadding="false"
+                                    android:textStyle="bold"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_4_hours_standard_crop" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_farmer_row1"
+                                android:layout_width="match_parent"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/f_duration_row"
+                                android:layout_marginTop="12dp" >
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/f_farmer_label_group"
+                                    android:layout_width="75dp"
+                                    android:layout_height="match_parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:layout_constraintBottom_toBottomOf="parent" >
+
+                                    <ImageView
+                                        android:id="@+id/f_user1"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginTop="0dp"
+                                        android:src="@drawable/img_f_user1"
+                                        android:scaleType="centerInside"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/tv_farmer"
+                                        android:layout_width="45dp"
+                                        android:layout_height="17dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginStart="30dp"
+                                        android:layout_marginTop="1.5dp"
+                                        android:text="@string/farmer"
+                                        android:textSize="13dp"
+                                        android:includeFontPadding="false"
+                                        android:gravity="start|center_vertical"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@color/color_text_tv_farmer" />
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_m_hegde_kota_village"
+                                    android:layout_width="154dp"
+                                    android:layout_height="17dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginStart="156dp"
+                                    android:layout_marginTop="1.5dp"
+                                    android:text="@string/m_hegde_kota_village"
+                                    android:textSize="13dp"
+                                    android:includeFontPadding="false"
+                                    android:textStyle="bold"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_m_hegde_kota_village" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_bottom_actions"
+                android:layout_width="match_parent"
+                android:layout_height="255dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@color/color_f_bottom_actions"
+                app:layout_constraintTop_toBottomOf="@id/f_top_content"
+                android:layout_marginTop="77dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_note_box"
+                    android:layout_width="350dp"
+                    android:layout_height="75dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_f_note_box" >
+
+                    <ImageView
+                        android:id="@+id/f_info"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="12dp"
+                        android:src="@drawable/img_f_info"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+
+                    <!-- app:fillRanges="0,23,color_text_tv_please_collect_exactly_4800|23,29,color_text_tv_please_collect_exactly_4800_2|29,112,color_text_tv_please_collect_exactly_4800_3" -->
+                    <TextView
+                        android:id="@+id/tv_please_collect_exactly_4800"
+                        android:layout_width="302dp"
+                        android:layout_height="51dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="36dp"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/please_collect_exactly_4800_from_the"
+                        android:textSize="11dp"
+                        android:includeFontPadding="false"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_please_collect_exactly_4800" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_confirm_button"
+                    android:layout_width="350dp"
+                    android:layout_height="54dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:background="@drawable/bg_f_confirm_button"
+                    app:layout_constraintTop_toBottomOf="@id/f_note_box"
+                    android:layout_marginTop="16dp" >
+
+                    <ImageView
+                        android:id="@+id/f_check5"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="81.5dp"
+                        android:layout_marginTop="17dp"
+                        android:src="@drawable/img_f_check5"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/tv_mark_cash_received"
+                        android:layout_width="159dp"
+                        android:layout_height="19dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="109.5dp"
+                        android:layout_marginTop="17.5dp"
+                        android:text="@string/mark_cash_received"
+                        android:textSize="15dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_mark_cash_received" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_alternative_action"
+                    android:layout_width="350dp"
+                    android:layout_height="25dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_confirm_button"
+                    android:layout_marginTop="16dp" >
+
+                    <TextView
+                        android:id="@+id/tv_pay_online_instead"
+                        android:layout_width="120dp"
+                        android:layout_height="17dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/pay_online_instead"
+                        android:textSize="13dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_pay_online_instead" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_home_indicator"
+                    android:layout_width="350dp"
+                    android:layout_height="33dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_alternative_action"
+                    android:layout_marginTop="16dp" >
+
+                    <View
+                        android:id="@+id/rect_rectangle6"
+                        android:layout_width="134dp"
+                        android:layout_height="5dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="108dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/bg_rect_rectangle6" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

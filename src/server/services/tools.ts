@@ -39,12 +39,28 @@ export async function listTools(params: {
       orderBy,
       skip: (page - 1) * limit,
       take: limit,
+      include: {
+        instances: {
+          select: { status: true },
+        },
+      },
     }),
     prisma.tool.count({ where }),
   ])
 
+  const mappedTools = tools.map((t) => {
+    const { instances, ...rest } = t
+    const totalCount = instances.length
+    const availableCount = instances.filter((i) => i.status === "AVAILABLE").length
+    return {
+      ...rest,
+      totalCount,
+      availableCount,
+    }
+  })
+
   return {
-    tools,
+    tools: mappedTools,
     meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
 }
@@ -70,7 +86,7 @@ export async function getToolBySlug(slug: string) {
     })
   } else {
     tool = await prisma.tool.findFirst({
-      where: { OR: [{ id: slug }, { name: { contains: slug } }] },
+      where: { OR: [{ id: slug }, { slug: slug }] },
       include: {
         reviews: { include: { user: true } },
         instances: { include: { owner: { select: { id: true, name: true } } } },
@@ -97,8 +113,13 @@ export async function getToolBySlug(slug: string) {
     canSelfOperate = permission?.status === VerificationStatus.VERIFIED
   }
 
+  const totalCount = instances.length
+  const availableCount = instances.filter((i) => i.status === "AVAILABLE").length
+
   return {
     ...toolWithoutInstances,
+    totalCount,
+    availableCount,
     toolOwner: owner,
     canSelfOperate,
   }

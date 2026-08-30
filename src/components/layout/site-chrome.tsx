@@ -6,9 +6,17 @@ import { Footer } from "./footer"
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isOperatorApp = pathname?.startsWith("/operator")
 
-  if (isOperatorApp) {
+  // These routes render their own mobile-native chrome — no desktop header/footer
+  const isBarePath =
+    pathname?.startsWith("/operator") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/verify-otp") ||
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/onboarding") ||
+    pathname?.startsWith("/owner")
+
+  if (isBarePath) {
     return <main className="min-h-screen">{children}</main>
   }
 

@@ -284,10 +284,7 @@ model Tool {
   pricePerWeek         Int?
   pricePerSeason       Int?
   deposit              Int          @default(0)
-  // DEPRECATED: tool availability must be DERIVED from ToolInstance rows & bookings
-  availableCount       Int          @default(0)
-  // DEPRECATED: count equals ToolInstance rows
-  totalCount           Int          @default(0)
+
   minRentalDays        Int          @default(1)
   maxRentalDays        Int          @default(30)
   specs                Json?

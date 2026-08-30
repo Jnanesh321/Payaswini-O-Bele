@@ -1,5 +1,127 @@
 # Changelog
 
+## 2026-08-30 — Dynamic Indian phone validation, dev-fallback OTP, CLI tooling, Razorpay webhook & ToolInstance custody chain
+
+**What:**
+1. **Dynamic Indian Phone Validation & Normalization (`src/server/services/auth.ts`):**
+   - Added and exported `normalizePhone()` and `isValidIndianPhone()`.
+   - Validates Indian phone numbers (10 digits starting with `6–9`, optionally prefixed with `+91` / `91`).
+   - Normalizes stored phone numbers to canonical 12-digit format (`91XXXXXXXXXX`) across OTP generation, user registration, and verification.
+   - Updated NextAuth credentials authorize provider in `src/server/lib/auth.ts` to resolve both 10-digit and 12-digit normalized phone lookups.
+2. **Dev-Fallback OTP Generation & Updated `check-otp.js`:**
+   - Implemented dev-mode master code bypass (`123456`) and auto-registration in development mode to remove testing friction.
+   - Updated `check-otp.js` to automatically load environment configuration from `.env.local` (falling back to `.env`) and support flexible phone lookup by 10-digit or 12-digit arguments.
+3. **Razorpay Webhook Reconciliation (`src/app/api/razorpay/webhook/route.ts`):**
+   - Implemented timing-safe HMAC SHA-256 webhook signature verification against `RAZORPAY_WEBHOOK_SECRET`.
+   - Idempotently reconciles `payment.captured` & `order.paid` events to mark payment captured and auto-advance bookings from `REQUESTED` to `OWNER_PENDING` with audit log.
+4. **ToolInstance QR & Custody Chain (Stage 2):**
+   - Integrated physical asset custody tracking into `src/server/services/bookings.ts` transitions (`TOOL_COLLECTED`, `WORK_STARTED`, `TOOL_RETURNED`, `INSPECTION`, `COMPLETED`).
+   - Automated creation of `HandoverLog` records on pickup and return, and added `ToolInstance` asset tag badges on operator screens.
+
+- **Files changed:**
+  - `src/server/services/auth.ts`
+  - `src/server/lib/auth.ts`
+  - `src/server/services/bookings.ts`
+  - `src/server/services/payments.ts`
+  - `src/app/api/razorpay/webhook/route.ts`
+  - `src/app/operator/_components/use-operator-booking.ts`
+  - `src/app/operator/pickup/page.tsx`
+  - `src/app/operator/return/page.tsx`
+  - `check-otp.js`
+  - `docs/structure.md`
+  - `docs/todo.md`
+  - `docs/changelog.md`
+- **Type-check:** clean (`npx tsc --noEmit` — 0 errors).
+
+## 2026-08-24 — Fix Vercel build: commit missing `Payment.depositRefundId` schema field
+
+**What:** Vercel production builds failed with `Property 'depositRefundId' does
+not exist on type Payment` at `src/server/lib/deposit-resolution.ts:139`.
+
+**Root cause:** `Payment.depositRefundId String?` was an intentional domain field
+(added 2026-08-12 to record the Razorpay refund entity ID for
+reconciliation/idempotency). The column existed in the database via
+`prisma db push` and the untracked `0_init` migration, and was actively used
+in `deposit-resolution.ts` (write after successful refund, read in outcome
+reporting), but was never committed to `prisma/schema.prisma`. Vercel's
+`prisma generate` therefore produced Prisma Client types without the field.
+
+**Fix:** Added `depositRefundId String?` to the committed `prisma/schema.prisma`
+(2 lines). No code changes required. No new migration required (column already
+exists in the database).
+
+- **Files changed:** `prisma/schema.prisma` only.
+- **Prisma schema changed:** Yes — the field was added to the committed schema.
+  This is a schema-alignment fix, not a new field.
+- **Type-check:** clean (`npx tsc --noEmit`).
+- **Build:** clean (`npm run build` — 47 routes, all pass).
+- **Tests:** No deposit-resolution unit/E2E test files exist in the repository.
+  The deposit-resolution logic was verified via the build (which exercises the
+  full type chain from `Payment` → `deposit-resolution.ts` → outcome types).
+- **Remaining concern:** The `prisma/migrations/0_init/` directory is untracked
+  in git. Consider committing it for migration traceability.
+
+## 2026-08-12 — Deposit lifecycle: refund / deduction / hold execution at inspection/return
+
+**What:** Completed the refundable-deposit lifecycle. Until now `create-order`
+set `Payment.depositFrozen` and `verify` captured the money, but nothing ever
+refunded or deducted it at return/inspection — `depositRefunded`,
+`depositDeducted` and `disputeLocked` were never written. This closes that gap
+with a minimal, idempotent, provider-abstracted flow. No state-machine
+redesign; the deposit model is untouched.
+
+- **New endpoint `POST /api/rentals/[id]/deposit-resolution`** with three
+  actions:
+  - `FULL_REFUND` → Razorpay refunds the whole deposit; `Payment.depositRefunded`
+    set, `depositFrozen` cleared.
+  - `PARTIAL_DEDUCTION` → `Payment.depositDeducted` records the withheld amount,
+    Razorpay refunds only the remainder (`deposit − deducted`).
+  - `HOLD` → keeps `depositFrozen`, sets `disputeLocked` so the deposit can
+    never be silently refunded (admin-only to release).
+- **Core in `src/lib/deposit-resolution.ts`** — `resolveBookingDeposit()` takes
+  an injectable `RefundExecutor` (production wires the real Razorpay SDK
+  `payments.refund()`; tests inject a mock, since real keys are unavailable).
+  Idempotency is an atomic conditional `updateMany` "claim": only the first
+  caller flips the payment from frozen→resolved; every retry/concurrent request
+  fails the claim and returns `alreadyResolved` without touching Razorpay. If
+  the provider refund fails, the claim is rolled back so a retry can safely
+  re-attempt (no double refund, no lost refund on retry).
+- **`COMPLETED` now requires deposit resolution.** `INSPECTION → COMPLETED`
+  (and `DISPUTED → COMPLETED`) returns 400 while the deposit is still frozen
+  (`isDepositResolutionRequired`). This is a precondition guard on the existing
+  edge, not a redesign. No-deposit bookings are unaffected.
+- **Entering `DISPUTED` sets `disputeLocked`** on the `Payment` (kept frozen),
+  so a disputed deposit cannot be silently refunded.
+- **Schema:** `Payment.depositRefundId String?` — records the Razorpay refund
+  entity id for reconciliation/idempotency. `prisma db push` + `generate`
+  applied.
+- **Shared helper:** `resolveActorForUser`/`isBookingActor` moved to
+  `src/lib/booking-actor.ts` (used by both the transition route and the new
+  route). Deposit resolution is owner/admin-only — the farmer can never refund
+  their own deposit.
+- **Audit:** every resolution writes a `BookingStateLog` row (from→to = current
+  state) with the action, amounts and Razorpay refund id.
+
+**Verification:**
+- `npx prisma generate` ✔; `npx tsc --noEmit` clean; `eslint` clean on touched
+  files; `next build` ✔ (28/28 routes incl. `/api/rentals/[id]/deposit-resolution`).
+- Core-logic drive-test vs live DB with a mock refund executor: 32/32 — full
+  refund, partial deduction, deduction > deposit rejected, hold/dispute-lock,
+  admin release, provider-failure rollback + retry, non-captured rejection,
+  zero-deposit no-op, idempotency helper.
+- End-to-end HTTP drive-test (real OTP → NextAuth sessions for owner/farmer/
+  admin): 22/22 — owner HOLD + idempotent retry, FULL_REFUND → 502 with dummy
+  keys + rollback + re-attempt, `INSPECTION → COMPLETED` blocked while frozen
+  then succeeds after resolution, no-deposit booking still completes, DISPUTED
+  sets `disputeLocked` and blocks owner/farmer refunds (admin passes the gate),
+  actor/state/validation gating (401/403/400).
+- **Could not be externally verified:** a real Razorpay refund against a
+  captured payment — `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` are placeholders
+  (`rzp_test_dummy`). The happy-path refund was verified only against a mock
+  executor; the real-SDK path was verified to the point of a clean
+  `REFUND_FAILED` → rollback. Remaining gap: a reconciliation job for the tiny
+  crash window between the DB claim and the provider refund.
+
 ## 2026-08-11 — Change 2 rolled back: refundable deposit + upfront payment restored
 
 **What:** The user decided Change 2 (collect-on-completion payment, deposits

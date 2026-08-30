@@ -93,25 +93,15 @@ export default function ToolOperators() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-4 text-center"
+          className="mb-8 text-center"
         >
           <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
             {t("title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground md:text-base">
+          <p className="mt-2 text-sm text-muted-foreground md:text-base">
             {t("subtitle")}
           </p>
         </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mx-auto mb-8 max-w-2xl text-center text-sm text-muted-foreground"
-        >
-          Our verified operators provide tools on rent OR skilled labor with
-          tools on wage basis — whatever suits your farm.
-        </motion.p>
 
         <div className="mb-10 flex justify-center">
           <div className="inline-flex rounded-lg border border-border bg-bele-cream p-1">

@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f_obele_operator_selection">
+
+    <in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:designRootWidth="390"
+        app:designRootHeight="825"
+        app:designAutoSizeMinTextSize="1.0"
+        app:designAutoSizeMaxTextSize="1.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/f_obele_operator_selection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_f_obele_operator_selection" >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_header"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="0dp" >
+
+                <ImageView
+                    android:id="@+id/f_back_button"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="12dp"
+                    android:src="@drawable/img_f_back_button"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@null"
+                    android:clipToOutline="true"
+                    android:background="@drawable/shape_f_back_button_circle" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_frame1"
+                    android:layout_width="109dp"
+                    android:layout_height="27dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="127.5dp"
+                    android:layout_marginTop="18.5dp" >
+
+                    <TextView
+                        android:id="@+id/tv_obele"
+                        android:layout_width="79dp"
+                        android:layout_height="match_parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="30dp"
+                        android:text="@string/obele"
+                        android:textSize="21dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_obele" />
+
+                    <ImageView
+                        android:id="@+id/f_leaf"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="1.5dp"
+                        android:src="@drawable/img_f_leaf"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_frame2"
+                    android:layout_width="66dp"
+                    android:layout_height="19dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="304dp"
+                    android:layout_marginTop="22.5dp"
+                    android:background="@drawable/bg_f_frame2" >
+
+                    <TextView
+                        android:id="@+id/tv_dk_coast"
+                        android:layout_width="46dp"
+                        android:layout_height="11dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/dk_coast"
+                        android:textSize="9dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_dk_coast" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_scroll_content"
+                android:layout_width="match_parent"
+                android:layout_height="761dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/f_header"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_rental_context_card"
+                    android:layout_width="350dp"
+                    android:layout_height="104dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_f_rental_context_card" >
+
+                    <ImageView
+                        android:id="@+id/iv_tool_image"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:src="@drawable/img_iv_tool_image"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame3"
+                        android:layout_width="230dp"
+                        android:layout_height="52dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="104dp"
+                        android:layout_marginTop="26dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame4"
+                            android:layout_width="match_parent"
+                            android:layout_height="18dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp" >
+
+                            <TextView
+                                android:id="@+id/tv_brush_cutter"
+                                android:layout_width="88dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp"
+                                android:text="@string/brush_cutter"
+                                android:textSize="14dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_brush_cutter" />
+
+                            <TextView
+                                android:id="@+id/tv_600day"
+                                android:layout_width="54dp"
+                                android:layout_height="14dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="176dp"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/s_600day"
+                                android:textSize="11dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_600day" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame5"
+                            android:layout_width="180dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/f_frame4"
+                            android:layout_marginTop="6dp" >
+
+                            <!-- app:fillRanges="0,16,color_text_tv_aug_14_aug_16_3_days|16,25,color_text_tv_aug_14_aug_16_3_days_2" -->
+                            <TextView
+                                android:id="@+id/tv_aug_14_aug_16_3_days"
+                                android:layout_width="160dp"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/aug_14_aug_16_3_days"
+                                android:textSize="13dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_aug_14_aug_16_3_days" />
+
+                            <ImageView
+                                android:id="@+id/f_icon_calendar"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="7dp"
+                                android:src="@drawable/img_f_icon_calendar"
+                                android:scaleType="centerInside"
+                                android:contentDescription="@null" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_operator_selection_section"
+                    android:layout_width="350dp"
+                    android:layout_height="205dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_rental_context_card"
+                    android:layout_marginTop="24dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame6"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="0dp" >
+
+                        <TextView
+                            android:id="@+id/tv_operator"
+                            android:layout_width="324dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="26dp"
+                            android:text="@string/operator_text"
+                            android:textSize="19dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_operator" />
+
+                        <ImageView
+                            android:id="@+id/f_user"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="3.5dp"
+                            android:src="@drawable/img_f_user"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_option_self"
+                        android:layout_width="match_parent"
+                        android:layout_height="74dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:background="@drawable/bg_f_option_self"
+                        app:layout_constraintTop_toBottomOf="@id/f_frame6"
+                        android:layout_marginTop="14dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame8"
+                            android:layout_width="278dp"
+                            android:layout_height="38dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="54dp"
+                            android:layout_marginTop="18dp" >
+
+                            <TextView
+                                android:id="@+id/tv_ill_operate_it_myself"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp"
+                                android:text="@string/ill_operate_it_myself"
+                                android:textSize="14dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_ill_operate_it_myself" />
+
+                            <TextView
+                                android:id="@+id/tv_requires_owner_permission_experience"
+                                android:layout_width="match_parent"
+                                android:layout_height="16dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                android:text="@string/requires_owner_permission_experience"
+                                android:textSize="12dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_requires_owner_permission_experience"
+                                app:layout_constraintTop_toBottomOf="@id/tv_ill_operate_it_myself"
+                                android:layout_marginTop="4dp" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame7"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="27dp"
+                            android:background="@drawable/bg_f_frame7" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_option_send"
+                        android:layout_width="match_parent"
+                        android:layout_height="78dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:background="@drawable/bg_f_option_send"
+                        app:layout_constraintTop_toBottomOf="@id/f_option_self"
+                        android:layout_marginTop="14dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame10"
+                            android:layout_width="278dp"
+                            android:layout_height="42dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="54dp"
+                            android:layout_marginTop="18dp" >
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_frame11"
+                                android:layout_width="match_parent"
+                                android:layout_height="18dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp" >
+
+                                <TextView
+                                    android:id="@+id/tv_send_an_operator"
+                                    android:layout_width="191dp"
+                                    android:layout_height="match_parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginTop="0dp"
+                                    android:text="@string/send_an_operator"
+                                    android:textSize="14dp"
+                                    android:includeFontPadding="false"
+                                    android:textStyle="bold"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_send_an_operator" />
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/f_frame12"
+                                    android:layout_width="87dp"
+                                    android:layout_height="15dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginStart="191dp"
+                                    android:layout_marginTop="1.5dp"
+                                    android:background="@drawable/bg_f_frame12" >
+
+                                    <TextView
+                                        android:id="@+id/tv_recommended"
+                                        android:layout_width="71dp"
+                                        android:layout_height="11dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginTop="2dp"
+                                        android:text="@string/recommended"
+                                        android:textSize="9dp"
+                                        android:includeFontPadding="false"
+                                        android:textStyle="bold"
+                                        android:gravity="start|center_vertical"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@color/color_text_tv_recommended" />
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <TextView
+                                android:id="@+id/tv_350day_operator_charge"
+                                android:layout_width="match_parent"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                android:text="@string/s_350day_operator_charge"
+                                android:textSize="13dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_350day_operator_charge"
+                                app:layout_constraintTop_toBottomOf="@id/f_frame11"
+                                android:layout_marginTop="4dp" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <ImageView
+                            android:id="@+id/f_frame9"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="29dp"
+                            android:src="@drawable/img_f_frame9"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_frame9_circle" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_price_estimate_box"
+                    android:layout_width="350dp"
+                    android:layout_height="224dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:background="@drawable/bg_f_price_estimate_box"
+                    app:layout_constraintTop_toBottomOf="@id/f_operator_selection_section"
+                    android:layout_marginTop="24dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame13"
+                        android:layout_width="310dp"
+                        android:layout_height="20dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp" >
+
+                        <TextView
+                            android:id="@+id/tv_price_estimate"
+                            android:layout_width="113dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:text="@string/price_estimate"
+                            android:textSize="15dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_price_estimate" />
+
+                        <TextView
+                            android:id="@+id/tv_no_deposit_required"
+                            android:layout_width="112dp"
+                            android:layout_height="12dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="198dp"
+                            android:text="@string/no_deposit_required"
+                            android:textSize="9dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_no_deposit_required" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame14"
+                        android:layout_width="310dp"
+                        android:layout_height="39dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_frame13"
+                        android:layout_marginTop="14dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame15"
+                            android:layout_width="match_parent"
+                            android:layout_height="21dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp" >
+
+                            <TextView
+                                android:id="@+id/tv_brush_cutter_3_days"
+                                android:layout_width="140dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp"
+                                android:text="@string/brush_cutter_3_days"
+                                android:textSize="14dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_brush_cutter_3_days" />
+
+                            <TextView
+                                android:id="@+id/tv_1800"
+                                android:layout_width="49dp"
+                                android:layout_height="17dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="261dp"
+                                android:text="@string/s_1800"
+                                android:textSize="13dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_1800" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <TextView
+                            android:id="@+id/tv_600day_3"
+                            android:layout_width="74dp"
+                            android:layout_height="14dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:text="@string/s_600day_3"
+                            android:textSize="11dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_600day_3"
+                            app:layout_constraintTop_toBottomOf="@id/f_frame15"
+                            android:layout_marginTop="4dp" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame16"
+                        android:layout_width="310dp"
+                        android:layout_height="39dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_frame14"
+                        android:layout_marginTop="14dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_frame17"
+                            android:layout_width="match_parent"
+                            android:layout_height="21dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp" >
+
+                            <TextView
+                                android:id="@+id/tv_operator_3_days"
+                                android:layout_width="116dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="0dp"
+                                android:text="@string/operator_3_days"
+                                android:textSize="14dp"
+                                android:includeFontPadding="false"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_operator_3_days" />
+
+                            <TextView
+                                android:id="@+id/tv_1050"
+                                android:layout_width="48dp"
+                                android:layout_height="17dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="262dp"
+                                android:text="@string/s_1050"
+                                android:textSize="13dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_1050" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <TextView
+                            android:id="@+id/tv_350day_3"
+                            android:layout_width="73dp"
+                            android:layout_height="14dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:text="@string/s_350day_3"
+                            android:textSize="11dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_350day_3"
+                            app:layout_constraintTop_toBottomOf="@id/f_frame17"
+                            android:layout_marginTop="4dp" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:id="@+id/line_line"
+                        android:layout_width="310dp"
+                        android:layout_height="1dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@color/color_line_line"
+                        android:rotation="0"
+                        app:layout_constraintTop_toBottomOf="@id/f_frame16"
+                        android:layout_marginTop="14dp" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_frame18"
+                        android:layout_width="310dp"
+                        android:layout_height="30dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/line_line"
+                        android:layout_marginTop="13dp" >
+
+                        <TextView
+                            android:id="@+id/tv_2850"
+                            android:layout_width="88dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="222dp"
+                            android:text="@string/s_2850"
+                            android:textSize="23dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_2850" />
+
+                        <TextView
+                            android:id="@+id/tv_total_price"
+                            android:layout_width="73dp"
+                            android:layout_height="18dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/total_price"
+                            android:textSize="14dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_total_price" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_frame19"
+                    android:layout_width="350dp"
+                    android:layout_height="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_price_estimate_box"
+                    android:layout_marginTop="24dp" >
+
+                    <ImageView
+                        android:id="@+id/f_icon_shield_check"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="54dp"
+                        android:src="@drawable/img_f_icon_shield_check"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/tv_cancel_free_up_to_24_hrs_before_dispatch"
+                        android:layout_width="218dp"
+                        android:layout_height="14dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="78dp"
+                        android:layout_marginTop="1dp"
+                        android:text="@string/cancel_free_up_to_24_hrs_before_dispatch"
+                        android:textSize="11dp"
+                        android:includeFontPadding="false"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_cancel_free_up_to_24_hrs_before_dispatch" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_sticky_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="102dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="723dp"
+                android:background="@color/color_f_sticky_bottom" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_cta_button"
+                    android:layout_width="350dp"
+                    android:layout_height="54dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_f_cta_button" >
+
+                    <TextView
+                        android:id="@+id/tv_continue_to_confirm"
+                        android:layout_width="149dp"
+                        android:layout_height="19dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="87.5dp"
+                        android:layout_marginTop="17.5dp"
+                        android:text="@string/continue_to_confirm"
+                        android:textSize="15dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_continue_to_confirm" />
+
+                    <ImageView
+                        android:id="@+id/f_icon_arrow_right"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="244.5dp"
+                        android:layout_marginTop="18dp"
+                        android:src="@drawable/img_f_icon_arrow_right"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

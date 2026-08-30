@@ -5,6 +5,7 @@ import OwnerShell from "./_components/owner-shell"
 import { Plus, Wrench, Loader2, Bell } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { useLocale } from "next-intl"
+import { useRouter } from "next/navigation"
 
 interface EquipmentItem {
   id: string
@@ -42,14 +43,15 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
 
 export default function OwnerEquipmentPage() {
   const locale = useLocale()
+  const router = useRouter()
   const fp = (n: number) => formatPrice(n, locale)
   const [tools, setTools] = useState<EquipmentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
 
-  const fetchTools = useCallback(async () => {
-    setLoading(true)
+  const fetchTools = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true)
     const res = await fetch("/api/owner/equipment")
     const data = await res.json()
     if (res.ok) {
@@ -61,7 +63,8 @@ export default function OwnerEquipmentPage() {
   }, [])
 
   useEffect(() => {
-    fetchTools()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTools(false)
   }, [fetchTools])
 
   const toggleAvailability = useCallback(
@@ -224,6 +227,7 @@ export default function OwnerEquipmentPage() {
       {/* FAB — Add Tool */}
       <button
         type="button"
+        onClick={() => router.push("/owner/add-tool")}
         className="sticky bottom-5 mt-6 flex items-center gap-2 self-end rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-[0_6px_24px_rgba(45,80,22,0.40)] transition hover:brightness-110"
       >
         <Plus size={18} /> Add Tool

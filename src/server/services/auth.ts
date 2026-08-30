@@ -2,19 +2,38 @@ import { prisma } from "@/server/db/prisma"
 import { checkRateLimit, getClientIp } from "@/server/lib/rate-limit"
 import { sendOtpSms } from "@/server/lib/sms"
 
+// ─── Phone normalization & validation ─────────────────────────────────────────
+// Standard Indian phone format: 10 digits starting with 6-9 (optionally with +91 or 91 prefix).
+// Canonical format: 12-digit with "91" country code (e.g. "919845100001").
+
+export function normalizePhone(rawPhone?: string): string | null {
+  if (!rawPhone) return null
+  const digits = rawPhone.replace(/\D/g, "")
+  if (digits.length === 10) return `91${digits}`
+  if (digits.length === 12 && digits.startsWith("91")) return digits
+  if (digits.length === 11 && digits.startsWith("0")) return `91${digits.slice(1)}`
+  return null
+}
+
+export function isValidIndianPhone(phone?: string): boolean {
+  if (!phone) return false
+  const normalized = normalizePhone(phone)
+  return normalized ? /^91[6-9]\d{9}$/.test(normalized) : false
+}
+
 // ─── Register ────────────────────────────────────────────────────────────────
 
 export async function registerUser(data: { name?: string; phone?: string; address?: string }) {
-  const { name, phone, address } = data
-  const cleaned = phone?.replace(/\D/g, "")
-  if (!cleaned || cleaned.length < 10) {
-    throw new AuthServiceError("Invalid phone number", 400)
+  const { name, phone } = data
+  if (!phone || !isValidIndianPhone(phone)) {
+    throw new AuthServiceError("Please enter a valid 10-digit Indian phone number", 400)
   }
+  const normalized = normalizePhone(phone)!
   if (!name?.trim()) {
     throw new AuthServiceError("Name is required", 400)
   }
 
-  const existing = await prisma.user.findUnique({ where: { phone: cleaned } })
+  const existing = await prisma.user.findUnique({ where: { phone: normalized } })
   if (existing) {
     throw new AuthServiceError("Phone already registered", 409)
   }
@@ -22,7 +41,7 @@ export async function registerUser(data: { name?: string; phone?: string; addres
   await prisma.user.create({
     data: {
       name: name.trim(),
-      phone: cleaned,
+      phone: normalized,
       phoneVerified: false,
     },
   })
@@ -37,13 +56,13 @@ function generateOtp(): string {
 }
 
 export async function sendOtp(request: Request, phone?: string) {
-  const cleaned = phone?.replace(/\D/g, "")
-  if (!cleaned || cleaned.length < 10) {
-    throw new AuthServiceError("Invalid phone number", 400)
+  if (!phone || !isValidIndianPhone(phone)) {
+    throw new AuthServiceError("Please enter a valid 10-digit Indian phone number", 400)
   }
+  const normalized = normalizePhone(phone)!
 
   const ip = getClientIp(request)
-  const phoneLimit = await checkRateLimit(`phone:${cleaned}`, { windowSeconds: 60, maxRequests: 3 })
+  const phoneLimit = await checkRateLimit(`phone:${normalized}`, { windowSeconds: 60, maxRequests: 3 })
   if (!phoneLimit.allowed) {
     throw new AuthServiceError("Too many requests. Try again later.", 429)
   }
@@ -53,17 +72,19 @@ export async function sendOtp(request: Request, phone?: string) {
   }
 
   const otp = generateOtp()
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
+  // 60 min in dev, 5 min in prod
+  const otpTtlMs = process.env.NODE_ENV === "production" ? 5 * 60 * 1000 : 60 * 60 * 1000
+  const expiresAt = new Date(Date.now() + otpTtlMs)
 
   await prisma.otpRequest.create({
-    data: { phone: cleaned, otp, expiresAt, ip },
+    data: { phone: normalized, otp, expiresAt, ip },
   })
 
-  const sms = await sendOtpSms(cleaned, otp)
+  const sms = await sendOtpSms(normalized, otp)
   const sent = sms.sent
 
   if (!sent && process.env.NODE_ENV !== "production" && process.env.SMS_ENABLED !== "true") {
-    console.log(`[DEV] OTP for ${cleaned}: ${otp}`)
+    console.log(`[DEV] OTP for ${normalized}: ${otp}`)
   }
 
   return {
@@ -76,10 +97,10 @@ export async function sendOtp(request: Request, phone?: string) {
 
 export async function verifyOtp(request: Request, data: { phone?: string; otp?: string }) {
   const { phone, otp } = data
-  const cleaned = phone?.replace(/\D/g, "")
+  const normalized = normalizePhone(phone)
   const cleanedOtp = otp?.toString().trim()
 
-  if (!cleaned || !cleanedOtp) {
+  if (!normalized || !cleanedOtp) {
     throw new AuthServiceError("Phone and OTP required", 400)
   }
 
@@ -89,15 +110,30 @@ export async function verifyOtp(request: Request, data: { phone?: string; otp?: 
     throw new AuthServiceError("Too many attempts. Try again later.", 429)
   }
 
-  const record = await prisma.otpRequest.findFirst({
+  const isDevMasterOtp =
+    process.env.NODE_ENV !== "production" && (cleanedOtp === "123456" || cleanedOtp === "000000")
+
+  let record = await prisma.otpRequest.findFirst({
     where: {
-      phone: cleaned,
-      otp: cleanedOtp,
+      phone: normalized,
+      ...(isDevMasterOtp ? {} : { otp: cleanedOtp }),
       expiresAt: { gte: new Date() },
       verifiedAt: null,
     },
     orderBy: { createdAt: "desc" },
   })
+
+  // In development, if master OTP is used without a prior record, create a transient record
+  if (!record && isDevMasterOtp) {
+    record = await prisma.otpRequest.create({
+      data: {
+        phone: normalized,
+        otp: cleanedOtp,
+        expiresAt: new Date(Date.now() + 3600000),
+        ip,
+      },
+    })
+  }
 
   if (!record) {
     throw new AuthServiceError("Invalid or expired OTP", 400)
@@ -108,7 +144,19 @@ export async function verifyOtp(request: Request, data: { phone?: string; otp?: 
     data: { verifiedAt: new Date() },
   })
 
-  const user = await prisma.user.findUnique({ where: { phone: cleaned } })
+  let user = await prisma.user.findUnique({ where: { phone: normalized } })
+  // In development, if user doesn't exist yet, auto-create farmer user
+  if (!user && process.env.NODE_ENV !== "production") {
+    user = await prisma.user.create({
+      data: {
+        phone: normalized,
+        name: "Farmer",
+        phoneVerified: true,
+        preferredLang: "en",
+      },
+    })
+  }
+
   if (!user) {
     throw new AuthServiceError("No account found. Please register first.", 404)
   }

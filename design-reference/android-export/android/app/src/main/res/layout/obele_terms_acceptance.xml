@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f_obele_terms_acceptance">
+
+    <in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:designRootWidth="390"
+        app:designRootHeight="800"
+        app:designAutoSizeMinTextSize="1.0"
+        app:designAutoSizeMaxTextSize="1.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/f_obele_terms_acceptance"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_f_obele_terms_acceptance" >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_header1"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_frame20"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="334dp"
+                    android:layout_marginTop="10dp" />
+
+                <ImageView
+                    android:id="@+id/f_back_button1"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="11dp"
+                    android:src="@drawable/img_f_back_button1"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@null"
+                    android:clipToOutline="true"
+                    android:background="@drawable/shape_f_back_button1_circle" />
+
+                <TextView
+                    android:id="@+id/tv_brand_logo"
+                    android:layout_width="74dp"
+                    android:layout_height="25dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="15.5dp"
+                    android:text="@string/obele"
+                    android:textSize="19dp"
+                    android:includeFontPadding="false"
+                    android:gravity="start|center_vertical"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/color_text_tv_brand_logo" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_content"
+                android:layout_width="match_parent"
+                android:layout_height="555dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/f_header1"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_intro"
+                    android:layout_width="342dp"
+                    android:layout_height="95dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="12dp" >
+
+                    <TextView
+                        android:id="@+id/tv_headline"
+                        android:layout_width="match_parent"
+                        android:layout_height="37dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="0dp"
+                        android:text="@string/before_you_book"
+                        android:textSize="30dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_headline" />
+
+                    <TextView
+                        android:id="@+id/tv_subheadline"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:text="@string/heres_what_we_agree_to_when_renting"
+                        android:textSize="14dp"
+                        android:includeFontPadding="false"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_subheadline"
+                        app:layout_constraintTop_toBottomOf="@id/tv_headline"
+                        android:layout_marginTop="12dp" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_terms_summary_card"
+                    android:layout_width="342dp"
+                    android:layout_height="350dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:background="@drawable/bg_f_terms_summary_card"
+                    app:layout_constraintTop_toBottomOf="@id/f_intro"
+                    android:layout_marginTop="24dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_decorative_accent"
+                        android:layout_width="302dp"
+                        android:layout_height="22dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_icon_captionsprout"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_icon_captionsprout"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:id="@+id/tv_rental_ground_rules"
+                            android:layout_width="141dp"
+                            android:layout_height="14dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="26dp"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/rental_ground_rules"
+                            android:textSize="11dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_rental_ground_rules" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_agreement_row"
+                        android:layout_width="302dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_decorative_accent"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_badge"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_badge"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_badge_circle" />
+
+                        <TextView
+                            android:id="@+id/tv_term_text"
+                            android:layout_width="258dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="44dp"
+                            android:text="@string/tools_must_be_returned_in_the_condition"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_term_text" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_agreement_row1"
+                        android:layout_width="302dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_agreement_row"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_badge1"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_badge1"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_badge1_circle" />
+
+                        <TextView
+                            android:id="@+id/tv_term_text1"
+                            android:layout_width="258dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="44dp"
+                            android:text="@string/cancellations_are_free_up_to_24_hours"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_term_text1" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_agreement_row2"
+                        android:layout_width="302dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_agreement_row1"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_badge2"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_badge2"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_badge2_circle" />
+
+                        <TextView
+                            android:id="@+id/tv_term_text2"
+                            android:layout_width="258dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="44dp"
+                            android:text="@string/youre_responsible_for_safe_use_follow"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_term_text2" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_agreement_row3"
+                        android:layout_width="302dp"
+                        android:layout_height="28dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_agreement_row2"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_badge3"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_badge3"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_badge3_circle" />
+
+                        <TextView
+                            android:id="@+id/tv_term_text3"
+                            android:layout_width="258dp"
+                            android:layout_height="20dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="44dp"
+                            android:text="@string/late_returns_may_incur_a_small_daily_fee"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_term_text3" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_agreement_row4"
+                        android:layout_width="302dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="20dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_agreement_row3"
+                        android:layout_marginTop="20dp" >
+
+                        <ImageView
+                            android:id="@+id/f_badge4"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:src="@drawable/img_f_badge4"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@null"
+                            android:clipToOutline="true"
+                            android:background="@drawable/shape_f_badge4_circle" />
+
+                        <TextView
+                            android:id="@+id/tv_term_text4"
+                            android:layout_width="258dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="44dp"
+                            android:text="@string/damage_beyond_normal_wear_is_your"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_term_text4" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_full_terms_link"
+                    android:layout_width="342dp"
+                    android:layout_height="26dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_terms_summary_card"
+                    android:layout_marginTop="24dp" >
+
+                    <TextView
+                        android:id="@+id/tv_link_text"
+                        android:layout_width="207dp"
+                        android:layout_height="18dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/read_full_terms_conditions"
+                        android:textSize="14dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_link_text" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_spacer"
+                android:layout_width="match_parent"
+                android:layout_height="51dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/f_content"
+                android:layout_marginTop="0dp" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_footer_actions"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/f_spacer"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_accept_cta_button"
+                    android:layout_width="342dp"
+                    android:layout_height="56dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_f_accept_cta_button" >
+
+                    <TextView
+                        android:id="@+id/tv_button_label"
+                        android:layout_width="148dp"
+                        android:layout_height="19dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="18.5dp"
+                        android:text="@string/i_accept_continue"
+                        android:textSize="15dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_button_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_home_indicator_container"
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/f_footer_actions"
+                android:layout_marginTop="0dp" >
+
+                <View
+                    android:id="@+id/rect_home_indicator"
+                    android:layout_width="134dp"
+                    android:layout_height="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="128dp"
+                    android:layout_marginTop="14.5dp"
+                    android:background="@drawable/bg_rect_home_indicator" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

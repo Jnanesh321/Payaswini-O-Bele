@@ -8,17 +8,18 @@ import { useTranslations } from "next-intl"
 import { motion, AnimatePresence } from "framer-motion"
 import { ShoppingCart, Menu, X, User } from "lucide-react"
 import { Button, Badge } from "@/components/ui"
+import { useSession } from "next-auth/react"
 import { useCartStore } from "@/store/cart"
 import { LanguageSwitcher } from "./language-switcher"
+import { CapabilitySwitcher } from "./capability-switcher"
 import { cn } from "@/lib/utils"
 
 export function Header() {
   const t = useTranslations("nav")
+  const { data: session, status } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const itemCount = useCartStore((s) => s.getItemCount())
-  const isLanding = pathname === "/"
 
   const navLinks = [
     { href: "/", label: t("home") },
@@ -31,12 +32,6 @@ export function Header() {
       setMobileOpen(false)
     })
   }, [pathname])
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   const transparent = false
 
@@ -92,16 +87,17 @@ export function Header() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher transparent={transparent} />
 
-          <Link href="/cart">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "relative",
-                transparent && "text-white/80 hover:text-white"
-              )}
-              aria-label="Cart"
-            >
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "relative",
+              transparent && "text-white/80 hover:text-white"
+            )}
+            aria-label="Cart"
+            asChild
+          >
+            <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
                 <Badge
@@ -111,10 +107,12 @@ export function Header() {
                   {itemCount > 99 ? "99+" : itemCount}
                 </Badge>
               )}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
-          <Link href="/login">
+          {status === "authenticated" && session?.user ? (
+            <CapabilitySwitcher variant="header" />
+          ) : (
             <Button
               variant={transparent ? "outline" : "default"}
               size="sm"
@@ -123,11 +121,14 @@ export function Header() {
                 transparent &&
                   "border-white/30 text-white hover:bg-white/10 hover:text-white"
               )}
+              asChild
             >
-              <User className="mr-1 h-4 w-4" />
-              {t("login")}
+              <Link href="/login">
+                <User className="mr-1 h-4 w-4" />
+                {t("login")}
+              </Link>
             </Button>
-          </Link>
+          )}
 
           <a
             href="https://payaswini.com"
@@ -235,12 +236,16 @@ export function Header() {
               </nav>
 
               <div className="border-t border-border px-4 py-4 space-y-3">
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="default" className="w-full">
-                    <User className="mr-1 h-4 w-4" />
-                    {t("login")} / {t("register")}
-                  </Button>
-                </Link>
+                {status === "authenticated" && session?.user ? (
+                  <CapabilitySwitcher variant="drawer" />
+                ) : (
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    <Button variant="default" className="w-full">
+                      <User className="mr-1 h-4 w-4" />
+                      {t("login")} / {t("register")}
+                    </Button>
+                  </Link>
+                )}
 
                 <Link href="/cart" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" className="relative w-full">

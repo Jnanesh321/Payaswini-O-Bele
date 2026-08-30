@@ -22,8 +22,16 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.phone) return null
-        const cleaned = credentials.phone.replace(/\D/g, "")
-        const user = await prisma.user.findUnique({ where: { phone: cleaned } })
+        const raw = credentials.phone.replace(/\D/g, "")
+        const normalized = raw.length === 10 ? `91${raw}` : raw
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { phone: normalized },
+              { phone: raw },
+            ],
+          },
+        })
         if (!user) return null
         return { id: user.id, name: user.name, email: user.email, image: user.image, isAdmin: user.isAdmin }
       },
@@ -41,12 +49,17 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email
         session.user.image = token.picture
         session.user.isAdmin = token.isAdmin
+        session.user.capabilities = token.capabilities || []
       }
       return session
     },
     async jwt({ token, user }) {
-      if (user) {
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
+      const targetId = user?.id || token.sub
+      if (targetId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: targetId },
+          include: { capabilities: true },
+        })
         if (dbUser) {
           return {
             id: dbUser.id,
@@ -54,18 +67,7 @@ export const authOptions: NextAuthOptions = {
             email: dbUser.email,
             picture: dbUser.image,
             isAdmin: dbUser.isAdmin,
-          }
-        }
-      }
-      if (token.sub) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.sub } })
-        if (dbUser) {
-          return {
-            id: dbUser.id,
-            name: dbUser.name,
-            email: dbUser.email,
-            picture: dbUser.image,
-            isAdmin: dbUser.isAdmin,
+            capabilities: dbUser.capabilities.map((c) => c.type),
           }
         }
       }

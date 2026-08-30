@@ -7,6 +7,7 @@ export type SafeUser = Omit<User, "createdAt" | "updatedAt"> & {
 
 export interface ToolCard {
   id: string
+  slug?: string
   name: string
   translations?: Record<string, { name?: string; description?: string }> | null
   description?: string
@@ -92,6 +93,7 @@ declare module "next-auth" {
       email?: string | null
       image?: string | null
       isAdmin: boolean
+      capabilities?: string[]
     }
   }
 }
@@ -100,5 +102,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string
     isAdmin: boolean
+    capabilities?: string[]
   }
 }

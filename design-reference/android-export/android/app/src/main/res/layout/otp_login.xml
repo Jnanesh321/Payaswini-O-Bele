@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f_otp_login">
+
+    <in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:designRootWidth="390"
+        app:designRootHeight="911"
+        app:designAutoSizeMinTextSize="1.0"
+        app:designAutoSizeMaxTextSize="1.2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/f_otp_login"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_f_otp_login" >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_scroll_content1"
+                android:layout_width="match_parent"
+                android:layout_height="739dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="0dp" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_brand_header"
+                    android:layout_width="342dp"
+                    android:layout_height="120dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="24dp" >
+
+                    <ImageView
+                        android:id="@+id/f_brand_badge"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="147dp"
+                        android:src="@drawable/img_f_brand_badge"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_brand_text"
+                        android:layout_width="119dp"
+                        android:layout_height="60dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="111.5dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_brand_badge"
+                        android:layout_marginTop="12dp" >
+
+                        <TextView
+                            android:id="@+id/tv_obele3"
+                            android:layout_width="117dp"
+                            android:layout_height="39dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:text="@string/obele"
+                            android:textSize="30dp"
+                            android:includeFontPadding="false"
+                            android:gravity="center"
+                            android:textAlignment="center"
+                            android:textColor="@color/color_text_tv_obele3" />
+
+                        <TextView
+                            android:id="@+id/tv_farm_tools_shared"
+                            android:layout_width="match_parent"
+                            android:layout_height="17dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:text="@string/farm_tools_shared"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="center"
+                            android:textAlignment="center"
+                            android:textColor="@color/color_text_tv_farm_tools_shared"
+                            app:layout_constraintTop_toBottomOf="@id/tv_obele3"
+                            android:layout_marginTop="4dp" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <ImageView
+                    android:id="@+id/iv_scenic_illustration"
+                    android:layout_width="342dp"
+                    android:layout_height="130dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:src="@drawable/img_iv_scenic_illustration"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@null"
+                    app:layout_constraintTop_toBottomOf="@id/f_brand_header"
+                    android:layout_marginTop="32dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_input_card"
+                    android:layout_width="342dp"
+                    android:layout_height="361dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:background="@drawable/bg_f_input_card"
+                    app:layout_constraintTop_toBottomOf="@id/iv_scenic_illustration"
+                    android:layout_marginTop="32dp" >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_text_group"
+                        android:layout_width="294dp"
+                        android:layout_height="74dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="24dp" >
+
+                        <TextView
+                            android:id="@+id/tv_verify_your_phone_number"
+                            android:layout_width="283dp"
+                            android:layout_height="26dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:text="@string/verify_your_phone_number"
+                            android:textSize="21dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_verify_your_phone_number" />
+
+                        <TextView
+                            android:id="@+id/tv_we_have_sent_a"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:text="@string/we_have_sent_a_4digit_verification_code"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_we_have_sent_a"
+                            app:layout_constraintTop_toBottomOf="@id/tv_verify_your_phone_number"
+                            android:layout_marginTop="8dp" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_phone_field_group"
+                        android:layout_width="294dp"
+                        android:layout_height="66dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="24dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_text_group"
+                        android:layout_marginTop="24dp" >
+
+                        <TextView
+                            android:id="@+id/tv_phone_number"
+                            android:layout_width="96dp"
+                            android:layout_height="14dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp"
+                            android:text="@string/phone_number"
+                            android:textSize="11dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_phone_number" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_phone_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:background="@drawable/bg_f_phone_input"
+                            app:layout_constraintTop_toBottomOf="@id/tv_phone_number"
+                            android:layout_marginTop="8dp" >
+
+                            <ImageView
+                                android:id="@+id/f_checkmark_circle"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="258dp"
+                                android:layout_marginTop="12dp"
+                                android:src="@drawable/img_f_checkmark_circle"
+                                android:scaleType="centerInside"
+                                android:contentDescription="@null"
+                                android:clipToOutline="true"
+                                android:background="@drawable/shape_f_checkmark_circle" />
+
+                            <TextView
+                                android:id="@+id/tv_91"
+                                android:layout_width="46dp"
+                                android:layout_height="19dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginTop="12.5dp"
+                                android:text="@string/s_91"
+                                android:textSize="15dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_91" />
+
+                            <TextView
+                                android:id="@+id/tv_98450_12345"
+                                android:layout_width="160dp"
+                                android:layout_height="19dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="86dp"
+                                android:layout_marginTop="12.5dp"
+                                android:text="@string/s_98450_12345"
+                                android:textSize="15dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_98450_12345" />
+
+                            <ImageView
+                                android:id="@+id/iv_line2"
+                                android:layout_width="1dp"
+                                android:layout_height="16dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="73dp"
+                                android:layout_marginTop="14dp"
+                                android:background="@color/color_iv_line2"
+                                android:contentDescription="@null" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_otp_digits_container"
+                        android:layout_width="294dp"
+                        android:layout_height="84dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="24dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_phone_field_group"
+                        android:layout_marginTop="24dp" >
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_otp_label_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="16dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginTop="0dp" >
+
+                            <TextView
+                                android:id="@+id/tv_change_number"
+                                android:layout_width="98dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginStart="196dp"
+                                android:text="@string/change_number"
+                                android:textSize="12dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_change_number" />
+
+                            <TextView
+                                android:id="@+id/tv_verification_code"
+                                android:layout_width="120dp"
+                                android:layout_height="14dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                android:layout_marginTop="1dp"
+                                android:text="@string/verification_code"
+                                android:textSize="11dp"
+                                android:includeFontPadding="false"
+                                android:textStyle="bold"
+                                android:gravity="start|center_vertical"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/color_text_tv_verification_code" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/f_digit_blocks"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/f_otp_label_row"
+                            android:layout_marginTop="12dp" >
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_otp_digit_box"
+                                android:layout_width="56dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginStart="17dp"
+                                android:background="@drawable/bg_f_otp_digit_box" >
+
+                                <TextView
+                                    android:id="@+id/tv_5"
+                                    android:layout_width="15dp"
+                                    android:layout_height="29dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginTop="13.5dp"
+                                    android:text="@string/s_5"
+                                    android:textSize="23dp"
+                                    android:includeFontPadding="false"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_5" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_otp_digit_box1"
+                                android:layout_width="56dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginStart="85dp"
+                                android:background="@drawable/bg_f_otp_digit_box1" >
+
+                                <TextView
+                                    android:id="@+id/tv_8"
+                                    android:layout_width="16dp"
+                                    android:layout_height="29dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginTop="13.5dp"
+                                    android:text="@string/s_8"
+                                    android:textSize="23dp"
+                                    android:includeFontPadding="false"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_8" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_otp_digit_box2"
+                                android:layout_width="56dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginStart="153dp"
+                                android:background="@drawable/bg_f_otp_digit_box2" >
+
+                                <TextView
+                                    android:id="@+id/tv_3"
+                                    android:layout_width="15dp"
+                                    android:layout_height="29dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginTop="13.5dp"
+                                    android:text="@string/s_3"
+                                    android:textSize="23dp"
+                                    android:includeFontPadding="false"
+                                    android:gravity="start|center_vertical"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/color_text_tv_3" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/f_otp_digit_box3"
+                                android:layout_width="56dp"
+                                android:layout_height="match_parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginStart="221dp"
+                                android:background="@drawable/bg_f_otp_digit_box3" >
+
+                                <ImageView
+                                    android:id="@+id/rect_caret"
+                                    android:layout_width="2dp"
+                                    android:layout_height="24dp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    android:layout_marginStart="27dp"
+                                    android:layout_marginTop="16dp"
+                                    android:src="@drawable/img_rect_caret"
+                                    android:scaleType="centerInside"
+                                    android:contentDescription="@null" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/f_resend_timer"
+                        android:layout_width="294dp"
+                        android:layout_height="17dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="24dp"
+                        app:layout_constraintTop_toBottomOf="@id/f_otp_digits_container"
+                        android:layout_marginTop="24dp" >
+
+                        <TextView
+                            android:id="@+id/tv_didnt_receive_the_otp"
+                            android:layout_width="148dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="23dp"
+                            android:text="@string/didnt_receive_the_otp"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_didnt_receive_the_otp" />
+
+                        <!-- app:fillRanges="0,10,color_text_tv_resend_in_028|10,14,color_text_tv_resend_in_028_2" -->
+                        <TextView
+                            android:id="@+id/tv_resend_in_028"
+                            android:layout_width="96dp"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_marginStart="175dp"
+                            android:text="@string/resend_in_028"
+                            android:textSize="13dp"
+                            android:includeFontPadding="false"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:textAlignment="viewStart"
+                            android:textColor="@color/color_text_tv_resend_in_028" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/f_sticky_bottom_actions"
+                android:layout_width="match_parent"
+                android:layout_height="172dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@color/color_f_sticky_bottom_actions"
+                app:layout_constraintTop_toBottomOf="@id/f_scroll_content1"
+                android:layout_marginTop="0dp" >
+
+                <!-- app:fillRanges="0,37,color_text_tv_by_continuing_you_agree|37,53,color_text_tv_by_continuing_you_agree_2|53,56,color_text_tv_by_continuing_you_agree_3|56,70,color_text_tv_by_continuing_you_agree_4|70,71,color_text_tv_by_continuing_you_agree_5" -->
+                <TextView
+                    android:id="@+id/tv_by_continuing_you_agree"
+                    android:layout_width="342dp"
+                    android:layout_height="34dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/by_continuing_you_agree_to_obeles_terms"
+                    android:textSize="11dp"
+                    android:includeFontPadding="false"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textColor="@color/color_text_tv_by_continuing_you_agree" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_verify_button"
+                    android:layout_width="342dp"
+                    android:layout_height="54dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    android:background="@drawable/bg_f_verify_button"
+                    app:layout_constraintTop_toBottomOf="@id/tv_by_continuing_you_agree"
+                    android:layout_marginTop="16dp" >
+
+                    <TextView
+                        android:id="@+id/tv_verify_continue"
+                        android:layout_width="137dp"
+                        android:layout_height="19dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="89.5dp"
+                        android:layout_marginTop="17.5dp"
+                        android:text="@string/verify_continue"
+                        android:textSize="15dp"
+                        android:includeFontPadding="false"
+                        android:textStyle="bold"
+                        android:gravity="start|center_vertical"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/color_text_tv_verify_continue" />
+
+                    <ImageView
+                        android:id="@+id/f_arrow_right7"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="234.5dp"
+                        android:layout_marginTop="18dp"
+                        android:src="@drawable/img_f_arrow_right7"
+                        android:scaleType="centerInside"
+                        android:contentDescription="@null" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/f_home_indicator_bar1"
+                    android:layout_width="342dp"
+                    android:layout_height="20dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="24dp"
+                    app:layout_constraintTop_toBottomOf="@id/f_verify_button"
+                    android:layout_marginTop="16dp" >
+
+                    <View
+                        android:id="@+id/rect_rectangle8"
+                        android:layout_width="134dp"
+                        android:layout_height="5dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="104dp"
+                        android:layout_marginTop="7.5dp"
+                        android:background="@drawable/bg_rect_rectangle8" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </in.obele.app.code_gen_export.common.views.DesignScaleFrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

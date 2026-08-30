@@ -1,4 +1,4 @@
-import { BookingServiceType, VerificationStatus } from "@prisma/client"
+import { BookingEventActor, BookingServiceType, VerificationStatus } from "@prisma/client"
 import Razorpay from "razorpay"
 import { prisma } from "@/server/db/prisma"
 import {
@@ -27,6 +27,7 @@ interface PreparedBooking {
   toolId: string
   toolName: string
   toolOwnerId: string
+  toolInstanceId: string
   serviceType: BookingServiceType
   startDate: Date
   endDate: Date
@@ -123,10 +124,43 @@ export async function createRazorpayOrder(params: {
       throw error
     }
 
-    const toolOwnerId = tool.instances[0]?.ownerId ?? null
-    if (!toolOwnerId) {
-      throw new PaymentServiceError(`Tool "${tool.name}" has no owner instance — cannot book`, 400)
+    const instances = await prisma.toolInstance.findMany({
+      where: {
+        toolId: tool.id,
+        status: { in: ["AVAILABLE", "RETURNED", "INSPECTION"] },
+      },
+      include: {
+        bookings: {
+          where: {
+            status: {
+              notIn: [
+                "CANCELLED_BY_FARMER",
+                "CANCELLED_BY_OWNER",
+                "CANCELLED_BY_OPERATOR",
+                "CANCELLED_BY_PLATFORM",
+                "FAILED_NO_OPERATOR",
+              ],
+            },
+            OR: [
+              {
+                startDate: { lte: endDate },
+                endDate: { gte: startDate },
+              },
+            ],
+          },
+        },
+      },
+    })
+
+    const availableInstance = instances.find((inst) => inst.bookings.length === 0)
+    if (!availableInstance) {
+      throw new PaymentServiceError(
+        `No units of "${tool.name}" are available for the selected dates.`,
+        400,
+      )
     }
+
+    const toolOwnerId = availableInstance.ownerId
 
     // Scenario validity
     if (tool.requiresCertifiedOperator && serviceType === "SELF_SERVICE_RENTAL") {
@@ -153,6 +187,7 @@ export async function createRazorpayOrder(params: {
       toolId: tool.id,
       toolName: tool.name,
       toolOwnerId,
+      toolInstanceId: availableInstance.id,
       serviceType: serviceType === "OPERATOR_ONLY"
         ? BookingServiceType.OPERATOR_ONLY
         : BookingServiceType.SELF_SERVICE_RENTAL,
@@ -180,6 +215,7 @@ export async function createRazorpayOrder(params: {
         orderId: orderRecord.id,
         farmerId: userId,
         toolId: p.toolId,
+        toolInstanceId: p.toolInstanceId,
         toolOwnerId: p.toolOwnerId,
         servicePerformerId: userId,
         serviceType: p.serviceType,
@@ -300,3 +336,159 @@ export async function createPaymentRecord(data: {
     },
   })
 }
+
+// ─── Handle Razorpay Webhook ────────────────────────────────────────────────
+
+export async function handleRazorpayWebhook(params: {
+  rawBody: string
+  signature: string
+}) {
+  const { rawBody, signature } = params
+  const crypto = await import("crypto")
+
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET
+  if (!secret) {
+    throw new PaymentServiceError("Razorpay webhook secret not configured on server", 500)
+  }
+
+  const expectedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody)
+    .digest("hex")
+
+  let isSignatureValid = false
+  try {
+    isSignatureValid =
+      expectedSignature.length === signature.length &&
+      crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
+  } catch {
+    isSignatureValid = false
+  }
+
+  if (!isSignatureValid) {
+    throw new PaymentServiceError("Invalid webhook signature", 400)
+  }
+
+  let event: any
+  try {
+    event = JSON.parse(rawBody)
+  } catch {
+    throw new PaymentServiceError("Invalid JSON payload", 400)
+  }
+
+  const eventType = event.event
+  const payload = event.payload
+
+  if (eventType === "payment.captured" || eventType === "order.paid") {
+    const paymentEntity = payload?.payment?.entity
+    const orderEntity = payload?.order?.entity
+
+    const razorpayPaymentId = paymentEntity?.id
+    const razorpayOrderId = paymentEntity?.order_id || orderEntity?.id
+    const method = paymentEntity?.method || "razorpay"
+    const vpa = paymentEntity?.vpa || null
+
+    if (!razorpayOrderId && !razorpayPaymentId) {
+      return { received: true, message: "Missing order/payment identifiers" }
+    }
+
+    const payments = await prisma.payment.findMany({
+      where: {
+        OR: [
+          ...(razorpayOrderId ? [{ razorpayOrderId }] : []),
+          ...(razorpayPaymentId ? [{ razorpayPaymentId }] : []),
+        ],
+      },
+      include: {
+        booking: true,
+      },
+    })
+
+    const now = new Date()
+
+    for (const p of payments) {
+      await prisma.payment.update({
+        where: { id: p.id },
+        data: {
+          status: "CAPTURED",
+          razorpayPaymentId: razorpayPaymentId || p.razorpayPaymentId,
+          method,
+          vpa,
+          webhookVerified: true,
+          webhookReceivedAt: now,
+        },
+      })
+
+      if (p.bookingId && p.booking) {
+        if (p.booking.status === "REQUESTED") {
+          await prisma.booking.update({
+            where: { id: p.bookingId },
+            data: { status: "OWNER_PENDING" },
+          })
+
+          await prisma.bookingStateLog.create({
+            data: {
+              bookingId: p.bookingId,
+              fromState: "REQUESTED",
+              toState: "OWNER_PENDING",
+              actor: BookingEventActor.SYSTEM,
+              note: `Payment captured via Razorpay webhook (${eventType})`,
+            },
+          })
+        }
+      }
+
+      if (p.orderId) {
+        await prisma.order.update({
+          where: { id: p.orderId },
+          data: { paymentStatus: "CAPTURED" },
+        })
+      }
+    }
+
+    return { received: true, event: eventType, updatedPayments: payments.length }
+  }
+
+  if (eventType === "payment.failed") {
+    const paymentEntity = payload?.payment?.entity
+    const razorpayPaymentId = paymentEntity?.id
+    const razorpayOrderId = paymentEntity?.order_id
+
+    if (razorpayOrderId || razorpayPaymentId) {
+      const payments = await prisma.payment.findMany({
+        where: {
+          OR: [
+            ...(razorpayOrderId ? [{ razorpayOrderId }] : []),
+            ...(razorpayPaymentId ? [{ razorpayPaymentId }] : []),
+          ],
+          status: "PENDING",
+        },
+      })
+
+      const now = new Date()
+      for (const p of payments) {
+        await prisma.payment.update({
+          where: { id: p.id },
+          data: {
+            status: "FAILED",
+            razorpayPaymentId: razorpayPaymentId || p.razorpayPaymentId,
+            webhookVerified: true,
+            webhookReceivedAt: now,
+          },
+        })
+
+        if (p.orderId) {
+          await prisma.order.update({
+            where: { id: p.orderId },
+            data: { paymentStatus: "FAILED" },
+          })
+        }
+      }
+    }
+
+    return { received: true, event: eventType }
+  }
+
+  return { received: true, event: eventType, message: "Event ignored" }
+}
+

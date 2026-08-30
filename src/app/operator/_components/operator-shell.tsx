@@ -3,12 +3,16 @@
 import { ReactNode } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import OperatorBottomNav from "./operator-bottom-nav"
+import { CapabilitySwitcher } from "@/components/layout/capability-switcher"
 
 interface OperatorShellProps {
   children: ReactNode
   eyebrow: string
   title: string
   action?: ReactNode
+  /** Hide the bottom tab bar (terminal screens). */
+  hideNav?: boolean
 }
 
 export default function OperatorShell({
@@ -16,6 +20,7 @@ export default function OperatorShell({
   eyebrow,
   title,
   action,
+  hideNav = false,
 }: OperatorShellProps) {
   const router = useRouter()
 
@@ -39,7 +44,7 @@ export default function OperatorShell({
             </svg>
             <span className="font-display text-[22px] font-bold text-primary">O~Bele</span>
           </Link>
-          <span className="rounded-md border border-accent bg-muted px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-secondary">DK Coast</span>
+          <CapabilitySwitcher variant="shell" currentRole="OPERATOR" />
         </header>
         <main className="flex flex-1 flex-col px-5 pb-6 pt-6">
           <div className="mb-5 flex items-end justify-between gap-3">
@@ -51,6 +56,7 @@ export default function OperatorShell({
           </div>
           {children}
         </main>
+        {!hideNav && <OperatorBottomNav />}
       </div>
     </div>
   )

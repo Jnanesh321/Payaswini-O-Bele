@@ -16,7 +16,7 @@ import {
 import { Button, Badge, Card, Skeleton } from "@/components/ui"
 import { useCartStore } from "@/store/cart"
 import { formatPrice, calculateRentalPrice, getLocaleName, getLocaleDescription } from "@/lib/utils"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 
 interface ToolOwner {
   id: string
@@ -55,6 +55,7 @@ export default function ToolDetailPage() {
   const params = useParams()
   const router = useRouter()
   const locale = useLocale()
+  const tc = useTranslations("categories")
   const fp = (n: number) => formatPrice(n, locale)
   const addItem = useCartStore((s) => s.addItem)
   const [tool, setTool] = useState<ToolDetail | null>(null)
@@ -192,7 +193,7 @@ export default function ToolDetailPage() {
 
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Info className="h-4 w-4" /> {tool.category}
+                <Info className="h-4 w-4" /> {tc(tool.category)}
               </span>
               {tool.toolOwner && (
                 <span className="flex items-center gap-1">

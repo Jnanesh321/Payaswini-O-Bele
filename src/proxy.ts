@@ -26,21 +26,65 @@ function getLocale(request: NextRequest): string {
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const search = request.nextUrl.search || ""
+  const fullPath = pathname + search
   const token = await getToken({ req: request })
   const locale = getLocale(request)
 
-  const adminPaths = ["/admin"]
-  if (adminPaths.some((p) => pathname.startsWith(p))) {
+  const capabilities = (token?.capabilities as string[] | undefined) || []
+
+  // Admin routes
+  if (pathname.startsWith("/admin")) {
     if (!token || !token.isAdmin) {
       return NextResponse.redirect(new URL("/", request.url))
     }
   }
 
+  // Tool Owner routes
+  if (pathname.startsWith("/owner")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url)
+      loginUrl.searchParams.set("callbackUrl", fullPath)
+      return NextResponse.redirect(loginUrl)
+    }
+    const isOwner = token.isAdmin || capabilities.includes("TOOL_OWNER")
+    if (!isOwner) {
+      const onboardUrl = new URL("/onboarding", request.url)
+      onboardUrl.searchParams.set("callbackUrl", fullPath)
+      return NextResponse.redirect(onboardUrl)
+    }
+  }
+
+  // Operator routes
+  if (pathname.startsWith("/operator")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url)
+      loginUrl.searchParams.set("callbackUrl", fullPath)
+      return NextResponse.redirect(loginUrl)
+    }
+    const isOperator = token.isAdmin || capabilities.includes("OPERATOR")
+    if (!isOperator) {
+      const onboardUrl = new URL("/onboarding", request.url)
+      onboardUrl.searchParams.set("callbackUrl", fullPath)
+      return NextResponse.redirect(onboardUrl)
+    }
+  }
+
+  // Onboarding route (requires authentication)
+  if (pathname.startsWith("/onboarding")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url)
+      loginUrl.searchParams.set("callbackUrl", fullPath)
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
+  // General customer protected routes
   const protectedPaths = ["/dashboard", "/checkout", "/orders"]
   if (protectedPaths.some((p) => pathname.startsWith(p))) {
     if (!token) {
       const loginUrl = new URL("/login", request.url)
-      loginUrl.searchParams.set("callbackUrl", pathname)
+      loginUrl.searchParams.set("callbackUrl", fullPath)
       return NextResponse.redirect(loginUrl)
     }
   }
@@ -58,6 +102,8 @@ export async function proxy(request: NextRequest) {
   return response
 }
 
+export { proxy as middleware }
+
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|logos).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|logos|images).*)"],
 }

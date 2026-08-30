@@ -34,7 +34,7 @@ export default async function Hero() {
           <Link href="/how-it-works">
             <Button
               variant="outline"
-              className="border-white text-white hover:scale-105 hover:bg-white/10 hover:text-white px-8 py-6 text-base"
+              className="bg-transparent border-white text-white hover:scale-105 hover:bg-white/10 hover:text-white px-8 py-6 text-base"
             >
               {t("ctaSecondary")}
             </Button>

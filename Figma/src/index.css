@@ -1,2 +1,96 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
+
+@layer utilities {
+  .btn-primary {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px 0 rgba(212, 160, 23, 0.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 rgba(212, 160, 23, 0.55);
+    filter: brightness(1.05);
+  }
+  .btn-primary:active {
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.95);
+  }
+
+  .btn-secondary {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    background-color: rgba(139, 69, 19, 0.05);
+    border-color: rgba(139, 69, 19, 0.4);
+  }
+  .btn-secondary:active {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .card-interactive {
+    transition: all 0.25s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(45, 80, 22, 0.08);
+    border-color: rgba(45, 80, 22, 0.35);
+  }
+
+  .list-row-interactive {
+    transition: all 0.2s ease;
+  }
+  .list-row-interactive:hover {
+    transform: translateX(2px);
+    background-color: rgba(45, 80, 22, 0.03);
+    border-color: rgba(45, 80, 22, 0.3);
+  }
+
+  .pulse-border {
+    animation: alert-pulse 2.2s infinite;
+  }
+
+  @keyframes alert-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.5);
+      border-color: rgba(212, 160, 23, 0.8);
+    }
+    70% {
+      box-shadow: 0 0 0 8px rgba(212, 160, 23, 0);
+      border-color: rgba(212, 160, 23, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(212, 160, 23, 0);
+      border-color: rgba(212, 160, 23, 0.8);
+    }
+  }
+
+  .alert-chevron {
+    animation: chevron-slide 1s infinite alternate;
+  }
+
+  @keyframes chevron-slide {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(4px);
+    }
+  }
+}
+
+/* Custom scrollbars inside the simulator viewports */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #C5BCAC;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8B4513;
+}
+

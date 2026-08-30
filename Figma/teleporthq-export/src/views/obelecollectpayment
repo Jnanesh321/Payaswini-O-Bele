@@ -1,0 +1,733 @@
+.obelecollectpayment-container1 {
+  width: 100%;
+  display: flex;
+  overflow: auto;
+  min-height: 100vh;
+  align-items: center;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-obelecollectpayment-elm {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  flex-direction: column;
+  background-color: rgba(250, 247, 240, 1);
+}
+ 
+.obelecollectpayment-thq-statusbar-elm {
+  display: flex;
+  padding: 0 24px;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-text-elm10 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-frame-elm1 {
+  gap: 6px;
+  display: flex;
+  align-items: center;
+}
+ 
+.obelecollectpayment-thq-iossignal-elm {
+  width: 20px;
+  height: 20px;
+}
+ 
+.obelecollectpayment-thq-ioswifisignal-elm {
+  width: 20px;
+  height: 20px;
+}
+ 
+.obelecollectpayment-thq-iosbatteryfull-elm {
+  width: 28px;
+  height: 20px;
+}
+ 
+.obelecollectpayment-thq-header-elm {
+  display: flex;
+  padding: 0 20px;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-text-elm11 {
+  color: rgba(45, 80, 22, 1);
+  height: auto;
+  font-size: 24px;
+  font-style: Black;
+  text-align: left;
+  font-family: Fraunces;
+  font-weight: 900;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-jobstatusbadge-elm {
+  gap: 4px;
+  display: flex;
+  padding: 4px 10px;
+  align-items: center;
+  border-color: rgba(212, 160, 23, 1);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 20px;
+  background-color: rgba(253, 249, 238, 1);
+}
+ 
+.obelecollectpayment-thq-badgeicon-elm {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.obelecollectpayment-thq-check-elm {
+  width: 13px;
+  height: 13px;
+}
+ 
+.obelecollectpayment-thq-text-elm12 {
+  color: rgba(139, 69, 19, 1);
+  height: auto;
+  font-size: 11px;
+  font-style: Bold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 700;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-content-elm {
+  gap: 20px;
+  display: flex;
+  padding: 12px 20px 40px;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-headinggroup-elm {
+  gap: 6px;
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-text-elm13 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 32px;
+  align-self: stretch;
+  font-style: Bold;
+  text-align: left;
+  font-family: Fraunces;
+  font-weight: 700;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm14 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 15px;
+  align-self: stretch;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: 139.9999976158142%;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-invoicecard-elm {
+  gap: 16px;
+  display: flex;
+  padding: 20px;
+  align-self: stretch;
+  box-shadow: 0px 8px 24px 0px rgba(139, 69, 19, 0.05098039284348488) ;
+  align-items: flex-start;
+  border-color: rgba(232, 226, 213, 1);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 20px;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 1);
+}
+ 
+.obelecollectpayment-thq-farmerrow-elm {
+  gap: 12px;
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+}
+ 
+.obelecollectpayment-thq-farmeravatar-elm {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 20px;
+  justify-content: center;
+  background-color: rgba(240, 246, 235, 1);
+}
+ 
+.obelecollectpayment-thq-farmermeta-elm {
+  gap: 2px;
+  width: 258px;
+  display: flex;
+  flex-grow: 1;
+  align-items: flex-start;
+  flex-shrink: 0;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-text-elm15 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 15px;
+  align-self: stretch;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm16 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 12px;
+  align-self: stretch;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-line-elm1 {
+  width: 310px;
+  height: 1px;
+  align-self: stretch;
+}
+ 
+.obelecollectpayment-thq-toolrow-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-frame-elm2 {
+  gap: 8px;
+  display: flex;
+  align-items: center;
+}
+ 
+.obelecollectpayment-thq-toolicon-elm {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.obelecollectpayment-thq-toolbox-elm {
+  width: 16px;
+  height: 16px;
+}
+ 
+.obelecollectpayment-thq-text-elm17 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm18 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 13px;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-line-elm2 {
+  width: 310px;
+  height: 1px;
+  align-self: stretch;
+}
+ 
+.obelecollectpayment-thq-breakdownlist-elm {
+  gap: 10px;
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-operatorchargerow-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-text-elm19 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm20 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-toolrentalrow-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-text-elm21 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm22 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-accentlinecontainer-elm {
+  gap: 2px;
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+}
+ 
+.obelecollectpayment-thq-line-elm3 {
+  width: 149px;
+  height: 1px;
+  flex-grow: 1;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm1 {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+ 
+.obelecollectpayment-thq-line-elm4 {
+  width: 149px;
+  height: 1px;
+  flex-grow: 1;
+}
+ 
+.obelecollectpayment-thq-totalrow-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-text-elm23 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 15px;
+  font-style: Bold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 700;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-text-elm24 {
+  color: rgba(212, 160, 23, 1);
+  height: auto;
+  font-size: 28px;
+  font-style: Black;
+  text-align: left;
+  font-family: Fraunces;
+  font-weight: 900;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-upiqrcard-elm {
+  gap: 16px;
+  display: flex;
+  padding: 20px;
+  align-self: stretch;
+  box-shadow: 0px 4px 16px 0px rgba(139, 69, 19, 0.019607843831181526) ;
+  align-items: center;
+  border-color: rgba(232, 226, 213, 1);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 20px;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 1);
+}
+ 
+.obelecollectpayment-thq-text-elm25 {
+  color: rgba(30, 37, 28, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: center;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-qrgraphic-elm {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  padding: 16px;
+  align-items: center;
+  flex-shrink: 0;
+  border-color: rgba(232, 226, 213, 1);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 12px;
+  justify-content: center;
+  background-color: rgba(250, 247, 240, 1);
+}
+ 
+.obelecollectpayment-thq-mockqr-elm {
+  display: flex;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-frame-elm3 {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm2 {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(45, 80, 22, 1);
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 4px;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm3 {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(45, 80, 22, 1);
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 4px;
+}
+ 
+.obelecollectpayment-thq-frame-elm4 {
+  gap: 8px;
+  display: flex;
+  padding: 0 12px;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-line-elm5 {
+  width: 124px;
+  height: 1px;
+  align-self: stretch;
+}
+ 
+.obelecollectpayment-thq-line-elm6 {
+  width: 124px;
+  height: 1px;
+  align-self: stretch;
+}
+ 
+.obelecollectpayment-thq-line-elm7 {
+  width: 124px;
+  height: 1px;
+  align-self: stretch;
+}
+ 
+.obelecollectpayment-thq-frame-elm5 {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-end;
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm4 {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(45, 80, 22, 1);
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 4px;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm5 {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+ 
+.obelecollectpayment-thq-frame-elm6 {
+  gap: 4px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-text-elm26 {
+  color: rgba(90, 101, 85, 1);
+  height: auto;
+  font-size: 13px;
+  font-style: Medium;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 500;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-frame-elm7 {
+  gap: 4px;
+  display: flex;
+  align-items: center;
+}
+ 
+.obelecollectpayment-thq-securedicon-elm {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.obelecollectpayment-thq-shield-elm {
+  width: 11px;
+  height: 11px;
+}
+ 
+.obelecollectpayment-thq-text-elm27 {
+  color: rgba(142, 155, 136, 1);
+  height: auto;
+  font-size: 11px;
+  font-style: Regular;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-actionsgroup-elm {
+  gap: 12px;
+  display: flex;
+  padding: 8px 0 0;
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: column;
+}
+ 
+.obelecollectpayment-thq-primarybutton-elm {
+  display: flex;
+  align-self: stretch;
+  box-shadow: 0px 8px 16px 0px rgba(45, 80, 22, 0.20000000298023224) ;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 28px;
+  justify-content: center;
+  background-color: rgba(45, 80, 22, 1);
+}
+ 
+.obelecollectpayment-thq-text-elm28 {
+  color: rgba(250, 247, 240, 1);
+  height: auto;
+  font-size: 16px;
+  font-style: Bold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 700;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.obelecollectpayment-thq-secondarybutton-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: center;
+}
+ 
+.obelecollectpayment-thq-text-elm29 {
+  color: rgba(139, 69, 19, 1);
+  height: auto;
+  font-size: 14px;
+  font-style: SemiBold;
+  text-align: left;
+  font-family: Work Sans;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: underline;
+}
+ 
+.obelecollectpayment-thq-homeindicatorbar-elm {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: center;
+}
+ 
+.obelecollectpayment-thq-rectangle-elm6 {
+  width: 134px;
+  height: 5px;
+  opacity: 0.30;
+  border-radius: 3px;
+}
+ 
+.obelecollectpayment-link {
+  display: contents;
+}
+ 
+.obelecollectpayment-container2 {
+  right: 50px;
+  border: 1px solid #ffffff5c;
+  bottom: 30px;
+  display: flex;
+  z-index: 22;
+  position: fixed;
+  box-shadow: 5px 5px 10px 0px rgba(31, 31, 31, 0.4);
+  min-height: auto;
+  align-items: center;
+  padding-top: 8px;
+  padding-left: 12px;
+  border-radius: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  backdrop-filter: blur(6px);
+  background-color: rgba(41, 41, 41, 0.41);
+}
+ 
+.obelecollectpayment-icon1 {
+  width: 24px;
+  margin-right: 4px;
+}
+ 
+.obelecollectpayment-text {
+  color: white;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+}

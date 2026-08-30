@@ -46,20 +46,24 @@ export default function HomeScreen({ navigate }: { navigate: NavFn }) {
         {/* New job alert banner */}
         <button
           onClick={() => navigate('new-job-alert')}
+          className="pulse-border"
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 12,
             padding: '14px 16px', border: `2px solid ${P.gold}`,
             borderRadius: 20, backgroundColor: P.goldMuted, cursor: 'pointer', textAlign: 'left',
+            transition: 'transform 0.2s ease',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <span style={{ fontSize: 24 }}>⚡</span>
+          <span style={{ fontSize: 24, display: 'inline-block', transformOrigin: 'center' }}>⚡</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontFamily: F.body, fontWeight: 700, color: '#7A5800' }}>New Job Alert!</div>
-            <div style={{ fontSize: 11, fontFamily: F.body, color: P.textMid, marginTop: 1 }}>
+            <div style={{ fontSize: 13.5, fontFamily: F.body, fontWeight: 800, color: '#7A5800' }}>New Job Alert!</div>
+            <div style={{ fontSize: 11.5, fontFamily: F.body, color: P.textMid, marginTop: 1 }}>
               Arecanut harvest · Ravi Shetty · 6.8 km · ₹2,100
             </div>
           </div>
-          <span style={{ fontSize: 20, animation: 'pulse 1s infinite' }}>›</span>
+          <span className="alert-chevron" style={{ fontSize: 20, fontWeight: 'bold', color: '#7A5800' }}>›</span>
         </button>
 
         <LeafDivider />

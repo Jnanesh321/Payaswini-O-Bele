@@ -29,10 +29,12 @@
   },
   "featuredTools": {
     "title": "Popular Tools",
+    "subtitle": "Quality farming equipment available for rent near you",
     "viewAll": "View All Tools",
     "rentNow": "Rent Now",
     "deposit": "Deposit",
-    "perDay": "/day"
+    "perDay": "/day",
+    "empty": "No featured tools available at the moment."
   },
   "toolOperators": {
     "title": "Don't have a tool operator? Meet our partners",
@@ -71,6 +73,17 @@
     "sortPriceLow": "Price Low",
     "sortPriceHigh": "Price High",
     "sortNewest": "Newest"
+  },
+  "categories": {
+    "CLIMBING_POLES": "Climbing Poles",
+    "TILLERS": "Tillers",
+    "NETS_COVERS": "Nets & Covers",
+    "TRANSPLANTERS": "Transplanters",
+    "SPRAYERS": "Sprayers",
+    "PRUNERS_CUTTERS": "Pruners & Cutters",
+    "WATER_PUMPS": "Water Pumps",
+    "HARVESTING_TOOLS": "Harvesting Tools",
+    "OTHER": "Other"
   },
   "footer": {
     "productOf": "A product of Payaswini.com",

@@ -1,4 +1,12 @@
-import { BookingEventActor, BookingServiceType, BookingStatus, Prisma, type BookingStateLog } from "@prisma/client"
+import {
+  BookingEventActor,
+  BookingServiceType,
+  BookingStatus,
+  HandoverType,
+  Prisma,
+  ToolInstanceStatus,
+  type BookingStateLog,
+} from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
 import {
   assertTransition,
@@ -28,7 +36,7 @@ import {
 export async function listFarmerBookings(userId: string) {
   return prisma.booking.findMany({
     where: { farmerId: userId },
-    include: { tool: true, payment: true },
+    include: { tool: true, payment: true, toolInstance: true },
     orderBy: { createdAt: "desc" },
   })
 }
@@ -38,7 +46,7 @@ export async function listFarmerBookings(userId: string) {
 export async function createBooking(userId: string, data: Prisma.BookingUncheckedCreateInput) {
   return prisma.booking.create({
     data: { ...data, farmerId: userId },
-    include: { tool: true, payment: true },
+    include: { tool: true, payment: true, toolInstance: true },
   })
 }
 
@@ -49,11 +57,16 @@ export async function getBookingById(id: string) {
     where: { id },
     include: {
       tool: true,
+      toolInstance: true,
       payment: true,
       farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true } },
+      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
       stateLogs: { orderBy: { createdAt: "asc" } },
+      handoverLogs: {
+        include: { actorUser: { select: { id: true, name: true, phone: true } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   })
 }
@@ -71,11 +84,16 @@ export async function getBookingWithTransitions(id: string) {
     where: { id },
     include: {
       tool: true,
+      toolInstance: true,
       payment: true,
       farmer: true,
-      toolOwner: { select: { id: true, name: true, phone: true } },
+      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
       stateLogs: { orderBy: { createdAt: "asc" } },
+      handoverLogs: {
+        include: { actorUser: { select: { id: true, name: true, phone: true } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   })
   if (!booking) return null
@@ -92,11 +110,16 @@ export async function getBookingWithActorTransitions(id: string) {
     where: { id },
     include: {
       tool: true,
+      toolInstance: true,
       payment: true,
       farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true } },
+      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
       stateLogs: { orderBy: { createdAt: "asc" } },
+      handoverLogs: {
+        include: { actorUser: { select: { id: true, name: true, phone: true } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   })
   if (!booking) return null
@@ -152,11 +175,16 @@ export async function transitionBooking(params: {
     where: { id: bookingId },
     include: {
       tool: { select: { requiresCertifiedOperator: true } },
+      toolInstance: true,
       farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true } },
+      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
       payment: true,
       stateLogs: { orderBy: { createdAt: "asc" } },
+      handoverLogs: {
+        include: { actorUser: { select: { id: true, name: true, phone: true } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   })
   if (!booking) throw new TransitionError("Booking not found", 404)
@@ -329,6 +357,73 @@ export async function transitionBooking(params: {
         where: { id: booking.payment.id },
         data: { disputeLocked: true },
       })
+    }
+
+    // Physical tool custody and handover tracking
+    if (booking.toolInstanceId) {
+      if (effectiveTo === BookingStatus.TOOL_COLLECTED) {
+        await tx.toolInstance.update({
+          where: { id: booking.toolInstanceId },
+          data: {
+            status: ToolInstanceStatus.HANDED_OVER,
+            currentCustodianId: booking.servicePerformerId || userId,
+          },
+        })
+        await tx.handoverLog.create({
+          data: {
+            bookingId: booking.id,
+            toolInstanceId: booking.toolInstanceId,
+            actorId: userId,
+            handoverType: HandoverType.PICKUP_FROM_OWNER,
+            conditionGrade: "GOOD",
+            notes: body.note || "Operator collected tool from owner",
+          },
+        })
+      } else if (effectiveTo === BookingStatus.WORK_STARTED) {
+        await tx.toolInstance.update({
+          where: { id: booking.toolInstanceId },
+          data: {
+            status: ToolInstanceStatus.IN_USE,
+          },
+        })
+      } else if (effectiveTo === BookingStatus.TOOL_RETURNED) {
+        await tx.toolInstance.update({
+          where: { id: booking.toolInstanceId },
+          data: {
+            status: ToolInstanceStatus.RETURNED,
+            currentCustodianId: booking.toolOwnerId,
+          },
+        })
+        await tx.handoverLog.create({
+          data: {
+            bookingId: booking.id,
+            toolInstanceId: booking.toolInstanceId,
+            actorId: userId,
+            handoverType: HandoverType.RETURN_TO_OWNER,
+            conditionGrade: "GOOD",
+            notes: body.note || "Operator returned tool to owner",
+          },
+        })
+      } else if (effectiveTo === BookingStatus.INSPECTION) {
+        await tx.toolInstance.update({
+          where: { id: booking.toolInstanceId },
+          data: {
+            status: ToolInstanceStatus.INSPECTION,
+          },
+        })
+      } else if (
+        effectiveTo === BookingStatus.COMPLETED ||
+        isTerminalCancellation(effectiveTo) ||
+        effectiveTo === BookingStatus.FAILED_NO_OPERATOR
+      ) {
+        await tx.toolInstance.update({
+          where: { id: booking.toolInstanceId },
+          data: {
+            status: ToolInstanceStatus.AVAILABLE,
+            currentCustodianId: booking.toolOwnerId,
+          },
+        })
+      }
     }
 
     const log = await tx.bookingStateLog.create({
@@ -542,7 +637,7 @@ export async function assignOperator(params: {
     include: {
       tool: { select: { requiresCertifiedOperator: true } },
       farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true } },
+      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
     },
   })

@@ -17,9 +17,12 @@
       financial conversion; corrected stale SMS wording
 - [x] Owner Earnings: `settled` = `COMPLETED` only; owner ledger + profile
       `lifetimeEarnings` sum `totalToolFee` (owner share)
-- [ ] Deposit refund execution at inspection/return (Razorpay refund API +
-      marking `depositRefunded`/`depositDeducted`/`disputeLocked`) — fields
-      restored, end-to-end refund still a follow-up
+- [x] Deposit refund execution at inspection/return (Razorpay refund API +
+      marking `depositRefunded`/`depositDeducted`/`disputeLocked`) — done
+      2026-08-12: `POST /api/rentals/[id]/deposit-resolution`
+      (FULL_REFUND / PARTIAL_DEDUCTION / HOLD), idempotent atomic claim,
+      `COMPLETED` gated on deposit resolution, `DISPUTED` sets
+      `disputeLocked`, `Payment.depositRefundId` recorded
 
 ### Booking/asset model revision — Stage 1 (schema) done
 - [x] Replace Booking's rigid `ownerId`/`operatorId` with `farmerId`,
@@ -95,14 +98,14 @@
 - [x] Wire checkout/cart so `create-order` resolves the real `toolOwnerId` and
       `serviceType` (done in Change 1 — 2026-08-11: server-side owner resolution
       from `ToolInstance`, `serviceType` carried from the tool-page scenario
-      selector). Remaining: real `servicePerformerId` (operator not yet known at
-      order time — currently placeholder farmer) + link `ToolInstance`(s)
-- [ ] Remove `Tool.availableCount` + `Tool.totalCount`; make tool
-      availability a DERIVED count of `ToolInstance` rows by status
-- [ ] Link bookings to specific `ToolInstance`(s) for the QR/asset-scanning
-      and custody-chain stages (seed already creates instances; checkout
-      currently leaves `toolInstanceId` unset)
-- [ ] Derived-availability query/aggregation endpoint used by store API
+      selector).
+- [x] Make tool availability a DERIVED count of `ToolInstance` rows by status
+      in `listTools` and `getToolBySlug` (zero duplicate counter state)
+- [x] Link bookings to specific `ToolInstance`(s) for QR/asset-scanning
+      and custody-chain stages with `HandoverLog` tracking during physical pickup
+      (`TOOL_COLLECTED`), work (`WORK_STARTED`), return (`TOOL_RETURNED`), and
+      completion/cancellation release
+- [x] Derived-availability queries integrated across store APIs and listing views
 
 ### Change 1 — certified-tool scenario selection (self-operate vs operator)
 - [x] `Tool.requiresCertifiedOperator` + `Tool.operatorFeePerDay` (paise)
@@ -124,26 +127,48 @@
 
 
 ### Locale & region ground rules fixup
-- [ ] Change `defaultLocale` from `"kn"` to `"en"` in:
-  `src/i18n/routing.ts`, `src/proxy.ts`, `src/i18n/request.ts`
-- [ ] Change `preferredLang String @default("kn")` to `@default("en")` in
-  `prisma/schema.prisma`
-- [ ] Make `formatPrice()` pull currency + number format from a locale/region
-  config instead of hardcoded `"en-IN"` / `"INR"` (`src/lib/utils.ts`)
+- [x] Change `defaultLocale` from `"kn"` to `"en"` in:
+  `src/i18n/routing.ts`, `src/proxy.ts`, `src/i18n/request.ts` — verified
+- [x] Change `preferredLang String @default("kn")` to `@default("en")` in
+  `prisma/schema.prisma` — verified
+- [x] Make `formatPrice()` pull currency + number format from a locale/region
+  config instead of hardcoded `"en-IN"` / `"INR"` (`src/lib/region.ts` & `src/lib/utils.ts`) — done
+
 
 ### Role system: capability-profile UX (schema done in Stage 1)
-- [ ] Add role/capability-switch UI (a user can hold FARMER + TOOL_OWNER +
-      OPERATOR simultaneously via `UserCapability`)
-- [ ] Handle capability-based auth in proxy.ts (e.g. TOOL_OWNER dashboard
-      routes gate on `UserCapability` instead of `isAdmin`)
+- [x] Add role/capability-switch UI (a user can hold FARMER + TOOL_OWNER +
+      OPERATOR simultaneously via `UserCapability`) — completed (CapabilitySwitcher
+      across desktop header, mobile drawer, OwnerShell & OperatorShell, SessionProvider
+      & JWT capability synchronization)
+- [x] Handle capability-based auth in proxy.ts (e.g. TOOL_OWNER dashboard
+      routes gate on `UserCapability` / `TOOL_OWNER`, OPERATOR routes gate on
+      `OPERATOR`, unauthenticated or unactivated users routed to login/onboarding) — done
 - [ ] Per-capability verification flows (KYC per profile, not per user)
 
 ### featured-tools.tsx: hardcoded data → DB-driven
-- [ ] Replace hardcoded `tools` array with a fetch from the DB
-- [ ] Replace hardcoded Kannada title `"ಜನಪ್ರಿಯ ಸಾಧನಗಳು"` with i18n
+- [x] Replace hardcoded `tools` array with a fetch from the DB
+- [x] Replace hardcoded Kannada title `"ಜನಪ್ರಿಯ ಸಾಧನಗಳು"` with i18n
   message key
-- [ ] Category badges should use translated labels from i18n, not raw
+- [x] Category badges should use translated labels from i18n, not raw
   English enum strings
+
+### Phase 2 (post-first-deploy) hardening — Razorpay webhook
+
+> Deferred by design for the first deploy (2026-08-13 audit): the release build
+> ships client-verification only (`POST /api/razorpay/verify`, HMAC via
+> `RAZORPAY_KEY_SECRET`). That flow loses a payment if the user closes the tab
+> mid-checkout — the refund/capture state then never lands server-side.
+
+- [x] Add `src/app/api/razorpay/webhook/route.ts` — server-confirmed capture
+      reconciliation for `payment.captured` (+ handle `payment.failed`)
+- [x] Validate `X-Razorpay-Signature` with an HMAC against a new
+      `RAZORPAY_WEBHOOK_SECRET` env var (distinct from `RAZORPAY_KEY_SECRET`)
+- [x] Payload idempotency: reconcile `razorpayOrderId` → Order/Booking →
+      `Payment.status = CAPTURED`, `webhookVerified = true`,
+      `webhookReceivedAt = NOW()` (schema fields already exist on `Payment`)
+- [x] Mark bookings `OWNER_PENDING` on captured webhook just like `verify`
+      does, so a closed-tab payment still advances the flow
+- [x] Add `RAZORPAY_WEBHOOK_SECRET` to `.env.example` (dashboard config ready for staging/prod)
 
 ### Region/state tagging on DB models
 - [ ] Add `region` / `state` field to Tool model (and possibly Booking)
@@ -158,11 +183,11 @@
 - [ ] Clean up 21 pre-existing unused-vars warnings
 
 ### Remaining landing polish
-- [ ] Convert `featured-tools.tsx` from client → server (replace FM
+- [x] Convert `featured-tools.tsx` from client → server (replace FM
   entrance with CSS, keep scroll/carousel as client island)
 - [ ] Add scroll-triggered entrance animation to stats + testimonials
   (currently CSS animations fire on load, not on scroll-into-view)
-- [ ] Convert `cta.tsx`, `how-it-works.tsx`, `trust-badges.tsx` from
+- [x] Convert `how-it-works.tsx`, `trust-badges.tsx` from
   client → server if they are still `"use client"`
 
 ## Blocked
