@@ -1,0 +1,29 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="96" fill="#FAF7F0"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#2D5016" stroke-width="3" opacity="0.15"/>
+  <ellipse cx="100" cy="176" rx="42" ry="6" fill="#8B4513" opacity="0.18"/>
+
+  <!-- Harvesting Sickle & Areca Nut Harvester -->
+  <g transform="translate(0, 0)">
+    <!-- Golden Crop Sheaf / Paddy Ears -->
+    <path d="M120,165 Q135,120 160,85 Q165,80 155,80 Q130,110 115,165" fill="#D4A017" opacity="0.85"/>
+    <path d="M125,165 Q145,130 170,105 Q175,100 165,100 Q140,125 120,165" fill="#E8B838" opacity="0.7"/>
+
+    <!-- Sharp Curved Harvesting Blade (Silver Steel) -->
+    <path d="M60,130 C45,95 55,50 105,45 C95,65 85,90 95,125 Z" fill="#C9CBCC" stroke="#888888" stroke-width="1.5"/>
+    <path d="M60,130 C45,95 55,50 105,45" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+
+    <!-- Wooden Handle -->
+    <path d="M60,130 L75,165 L88,160 L73,125 Z" fill="#8B4513" stroke="#5C2D0C" stroke-width="1.5"/>
+    <!-- Handle Grip Bands -->
+    <line x1="64" y1="138" x2="77" y2="133" stroke="#D4A017" stroke-width="2"/>
+    <line x1="68" y1="147" x2="81" y2="142" stroke="#D4A017" stroke-width="2"/>
+    <line x1="72" y1="156" x2="85" y2="151" stroke="#D4A017" stroke-width="2"/>
+
+    <!-- Areca Nut bunch accent -->
+    <circle cx="120" cy="85" r="9" fill="#E8720C"/>
+    <circle cx="132" cy="78" r="8" fill="#E8720C"/>
+    <circle cx="130" cy="92" r="8.5" fill="#D4A017"/>
+    <circle cx="140" cy="88" r="7.5" fill="#E8720C"/>
+  </g>
+</svg>

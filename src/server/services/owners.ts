@@ -1,7 +1,8 @@
-import { BookingStatus, ToolInstanceStatus } from "@prisma/client"
+import { BookingStatus, ToolInstanceStatus, VerificationStatus } from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
 import { deriveModeFromServiceType } from "@/server/lib/booking-state-machine"
 import { expireOverdueOwnerRequests, OWNER_RESPONSE_SLA_MS } from "@/server/lib/owner-sla"
+import { normalizePhone } from "@/server/services/auth"
 
 // ─── List owner requests ─────────────────────────────────────────────────────
 
@@ -317,6 +318,178 @@ export async function getOwnerEarnings(userId: string, periodParam: string | nul
   }
 }
 
+// ─── Owner permissions (Self-Operate Certification) ─────────────────────────
+
+export async function listOwnerPermissions(ownerId: string) {
+  const permissions = await prisma.selfOperatePermission.findMany({
+    where: { toolOwnerId: ownerId },
+    include: {
+      farmer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          district: true,
+          taluk: true,
+          village: true,
+          image: true,
+          phoneVerified: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+
+  return permissions.map((p) => ({
+    id: p.id,
+    farmerId: p.farmerId,
+    toolOwnerId: p.toolOwnerId,
+    status: p.status,
+    verifiedAt: p.verifiedAt,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+    farmer: {
+      id: p.farmer.id,
+      name: p.farmer.name ?? "Farmer",
+      phone: p.farmer.phone,
+      district: p.farmer.district,
+      taluk: p.farmer.taluk,
+      village: p.farmer.village,
+      image: p.farmer.image,
+      phoneVerified: p.farmer.phoneVerified,
+      location: [p.farmer.village, p.farmer.taluk, p.farmer.district].filter(Boolean).join(", "),
+    },
+  }))
+}
+
+export async function grantOwnerPermission(
+  ownerId: string,
+  farmerPhone: string,
+  status: VerificationStatus = VerificationStatus.VERIFIED,
+) {
+  const normalized = normalizePhone(farmerPhone)
+  if (!normalized) {
+    throw new OwnerServiceError("Invalid 10-digit Indian phone number", 400)
+  }
+
+  const farmer = await prisma.user.findUnique({
+    where: { phone: normalized },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      district: true,
+      taluk: true,
+      village: true,
+      image: true,
+      phoneVerified: true,
+    },
+  })
+
+  if (!farmer) {
+    throw new OwnerServiceError("Farmer account not found with this phone number", 404)
+  }
+
+  if (farmer.id === ownerId) {
+    throw new OwnerServiceError("You cannot grant permission to yourself", 400)
+  }
+
+  const permission = await prisma.selfOperatePermission.upsert({
+    where: {
+      farmerId_toolOwnerId: {
+        farmerId: farmer.id,
+        toolOwnerId: ownerId,
+      },
+    },
+    update: {
+      status,
+      verifiedAt: status === VerificationStatus.VERIFIED ? new Date() : null,
+    },
+    create: {
+      farmerId: farmer.id,
+      toolOwnerId: ownerId,
+      status,
+      verifiedAt: status === VerificationStatus.VERIFIED ? new Date() : null,
+    },
+    include: {
+      farmer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          district: true,
+          taluk: true,
+          village: true,
+          image: true,
+          phoneVerified: true,
+        },
+      },
+    },
+  })
+
+  return {
+    id: permission.id,
+    farmerId: permission.farmerId,
+    toolOwnerId: permission.toolOwnerId,
+    status: permission.status,
+    verifiedAt: permission.verifiedAt,
+    createdAt: permission.createdAt,
+    farmer: {
+      id: permission.farmer.id,
+      name: permission.farmer.name ?? "Farmer",
+      phone: permission.farmer.phone,
+      district: permission.farmer.district,
+      taluk: permission.farmer.taluk,
+      village: permission.farmer.village,
+      image: permission.farmer.image,
+      phoneVerified: permission.farmer.phoneVerified,
+      location: [permission.farmer.village, permission.farmer.taluk, permission.farmer.district].filter(Boolean).join(", "),
+    },
+  }
+}
+
+export async function revokeOwnerPermission(ownerId: string, permissionId: string) {
+  const existing = await prisma.selfOperatePermission.findFirst({
+    where: {
+      id: permissionId,
+      toolOwnerId: ownerId,
+    },
+  })
+
+  if (!existing) {
+    throw new OwnerServiceError("Permission record not found", 404)
+  }
+
+  const updated = await prisma.selfOperatePermission.update({
+    where: { id: permissionId },
+    data: {
+      status: VerificationStatus.REVOKED,
+      verifiedAt: null,
+    },
+  })
+
+  return { id: updated.id, status: updated.status }
+}
+
+export async function deleteOwnerPermission(ownerId: string, permissionId: string) {
+  const existing = await prisma.selfOperatePermission.findFirst({
+    where: {
+      id: permissionId,
+      toolOwnerId: ownerId,
+    },
+  })
+
+  if (!existing) {
+    throw new OwnerServiceError("Permission record not found", 404)
+  }
+
+  await prisma.selfOperatePermission.delete({
+    where: { id: permissionId },
+  })
+
+  return { id: permissionId, deleted: true }
+}
+
 // ─── Error class ────────────────────────────────────────────────────────────
 
 export class OwnerServiceError extends Error {
@@ -327,3 +500,4 @@ export class OwnerServiceError extends Error {
     this.statusCode = statusCode
   }
 }
+

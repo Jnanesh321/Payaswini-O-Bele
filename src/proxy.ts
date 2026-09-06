@@ -105,5 +105,6 @@ export async function proxy(request: NextRequest) {
 export { proxy as middleware }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|logos|images).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|logos|images|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)"],
 }
+

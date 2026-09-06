@@ -25,6 +25,10 @@ export interface ToolCard {
   deliveryAvailable: boolean
   deliveryRadiusKm: number
   freeDeliveryRadiusKm: number
+  requiresCertifiedOperator?: boolean
+  operatorFeePerDay?: number
+  taluk?: string
+  distanceKm?: number
   createdAt: string
 }
 

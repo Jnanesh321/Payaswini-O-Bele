@@ -3,6 +3,7 @@
 import { useState, useEffect, startTransition } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { AppLogo } from "@/components/ui/app-logo"
 import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { motion, AnimatePresence } from "framer-motion"
@@ -12,6 +13,7 @@ import { useSession } from "next-auth/react"
 import { useCartStore } from "@/store/cart"
 import { LanguageSwitcher } from "./language-switcher"
 import { CapabilitySwitcher } from "./capability-switcher"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 
 export function Header() {
@@ -41,19 +43,12 @@ export function Header() {
         "sticky top-0 z-50 w-full transition-all duration-300",
         transparent
           ? "bg-transparent"
-          : "bg-bele-cream/95 backdrop-blur-md shadow-sm"
+          : "bg-background/95 dark:bg-card/95 backdrop-blur-md border-b border-border shadow-sm"
       )}
     >
       <div className="container flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="relative shrink-0">
-          <Image
-            src="/logos/obele-logo.svg"
-            alt="O Bele"
-            width={110}
-            height={39}
-            className="h-9 w-auto"
-            priority
-          />
+        <Link href="/" className="relative shrink-0 flex items-center">
+          <AppLogo width={110} height={39} className="h-8 w-auto" priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
@@ -67,7 +62,7 @@ export function Header() {
                   ? "text-white/80 hover:text-white"
                   : "text-muted-foreground hover:text-foreground",
                 pathname === link.href &&
-                  (transparent ? "text-white" : "text-foreground")
+                  (transparent ? "text-white" : "text-foreground font-semibold")
               )}
             >
               {link.label}
@@ -85,6 +80,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <ThemeToggle />
           <LanguageSwitcher transparent={transparent} />
 
           <Button
@@ -197,25 +193,22 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 z-50 w-72 bg-bele-cream shadow-xl md:hidden"
+              className="fixed inset-y-0 right-0 z-50 w-72 bg-background dark:bg-card border-l border-border shadow-xl md:hidden flex flex-col justify-between"
             >
               <div className="flex items-center justify-between border-b border-border px-4 py-4">
-                <Image
-                  src="/logos/obele-logo.svg"
-                  alt="O Bele"
-                  width={90}
-                  height={32}
-                  className="h-7 w-auto"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
+                  <AppLogo width={90} height={32} className="h-7 w-auto" />
+                  <div className="flex items-center gap-1">
+                    <ThemeToggle />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMobileOpen(false)}
+                      aria-label="Close menu"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
 
               <nav className="space-y-1 px-3 py-4">
                 {navLinks.map((link) => (

@@ -40,13 +40,13 @@ export const useCartStore = create<CartState>()(
       },
       clearCart: () => set({ items: [] }),
       getItemCount: () => get().items.length,
-      getSubtotal: () => get().items.reduce((sum, i) => sum + i.totalAmount, 0),
-      getTotalDeposit: () => get().items.reduce((sum, i) => sum + i.deposit, 0),
-      getTotalOperatorFee: () => get().items.reduce((sum, i) => sum + i.totalOperatorFee, 0),
-      getTotalDiscount: () => get().items.reduce((sum, i) => sum + i.discount, 0),
+      getSubtotal: () => get().items.reduce((sum, i) => sum + (i.pricePerDay * i.days), 0),
+      getTotalDeposit: () => 0,
+      getTotalOperatorFee: () => get().items.reduce((sum, i) => sum + (i.totalOperatorFee || 0), 0),
+      getTotalDiscount: () => get().items.reduce((sum, i) => sum + (i.discount || 0), 0),
       getGrandTotal: () => {
         const state = get()
-        return state.getSubtotal() + state.getTotalDeposit() + state.getTotalOperatorFee()
+        return Math.max(0, state.getSubtotal() + state.getTotalOperatorFee() - state.getTotalDiscount())
       },
     }),
     {

@@ -24,15 +24,14 @@ const tools = [
     },
     category: "CLIMBING_POLES",
     images: [
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/cf-pole-12m-1.jpg",
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/cf-pole-12m-2.jpg",
+      "/images/carbon-fiber-pole.svg",
     ],
     thumbnailUrl:
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/cf-pole-12m-thumb.jpg",
+      "/images/carbon-fiber-pole.svg",
     pricePerDay: inr(299),
     pricePerWeek: inr(1499),
     pricePerSeason: inr(4999),
-    deposit: inr(2000),
+    deposit: 0,
 
     minRentalDays: 1,
     maxRentalDays: 90,
@@ -63,13 +62,13 @@ const tools = [
     },
     category: "SPRAYERS",
     images: [
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/battery-sprayer-16l-1.jpg",
+      "/images/battery-sprayer.svg",
     ],
     thumbnailUrl:
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/battery-sprayer-16l-thumb.jpg",
+      "/images/battery-sprayer.svg",
     pricePerDay: inr(149),
     pricePerWeek: inr(749),
-    deposit: inr(1000),
+    deposit: 0,
 
     minRentalDays: 1,
     maxRentalDays: 14,
@@ -97,13 +96,13 @@ const tools = [
     },
     category: "TILLERS",
     images: [
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/power-tiller-5hp-1.jpg",
+      "/images/power-tiller.svg",
     ],
     thumbnailUrl:
-      "https://res.cloudinary.com/obele/image/upload/v1/tools/power-tiller-5hp-thumb.jpg",
+      "/images/power-tiller.svg",
     pricePerDay: inr(599),
     pricePerWeek: inr(2999),
-    deposit: inr(5000),
+    deposit: 0,
 
     minRentalDays: 1,
     maxRentalDays: 14,

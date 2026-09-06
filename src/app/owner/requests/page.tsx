@@ -57,12 +57,12 @@ interface OwnerRequest {
 }
 
 function useCountdown(deadlineIso: string): string {
-  const [, tick] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    const id = setInterval(() => tick((n) => n + 1), 30_000)
+    const id = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(id)
   }, [])
-  const ms = Math.max(0, new Date(deadlineIso).getTime() - Date.now())
+  const ms = Math.max(0, new Date(deadlineIso).getTime() - now)
   const h = Math.floor(ms / 3_600_000)
   const m = Math.floor((ms % 3_600_000) / 60_000)
   if (ms <= 0) return "Expiring…"
@@ -70,9 +70,17 @@ function useCountdown(deadlineIso: string): string {
 }
 
 function Avatar({ name, image, className }: { name: string | null; image: string | null; className?: string }) {
+  const [hasError, setHasError] = useState(false)
   const initial = (name?.trim()?.[0] ?? "F").toUpperCase()
-  if (image) {
-    return <img src={image} alt={name ?? "Farmer"} className={`h-[60px] w-[60px] rounded-[18px] object-cover ${className ?? ""}`} />
+  if (image && !hasError) {
+    return (
+      <img
+        src={image}
+        alt={name ?? "Farmer"}
+        className={`h-[60px] w-[60px] rounded-[18px] object-cover ${className ?? ""}`}
+        onError={() => setHasError(true)}
+      />
+    )
   }
   return (
     <div className={`flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-bele-green-muted text-xl font-bold text-primary ${className ?? ""}`}>
@@ -341,6 +349,7 @@ export default function OwnerRequestsPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRequests()
   }, [fetchRequests])
 

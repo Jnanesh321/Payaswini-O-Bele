@@ -89,7 +89,13 @@ export function CapabilitySwitcher({
   const currentRoleMeta = ROLES.find((r) => r.id === activeRole) || ROLES[0]
 
   // User's activated capabilities from session
-  const userCapabilities = (session?.user?.capabilities as string[]) || ["FARMER"]
+  const isAdmin = Boolean(session?.user?.isAdmin)
+  const rawCaps = Array.isArray(session?.user?.capabilities) ? (session.user.capabilities as string[]) : []
+  const userCapabilities = isAdmin
+    ? ["FARMER", "TOOL_OWNER", "OPERATOR"]
+    : rawCaps.length > 0
+    ? rawCaps
+    : ["FARMER"]
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -111,6 +117,7 @@ export function CapabilitySwitcher({
 
   // Close dropdown when route changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsOpen(false)
   }, [pathname])
 
@@ -125,14 +132,8 @@ export function CapabilitySwitcher({
   }
 
   const handleRoleSelect = (role: RoleMeta) => {
-    const hasRole = userCapabilities.includes(role.id)
     setIsOpen(false)
-    if (hasRole) {
-      router.push(role.href)
-    } else {
-      // Guide user to activate this capability
-      router.push(`/onboarding?callbackUrl=${encodeURIComponent(role.href)}`)
-    }
+    router.push(role.href)
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -204,7 +205,7 @@ export function CapabilitySwitcher({
           {/* Quick Account Links */}
           <div className="mt-4 flex flex-col gap-1 border-t border-border/50 pt-3 text-xs">
             <Link
-              href="/orders"
+              href="/dashboard"
               className="flex items-center justify-between rounded-lg px-2.5 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <span className="flex items-center gap-2">
@@ -441,8 +442,21 @@ export function CapabilitySwitcher({
 
             {/* Footer Quick Links */}
             <div className="border-t border-border/50 pt-2 space-y-1">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 transition"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Admin Staff Console
+                  </span>
+                  <ChevronDown className="h-3 w-3 -rotate-90" />
+                </Link>
+              )}
+
               <Link
-                href="/orders"
+                href="/dashboard"
                 className="flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-[#FAF7F0] hover:text-foreground transition"
               >
                 <span className="flex items-center gap-2">

@@ -39,6 +39,9 @@ curl_resp.txt
 dev-output.txt
 dev_err.txt
 dev_out.txt
+*.tmp.js
+check-*.js
+*.tmp.*
 
 # vercel
 .vercel
@@ -58,4 +61,7 @@ android/local.properties
 
 # design reference exports
 /Figma/
+
+# recording / temp artifacts
+temp-videos/
 

@@ -123,7 +123,9 @@
       booking with Raju as owner + ₹200/day operator fee; sprayer →
       `SELF_SERVICE_RENTAL` with Parameshwara as owner, no operator fee. Test
       rows cleaned up after each drive.
-- [ ] Follow-up: operator self-operate permission grant UI (tool owner side)
+- [x] Follow-up: operator self-operate permission grant UI (tool owner side) —
+      done 2026-08-30: `/owner/permissions` UI + API routes (`/api/owner/permissions`,
+      `/api/owner/farmers/lookup`) + `listOwnerPermissions`/`grantOwnerPermission`/`revokeOwnerPermission` services.
 
 
 ### Locale & region ground rules fixup
@@ -143,7 +145,11 @@
 - [x] Handle capability-based auth in proxy.ts (e.g. TOOL_OWNER dashboard
       routes gate on `UserCapability` / `TOOL_OWNER`, OPERATOR routes gate on
       `OPERATOR`, unauthenticated or unactivated users routed to login/onboarding) — done
-- [ ] Per-capability verification flows (KYC per profile, not per user)
+- [x] Per-capability verification flows (KYC per profile, not per user) —
+      done 2026-08-30: `submitCapabilityVerification`, `listCapabilityVerifications`,
+      `reviewCapabilityVerification` services, user submit API (`/api/user/capabilities/verify`),
+      admin review APIs (`/api/admin/verifications`), `CapabilityVerificationModal`, and
+      Admin Verification Dashboard at `/admin/verifications`.
 
 ### featured-tools.tsx: hardcoded data → DB-driven
 - [x] Replace hardcoded `tools` array with a fetch from the DB
@@ -176,19 +182,22 @@
 - [ ] Add region-based filtering to tool listing API
 
 ### ESLint & purity issues
-- [ ] Fix `Date.now()` impure function call in
-  `src/app/(store)/tools/[slug]/page.tsx:240`
-- [ ] Fix `require()` imports in `prisma/seed.js:5-6` and
-  `src/app/api/razorpay/create-order/route.ts:6`
-- [ ] Clean up 21 pre-existing unused-vars warnings
+- [x] Fix `Date.now()` purity in `src/app/owner/requests/page.tsx` useCountdown hook
+- [x] Fix ES imports in `src/app/api/razorpay/create-order/route.ts`
+- [x] Fix immutable cookie mutation in `src/components/layout/language-switcher.tsx`
+- [x] Fix `any` type in `src/server/services/payments.ts` webhook handler
+- [x] Clean up cascading `setState` effects across admin and owner dashboard components
+- [x] `npx eslint "src/**/*.{ts,tsx}" --quiet` runs clean with 0 errors
 
-### Remaining landing polish
-- [x] Convert `featured-tools.tsx` from client → server (replace FM
-  entrance with CSS, keep scroll/carousel as client island)
-- [ ] Add scroll-triggered entrance animation to stats + testimonials
-  (currently CSS animations fire on load, not on scroll-into-view)
-- [x] Convert `how-it-works.tsx`, `trust-badges.tsx` from
-  client → server if they are still `"use client"`
+### Native Android App Utility Feed Transformation (Home Screen)
+- [x] Transformed `src/app/page.tsx` from marketing landing page into a high-density, thumb-friendly Android utility feed
+- [x] Sticky Top Mobile App Bar with `pt-safe`, regional location selector (`Kasaragod / Puttur` with Taluk bottom sheet), embedded quick search, compact language toggle (`KN | EN`), and cart/profile status
+- [x] Seasonal Task / Crop Quick-Filters Carousel (Harvesting, Tilling, Weeding, Spraying, All Equipment) with instant zero-reload client filtering
+- [x] Active Rental Banner displaying ongoing booking status (Awaiting Confirmation, Matching Operator, En Route, Work in Progress, Return)
+- [x] High-density utility Tool Cards with distance/taluk badges, operator capability chips ("Certified Operator Included" vs "Self-Operate Permitted"), clear price breakdown with refundable deposit, and primary "Book Now" CTA
+- [x] Persistent docked Bottom Navigation Bar (`src/components/layout/bottom-nav.tsx`) with Capacitor safe-area padding (`pb-safe`) for Explore, Bookings, Cart, and Account
+- [x] Full `next-intl` localization support in `en.json` and `kn.json` under `homeUtility`
+- [x] Zero ESLint warnings and clean production build (56/56 routes pass)
 
 ## Blocked
 

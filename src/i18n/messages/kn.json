@@ -88,5 +88,33 @@
   "footer": {
     "productOf": "Payaswini.com ನ ಉತ್ಪನ್ನ",
     "tagline": "ಬೆಳೆಗಾರನ ಬೆಸುಗೆ"
+  },
+  "homeUtility": {
+    "searchPlaceholder": "ಪವರ್ ಟಿಲ್ಲರ್, ಅಡಿಕೆ ಕೊಯ್ಲು ಕೋಲು ಹುಡುಕಿ...",
+    "selectLocation": "ತಾಲೂಕು / ಪ್ರದೇಶ ಆಯ್ಕೆಮಾಡಿ",
+    "locationKasPuttur": "ಕಾಸರಗೋಡು / ಪುತ್ತೂರು",
+    "activeRental": "ಸಕ್ರಿಯ ಬಾಡಿಗೆ",
+    "viewStatus": "ಸ್ಥಿತಿ ವೀಕ್ಷಿಸಿ",
+    "availableNearYou": "ಇಂದು ನಿಮ್ಮ ಹತ್ತಿರ ಲಭ್ಯವಿರುವ ಸಾಧನಗಳು",
+    "toolsCount": "{count} ಸಾಧನಗಳು",
+    "bookNow": "ಈಗಲೇ ಬುಕ್ ಮಾಡಿ",
+    "rentNow": "ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ",
+    "perDay": "/ದಿನ",
+    "refDeposit": "ಹಿಂತಿರುಗಿಸುವ ಠೇವಣಿ",
+    "certifiedOperator": "ತರಬೇತಿ ಹೊಂದಿದ ಆಪರೇಟರ್ ಲಭ್ಯ",
+    "selfOperate": "ಸ್ವಯಂ ಚಾಲನೆಗೆ ಅನುಮತಿಸಲಾಗಿದೆ",
+    "withOperator": "ಆಪರೇಟರ್ ಆಯ್ಕೆಯೊಂದಿಗೆ",
+    "allEquipment": "ಎಲ್ಲಾ ಉಪಕರಣಗಳು",
+    "harvestTask": "ಅಡಿಕೆ & ತೆಂಗು ಕೊಯ್ಲು",
+    "harvestDesc": "ಕಾರ್ಬನ್ ಕೋಲುಗಳು",
+    "tillingTask": "ಉಳುಮೆ & ಸಾಗುವಳಿ",
+    "tillingDesc": "ಪವರ್ ಟಿಲ್ಲರ್ಗಳು",
+    "weedingTask": "ಕಳೆ ಕೀಳುವಿಕೆ & ತೆರವು",
+    "weedingDesc": "ಬ್ರಶ್ ಕಟ್ಟರ್ಗಳು",
+    "sprayingTask": "ಔಷಧ ಸಿಂಪಡಣೆ & ರಕ್ಷಣೆ",
+    "sprayingDesc": "HTP & ಪಂಪ್ಗಳು",
+    "explore": "ಅನ್ವೇಷಿಸಿ",
+    "bookings": "ಬುಕಿಂಗ್ಗಳು",
+    "profile": "ಖಾತೆ"
   }
 }

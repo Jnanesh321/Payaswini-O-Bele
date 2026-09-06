@@ -16,3 +16,6 @@ export {
   PaginationNext,
   PaginationPrevious,
 } from "./pagination"
+export { ToolImage } from "./tool-image"
+export { SafeAvatar } from "./safe-avatar"
+

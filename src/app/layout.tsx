@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
 import "./globals.css"
 import { SessionProvider } from "@/components/providers/session-provider"
+import { ThemeProvider } from "@/components/providers/theme-provider"
 import { SiteChrome } from "@/components/layout/site-chrome"
 import { cn } from "@/lib/utils"
 
@@ -51,12 +52,14 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={cn(nunito.variable, lora.variable, "font-sans")} suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <SessionProvider>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <SiteChrome>{children}</SiteChrome>
-          </NextIntlClientProvider>
-        </SessionProvider>
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased transition-colors duration-200">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
+          <SessionProvider>
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <SiteChrome>{children}</SiteChrome>
+            </NextIntlClientProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

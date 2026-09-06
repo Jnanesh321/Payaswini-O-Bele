@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import OperatorShell from "../_components/operator-shell"
 import { useOperatorBooking } from "../_components/use-operator-booking"
+import { AssetQRCard } from "@/components/tools/asset-qr-card"
 
 function formatPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "")
@@ -21,6 +22,7 @@ function OperatorPickupInner() {
   const { booking, loading, error, transition, can } = useOperatorBooking(bookingId)
 
   const [checks, setChecks] = useState([false, false, false, false])
+  const [conditionGrade, setConditionGrade] = useState<"GOOD" | "FAIR" | "DAMAGED">("GOOD")
   const [busy, setBusy] = useState(false)
 
   const collecting = can("TOOL_COLLECTED")
@@ -41,10 +43,13 @@ function OperatorPickupInner() {
   const handleCollected = useCallback(async () => {
     if (!bookingId || !allChecked) return
     setBusy(true)
-    await transition("TOOL_COLLECTED", "Operator collected tool from owner")
+    await transition("TOOL_COLLECTED", {
+      note: `Operator collected tool from owner (Condition: ${conditionGrade})`,
+      conditionGrade,
+    })
     setBusy(false)
     router.push(`/operator/en-route?booking=${bookingId}`)
-  }, [bookingId, allChecked, transition, router])
+  }, [bookingId, allChecked, conditionGrade, transition, router])
 
   if (!bookingId) {
     return <p className="text-center text-sm font-semibold text-secondary">No job selected.</p>
@@ -58,6 +63,20 @@ function OperatorPickupInner() {
 
         {booking && (
           <>
+            {/* Physical Asset Tag & QR Card */}
+            {booking.toolInstance?.assetCode && (
+              <AssetQRCard
+                assetCode={booking.toolInstance.assetCode}
+                toolName={booking.tool.name}
+                status={booking.toolInstance.status}
+                ownerName={booking.toolOwner.name}
+                custodianName={booking.farmer.name}
+                conditionGrade={conditionGrade}
+                onConditionChange={setConditionGrade}
+                interactiveCondition={collecting}
+              />
+            )}
+
             <div className="rounded-[22px] border border-accent bg-[#fffaf0] p-5">
               <div className="flex items-start gap-3.5">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-2xl text-secondary">✦</span>

@@ -80,7 +80,7 @@ export async function getToolBySlug(slug: string) {
     tool = await prisma.tool.findUnique({
       where: { id: slug },
       include: {
-        reviews: { include: { user: true } },
+        reviews: { include: { user: { select: { id: true, name: true, image: true } } } },
         instances: { include: { owner: { select: { id: true, name: true } } } },
       },
     })
@@ -88,7 +88,7 @@ export async function getToolBySlug(slug: string) {
     tool = await prisma.tool.findFirst({
       where: { OR: [{ id: slug }, { slug: slug }] },
       include: {
-        reviews: { include: { user: true } },
+        reviews: { include: { user: { select: { id: true, name: true, image: true } } } },
         instances: { include: { owner: { select: { id: true, name: true } } } },
       },
     })

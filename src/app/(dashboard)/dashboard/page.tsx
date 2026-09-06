@@ -1,163 +1,282 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { useLocale } from "next-intl"
+import { formatPrice, formatDate } from "@/lib/utils"
+import { FarmerShell } from "@/components/layout/farmer-shell"
+import { CapabilityVerificationModal } from "@/components/verification/capability-verification-modal"
 import {
   Package,
   Clock,
   CreditCard,
-  MapPin,
   ShieldCheck,
   ChevronRight,
+  Plus,
+  Loader2,
+  Calendar,
+  Wrench,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react"
-import { Button, Card, Badge, Skeleton } from "@/components/ui"
-import { formatPrice, formatDate } from "@/lib/utils"
-import { useLocale } from "next-intl"
 
 interface RentalItem {
   id: string
+  bookingRef: string
   startDate: string
   endDate: string
   totalAmount: number
   deposit: number
   status: string
-  tool: { name: string; images: string[] }
+  tool: { id: string; name: string; slug: string; thumbnailUrl?: string; images: string[] }
+  toolInstance?: { assetCode: string } | null
+  serviceType: string
+}
+
+interface CapabilityItem {
+  id: string
+  type: string
+  status: string
+  notes?: string | null
 }
 
 export default function DashboardPage() {
   const locale = useLocale()
   const fp = (n: number) => formatPrice(n, locale)
   const [rentals, setRentals] = useState<RentalItem[]>([])
+  const [capabilities, setCapabilities] = useState<CapabilityItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [kycModalOpen, setKycModalOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("/api/rentals")
-      const data = await res.json()
-      setRentals(data.data || [])
+  const fetchData = useCallback(async () => {
+    try {
+      const [rentalsRes, capsRes] = await Promise.all([
+        fetch("/api/rentals"),
+        fetch("/api/user/capabilities"),
+      ])
+      const rentalsData = await rentalsRes.json()
+      const capsData = await capsRes.json()
+
+      if (rentalsRes.ok) setRentals(rentalsData.data || [])
+      if (capsRes.ok && capsData.detailedCapabilities) {
+        setCapabilities(capsData.detailedCapabilities)
+      }
+    } catch {
+      // Ignored
+    } finally {
       setLoading(false)
     }
-    fetchData()
   }, [])
 
-  const activeRentals = rentals.filter(
-    (r) => r.status === "ACTIVE" || r.status === "CONFIRMED"
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData()
+  }, [fetchData])
+
+  const farmerCap = capabilities.find((c) => c.type === "FARMER")
+  const isKycVerified = farmerCap?.status === "VERIFIED"
+  const isKycPending = farmerCap?.status === "PENDING"
+
+  const activeRentals = rentals.filter((r) =>
+    [
+      "OWNER_ACCEPTED",
+      "OPERATOR_ASSIGNED",
+      "FETCHING_TOOL",
+      "TOOL_COLLECTED",
+      "TRAVELLING_TO_FARM",
+      "ARRIVED",
+      "WORK_STARTED",
+      "WORK_PAUSED",
+      "WORK_RESUMED",
+      "RETURNING_TOOL",
+    ].includes(r.status)
   )
+
+  const completedRentals = rentals.filter((r) =>
+    ["TOOL_RETURNED", "INSPECTION", "COMPLETED"].includes(r.status)
+  )
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "WORK_STARTED":
+      case "ARRIVED":
+      case "TOOL_COLLECTED":
+        return <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent">In Progress</span>
+      case "OWNER_PENDING":
+        return <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600">Pending Owner</span>
+      case "COMPLETED":
+        return <span className="rounded-full bg-bele-green-muted px-2 py-0.5 text-[10px] font-bold text-primary">Completed</span>
+      default:
+        return <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">{status.replace("_", " ")}</span>
+    }
+  }
+
   return (
-    <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="font-heading text-3xl font-bold">My Dashboard</h1>
-        <p className="text-muted-foreground">Manage your account and rentals</p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        {[
-          { label: "Active Rentals", value: activeRentals.length, icon: Package },
-          { label: "Total Rentals", value: rentals.length, icon: Clock },
-          { label: "Total Spent", value: rentals.reduce((s, r) => s + r.totalAmount, 0), icon: CreditCard, isPrice: true },
-          { label: "KYC Status", value: "Not Verified", icon: ShieldCheck },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <Card className="rounded-2xl p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{item.label}</p>
-                  <p className="mt-1 text-2xl font-bold">
-                    {item.isPrice ? fp(item.value as number) : item.value}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <item.icon className="h-5 w-5 text-primary" />
-                </div>
+    <FarmerShell
+      eyebrow="Farmer Portal"
+      title="My Farm Hub"
+      subtitle="Track active tool bookings and farm machinery"
+    >
+      <div className="flex flex-col gap-4">
+        {/* ── KYC / Verification Banner ──────────────────────── */}
+        {!isKycVerified && (
+          <div className="rounded-2xl border border-primary/20 bg-bele-green-muted p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm text-primary">
+                {isKycPending ? <AlertCircle size={18} /> : <ShieldCheck size={18} />}
               </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-xs font-bold text-primary">
+                    {isKycPending ? "Verification In Review" : "Verify Farmer Profile"}
+                  </h3>
+                  <span className="text-[10px] font-bold text-primary/70">
+                    {isKycPending ? "Pending" : "Required"}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-primary/80">
+                  {isKycPending
+                    ? "Your farm profile is pending admin approval. You can still rent tools."
+                    : "Add your land size and location to unlock direct farmer pricing discounts."}
+                </p>
+                {!isKycPending && (
+                  <button
+                    type="button"
+                    onClick={() => setKycModalOpen(true)}
+                    className="mt-2.5 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:brightness-110"
+                  >
+                    Complete Profile →
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="rounded-2xl p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-heading font-semibold">Active Rentals</h2>
-              <Link href="/dashboard/rentals">
-                <Button variant="ghost" size="sm" className="gap-1">
-                  View All <ChevronRight className="h-4 w-4" />
-                </Button>
+        {/* ── Quick Stats Grid ──────────────────────────────── */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-2xl border border-border bg-card p-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active</p>
+            <p className="mt-1 font-display text-lg font-bold text-primary">{activeRentals.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Completed</p>
+            <p className="mt-1 font-display text-lg font-bold text-secondary">{completedRentals.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Deposits</p>
+            <p className="mt-1 font-display text-sm font-bold text-foreground">
+              {fp(rentals.reduce((sum, r) => sum + (r.deposit || 0), 0))}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Active Bookings Section ───────────────────────── */}
+        <div>
+          <div className="mb-2.5 flex items-center justify-between">
+            <h2 className="font-display text-sm font-bold text-foreground">
+              Active Rentals ({activeRentals.length})
+            </h2>
+            <Link href="/tools" className="text-[11px] font-bold text-primary hover:underline">
+              + Rent New
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+            </div>
+          ) : activeRentals.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center">
+              <Package size={28} className="text-muted-foreground/50 mb-2" />
+              <p className="text-xs font-bold text-foreground">No active rentals right now</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Need a power tiller or carbon pole for your harvest?
+              </p>
+              <Link
+                href="/tools"
+                className="mt-3 inline-flex items-center gap-1 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:brightness-110"
+              >
+                <Plus size={13} /> Explore Catalog
               </Link>
             </div>
-            {loading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-              </div>
-            ) : activeRentals.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-center">
-                <Package className="mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="font-medium">No active rentals</p>
-                <p className="text-sm text-muted-foreground">Browse tools to rent</p>
-                <Link href="/tools">
-                  <Button size="sm" className="mt-3">
-                    Browse Tools
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activeRentals.map((rental) => (
-                  <div
-                    key={rental.id}
-                    className="flex items-center gap-3 rounded-lg border border-border p-3"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-xl">
-                      🌾
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {activeRentals.map((rental) => (
+                <div
+                  key={rental.id}
+                  className="overflow-hidden rounded-2xl border border-border bg-card p-3.5 shadow-sm transition hover:border-primary/40"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <span className="font-mono text-[10px] text-muted-foreground font-bold">
+                        {rental.bookingRef}
+                      </span>
+                      <h3 className="font-display text-sm font-bold text-foreground">
+                        {rental.tool.name}
+                      </h3>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{rental.tool.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={rental.status === "ACTIVE" ? "success" : "warning"}
-                    >
-                      {rental.status}
-                    </Badge>
+                    {getStatusBadge(rental.status)}
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
 
-        <div className="space-y-6">
-          <Card className="rounded-2xl p-6">
-            <h2 className="mb-4 font-heading font-semibold">Quick Links</h2>
-            <div className="space-y-2">
-              {[
-                { href: "/dashboard/kyc", label: "KYC Verification", icon: ShieldCheck },
-                { href: "/dashboard/addresses", label: "Saved Addresses", icon: MapPin },
-                { href: "/dashboard/wallet", label: "Wallet & Deposits", icon: CreditCard },
-                { href: "/dashboard/rentals", label: "Rental History", icon: Clock },
-              ].map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <div className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-card">
-                    <link.icon className="h-5 w-5 text-primary" />
-                    <span className="text-sm">{link.label}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground border-t border-border/60 pt-2.5 mt-2">
+                    <div className="flex items-center gap-1">
+                      <Calendar size={12} />
+                      <span>
+                        {formatDate(rental.startDate)} – {formatDate(rental.endDate)}
+                      </span>
+                    </div>
+                    <span className="font-bold text-foreground">{fp(rental.totalAmount)}</span>
                   </div>
-                </Link>
+
+                  {rental.toolInstance?.assetCode && (
+                    <div className="mt-2 flex items-center justify-between rounded-lg bg-muted px-2.5 py-1 text-[10px]">
+                      <span className="text-muted-foreground">Asset Tag:</span>
+                      <span className="font-mono font-bold text-foreground">
+                        🏷 {rental.toolInstance.assetCode}
+                      </span>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-          </Card>
+          )}
         </div>
+
+        {/* ── Rental History Section ────────────────────────── */}
+        {completedRentals.length > 0 && (
+          <div className="mt-2">
+            <h2 className="mb-2.5 font-display text-sm font-bold text-foreground">
+              Past Rentals ({completedRentals.length})
+            </h2>
+            <div className="flex flex-col gap-2">
+              {completedRentals.map((rental) => (
+                <div
+                  key={rental.id}
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-xs"
+                >
+                  <div>
+                    <p className="font-bold text-foreground">{rental.tool.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatDate(rental.endDate)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-foreground">{fp(rental.totalAmount)}</p>
+                    <span className="text-[10px] text-primary font-semibold">Completed</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* Verification Modal */}
+      <CapabilityVerificationModal
+        type="FARMER"
+        isOpen={kycModalOpen}
+        onClose={() => setKycModalOpen(false)}
+        onSuccess={() => fetchData()}
+      />
+    </FarmerShell>
   )
 }

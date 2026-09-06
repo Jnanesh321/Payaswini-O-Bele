@@ -4,7 +4,7 @@ import { Fraunces, Figtree } from "next/font/google"
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["600", "700", "900"],
-  variable: "--font-operator-display",
+  variable: "--font-display",
 })
 
 const figtree = Figtree({

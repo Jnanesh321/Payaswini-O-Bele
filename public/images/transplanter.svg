@@ -1,0 +1,37 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="96" fill="#FAF7F0"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#2D5016" stroke-width="3" opacity="0.15"/>
+  <ellipse cx="100" cy="176" rx="42" ry="6" fill="#8B4513" opacity="0.18"/>
+
+  <!-- Paddy Transplanter Machine -->
+  <g transform="translate(0, 0)">
+    <!-- Sloped Seedling Feed Tray (Bright Yellow / Gold) -->
+    <polygon points="45,65 110,65 140,115 75,115" fill="#D4A017"/>
+    <polygon points="45,65 110,65 140,115 75,115" fill="none" stroke="#A87F0D" stroke-width="2"/>
+    
+    <!-- Seedling Guide Dividers -->
+    <line x1="65" y1="65" x2="95" y2="115" stroke="#A87F0D" stroke-width="1.5"/>
+    <line x1="85" y1="65" x2="115" y2="115" stroke="#A87F0D" stroke-width="1.5"/>
+
+    <!-- Green Seedling Shoots -->
+    <path d="M55,62 Q52,50 48,46 Q55,52 58,62" fill="#2D5016"/>
+    <path d="M75,62 Q72,50 68,46 Q75,52 78,62" fill="#2D5016"/>
+    <path d="M95,62 Q92,50 88,46 Q95,52 98,62" fill="#2D5016"/>
+
+    <!-- Main Chassis & Engine (Green) -->
+    <rect x="90" y="110" width="55" height="35" rx="6" fill="#2D5016"/>
+    <rect x="90" y="110" width="55" height="35" rx="6" fill="none" stroke="#1B330E" stroke-width="1.5"/>
+
+    <!-- Operating Handlebars -->
+    <path d="M140,118 L170,85" stroke="#232323" stroke-width="5" stroke-linecap="round"/>
+    <path d="M162,80 h16" stroke="#232323" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Planting Claws / Mechanism -->
+    <path d="M70,120 L58,155 L65,160" stroke="#333333" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M80,122 L72,158" stroke="#333333" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Floats / Mud Wheels -->
+    <ellipse cx="115" cy="155" rx="28" ry="10" fill="#E8720C"/>
+    <ellipse cx="115" cy="155" rx="28" ry="10" fill="none" stroke="#C45E06" stroke-width="1.5"/>
+  </g>
+</svg>

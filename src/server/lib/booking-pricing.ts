@@ -103,7 +103,9 @@ export function computeRentalDays(startDate: Date, endDate: Date): number {
  * Unknown/missing input defaults to pickup (₹0).
  */
 export function resolveDeliveryCharge(deliveryType: unknown): number {
-  return deliveryType === "delivery" ? DELIVERY_FEE_PAISE : 0
+  return typeof deliveryType === "string" && deliveryType.toLowerCase() === "delivery"
+    ? DELIVERY_FEE_PAISE
+    : 0
 }
 
 /**
@@ -129,10 +131,10 @@ export function computeBookingPricing(input: BookingPricingInput): ComputedBooki
   const operatorFeePerDay = serviceType === "OPERATOR_ONLY" ? tool.operatorFeePerDay : 0
   const totalToolFee = toolFeePerDay * days
   const totalOperatorFee = operatorFeePerDay * days
-  const deposit = tool.deposit
+  const deposit = 0
   const platformFee = PLATFORM_FEE_PAISE
   const subtotal = totalToolFee + totalOperatorFee
-  const totalAmount = subtotal + deposit + deliveryFee + platformFee
+  const totalAmount = subtotal + deliveryFee + platformFee
 
   return {
     days,

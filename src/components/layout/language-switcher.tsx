@@ -10,13 +10,19 @@ const locales = [
   { code: "en", label: "English" },
 ]
 
+function setLocaleCookie(next: string) {
+  if (typeof document !== "undefined") {
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`
+    window.location.reload()
+  }
+}
+
 export function LanguageSwitcher({ transparent = false }: { transparent?: boolean }) {
   const locale = useLocale()
 
   const switchLocale = (next: string) => {
     if (next === locale) return
-    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`
-    window.location.reload()
+    setLocaleCookie(next)
   }
 
   const other = locales.find((l) => l.code !== locale)

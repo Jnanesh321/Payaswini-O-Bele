@@ -1,11 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 import { signOut } from "next-auth/react"
 import OwnerShell from "../_components/owner-shell"
 import { useLocale } from "next-intl"
 import { formatPrice, formatDate } from "@/lib/utils"
-import { Loader2, Settings, Check, Phone, MapPin, CalendarDays } from "lucide-react"
+import { Loader2, Settings, Check, Phone, MapPin, CalendarDays, ShieldCheck } from "lucide-react"
+import { SafeAvatar } from "@/components/ui"
 
 interface ProfileData {
   id: string
@@ -51,6 +53,7 @@ export default function OwnerProfilePage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProfile()
   }, [fetchProfile])
 
@@ -104,17 +107,13 @@ export default function OwnerProfilePage() {
           <div className="mt-2 rounded-b-[28px] rounded-t-[20px] bg-primary px-5 pb-10 pt-4 text-white">
             <div className="flex items-center gap-3.5">
               <div className="relative shrink-0">
-                {profile.image ? (
-                  <img
-                    src={profile.image}
-                    alt={profile.name ?? "Tool Owner"}
-                    className="h-16 w-16 rounded-[20px] border-[3px] border-accent object-cover"
-                  />
-                ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-[20px] border-[3px] border-accent bg-white/10 text-2xl font-bold">
-                    {(profile.name?.trim()?.[0] ?? "O").toUpperCase()}
-                  </div>
-                )}
+                <SafeAvatar
+                  src={profile.image}
+                  name={profile.name}
+                  alt={profile.name ?? "Tool Owner"}
+                  className="h-16 w-16 rounded-[20px] border-[3px] border-accent object-cover"
+                  fallbackClassName="flex h-16 w-16 items-center justify-center rounded-[20px] border-[3px] border-accent bg-white/10 text-2xl font-bold"
+                />
                 <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-accent">
                   <Check size={10} className="text-white" strokeWidth={3} />
                 </div>
@@ -166,6 +165,23 @@ export default function OwnerProfilePage() {
                 </div>
               ))}
             </div>
+
+            {/* ── Certified Farmers Management ──────────────── */}
+            <Link
+              href="/owner/permissions"
+              className="mt-3 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-bele-green-muted text-primary">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-foreground">Certified Farmers</div>
+                  <div className="text-[11px] text-muted-foreground">Manage self-operate machinery permissions</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-primary">Manage →</span>
+            </Link>
 
             {/* ── Contact hints (real user data, decorative) ─── */}
             <div className="mt-3 flex flex-col gap-2">

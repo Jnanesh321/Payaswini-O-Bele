@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const result = await verifyOtp(request, body)
-    return NextResponse.json({ success: true, data: result })
+    return NextResponse.json({ success: true, ...result })
   } catch (error) {
     if (error instanceof AuthServiceError) {
       return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })

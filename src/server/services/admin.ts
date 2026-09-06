@@ -1,4 +1,4 @@
-import { BookingStatus } from "@prisma/client"
+import { BookingStatus, CapabilityType, VerificationStatus } from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
 import { deriveModeFromServiceType } from "@/server/lib/booking-state-machine"
 
@@ -88,3 +88,102 @@ export async function getAdminAssignments() {
 
   return { bookings, operators }
 }
+
+// ─── List capability verifications ──────────────────────────────────────────
+
+export async function listCapabilityVerifications(filter?: {
+  type?: CapabilityType
+  status?: VerificationStatus
+}) {
+  const where: Record<string, unknown> = {}
+  if (filter?.type) where.type = filter.type
+  if (filter?.status) where.status = filter.status
+
+  const items = await prisma.userCapability.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          village: true,
+          taluk: true,
+          district: true,
+          pincode: true,
+          phoneVerified: true,
+          aadhaarVerified: true,
+          image: true,
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: [
+      { status: "asc" }, // PENDING first
+      { createdAt: "desc" },
+    ],
+  })
+
+  return items.map((item) => ({
+    id: item.id,
+    type: item.type,
+    status: item.status,
+    verifiedAt: item.verifiedAt,
+    deniedAt: item.deniedAt,
+    notes: item.notes,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    user: {
+      ...item.user,
+      location: [item.user.village, item.user.taluk, item.user.district].filter(Boolean).join(", "),
+    },
+  }))
+}
+
+// ─── Review capability verification ─────────────────────────────────────────
+
+export async function reviewCapabilityVerification(
+  capabilityId: string,
+  _adminUserId: string,
+  decision: "APPROVE" | "REJECT",
+  notes?: string,
+) {
+  const capability = await prisma.userCapability.findUnique({
+    where: { id: capabilityId },
+    include: { user: { select: { id: true, name: true, phone: true } } },
+  })
+
+  if (!capability) {
+    throw new AdminServiceError("Capability verification request not found", 404)
+  }
+
+  const isApproval = decision === "APPROVE"
+
+  const updated = await prisma.userCapability.update({
+    where: { id: capabilityId },
+    data: {
+      status: isApproval ? VerificationStatus.VERIFIED : VerificationStatus.REVOKED,
+      verifiedAt: isApproval ? new Date() : null,
+      deniedAt: isApproval ? null : new Date(),
+      notes: notes || (isApproval ? "Verified by Admin" : "Declined by Admin"),
+    },
+    include: {
+      user: { select: { id: true, name: true, phone: true } },
+    },
+  })
+
+  return updated
+}
+
+// ─── Error class ────────────────────────────────────────────────────────────
+
+export class AdminServiceError extends Error {
+  readonly statusCode: number
+  constructor(message: string, statusCode: number) {
+    super(message)
+    this.name = "AdminServiceError"
+    this.statusCode = statusCode
+  }
+}
+

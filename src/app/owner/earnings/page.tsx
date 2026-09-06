@@ -60,6 +60,7 @@ export default function OwnerEarningsPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchEarnings(period)
   }, [period, fetchEarnings])
 

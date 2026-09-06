@@ -1,0 +1,41 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="96" fill="#FAF7F0"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#2D5016" stroke-width="3" opacity="0.15"/>
+  <ellipse cx="100" cy="176" rx="40" ry="6" fill="#8B4513" opacity="0.18"/>
+
+  <!-- Water Pump Body -->
+  <g transform="translate(0, 0)">
+    <!-- Base Plate -->
+    <rect x="55" y="150" width="90" height="12" rx="3" fill="#333333"/>
+    
+    <!-- Pump Casing (Blue/Cyan) -->
+    <circle cx="85" cy="115" r="32" fill="#1D6FBF"/>
+    <circle cx="85" cy="115" r="32" fill="none" stroke="#134D87" stroke-width="2"/>
+    <circle cx="85" cy="115" r="14" fill="#134D87"/>
+    <circle cx="85" cy="115" r="6" fill="#FAF7F0"/>
+
+    <!-- Suction / Discharge Flanges -->
+    <rect x="42" y="107" width="16" height="16" rx="2" fill="#888888"/>
+    <rect x="36" y="103" width="6" height="24" rx="2" fill="#555555"/>
+
+    <rect x="77" y="65" width="16" height="20" rx="2" fill="#888888"/>
+    <rect x="73" y="60" width="24" height="6" rx="2" fill="#555555"/>
+
+    <!-- Motor Housing (Dark Charcoal/Green) -->
+    <rect x="110" y="90" width="45" height="50" rx="6" fill="#2D5016"/>
+    <rect x="110" y="90" width="45" height="50" rx="6" fill="none" stroke="#1B330E" stroke-width="1.5"/>
+    
+    <!-- Cooling Fins -->
+    <line x1="118" y1="94" x2="118" y2="136" stroke="#417320" stroke-width="2"/>
+    <line x1="126" y1="94" x2="126" y2="136" stroke="#417320" stroke-width="2"/>
+    <line x1="134" y1="94" x2="134" y2="136" stroke="#417320" stroke-width="2"/>
+    <line x1="142" y1="94" x2="142" y2="136" stroke="#417320" stroke-width="2"/>
+
+    <!-- Motor End Cap & Terminal Box -->
+    <rect x="155" y="96" width="6" height="38" rx="2" fill="#1B330E"/>
+    <rect x="120" y="78" width="22" height="12" rx="2" fill="#D4A017"/>
+
+    <!-- Water Stream Droplet Accent -->
+    <path d="M85 54 Q88 42 85 36 Q82 42 85 54 Z" fill="#1D6FBF" opacity="0.7"/>
+  </g>
+</svg>

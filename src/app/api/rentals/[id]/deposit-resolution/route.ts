@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth"
+import { requireAuth, requireBookingAccess, AuthGuardError } from "@/server/lib/auth-guard"
 import { resolveBookingDepositService, TransitionError } from "@/server/services/bookings"
 
 /**
@@ -17,12 +17,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession()
-  if (!session?.user) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
-  }
-
-  const { id } = await params
+  try {
+    const user = await requireAuth()
+    const { id } = await params
+    await requireBookingAccess(id, user.id, user.isAdmin)
 
   let body: { action?: unknown; deductedAmount?: unknown; note?: unknown; actor?: unknown } = {}
   try {
@@ -31,15 +29,17 @@ export async function POST(
     return NextResponse.json({ success: false, error: "Invalid JSON body" }, { status: 400 })
   }
 
-  try {
     const result = await resolveBookingDepositService({
       bookingId: id,
-      userId: session.user.id,
-      isAdmin: session.user.isAdmin,
+      userId: user.id,
+      isAdmin: user.isAdmin ?? false,
       body,
     })
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
+    if (error instanceof AuthGuardError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     if (error instanceof TransitionError) {
       return NextResponse.json(
         { success: false, error: error.message, ...(error.data ? { data: error.data } : {}) },

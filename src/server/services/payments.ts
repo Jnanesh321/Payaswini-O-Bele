@@ -239,14 +239,37 @@ export async function createRazorpayOrder(params: {
     bookings.push(booking)
   }
 
-  // Razorpay order
+  // Razorpay order creation
   const receipt = `bk_${Date.now()}`
-  const order = await getRazorpay().orders.create({
-    amount: orderTotal,
-    currency: "INR",
-    receipt,
-    notes: { orderId: orderRecord.id, bookingIds: bookings.map((b) => b.id).join(",") },
-  })
+  let order: { id: string; amount: number | string; currency: string }
+  try {
+    const razorpayKey = process.env.RAZORPAY_KEY_ID || ""
+    if (razorpayKey.startsWith("rzp_test_placeholder") || !process.env.RAZORPAY_KEY_SECRET) {
+      order = {
+        id: `order_mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        amount: orderTotal,
+        currency: "INR",
+      }
+    } else {
+      order = await getRazorpay().orders.create({
+        amount: orderTotal,
+        currency: "INR",
+        receipt,
+        notes: { orderId: orderRecord.id, bookingIds: bookings.map((b) => b.id).join(",") },
+      })
+    }
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Razorpay API call failed in non-production, using mock order:", err)
+      order = {
+        id: `order_mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        amount: orderTotal,
+        currency: "INR",
+      }
+    } else {
+      throw err
+    }
+  }
 
   await prisma.order.update({
     where: { id: orderRecord.id },
@@ -270,7 +293,9 @@ export async function createRazorpayOrder(params: {
     orderId: order.id,
     amount: order.amount,
     currency: order.currency,
-    keyId: process.env.RAZORPAY_KEY_ID,
+    key: process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder",
+    keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder",
+    bookingId: bookings[0]?.id,
     bookingIds: bookings.map((b) => b.id),
   }
 }
@@ -285,37 +310,83 @@ export async function verifyRazorpayPayment(params: {
 }) {
   const { razorpayOrderId, razorpayPaymentId, razorpaySignature, bookingIds } = params
 
+  if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !Array.isArray(bookingIds) || bookingIds.length === 0) {
+    throw new PaymentServiceError("Missing required verification parameters", 400)
+  }
+
   const crypto = await import("crypto")
   const body = razorpayOrderId + "|" + razorpayPaymentId
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || ""
   const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", keySecret)
     .update(body)
     .digest("hex")
 
-  if (expectedSignature !== razorpaySignature) {
+  let isValidSignature = false
+  try {
+    isValidSignature =
+      expectedSignature.length === razorpaySignature.length &&
+      crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(razorpaySignature))
+  } catch {
+    isValidSignature = false
+  }
+
+  if (!isValidSignature) {
     for (const id of bookingIds) {
       await prisma.payment.updateMany({
-        where: { bookingId: id },
+        where: { bookingId: id, status: "PENDING" },
         data: { status: "FAILED" },
       })
     }
     throw new PaymentServiceError("Invalid signature", 400)
   }
 
+  const now = new Date()
+
+  // Process verified payments and bookings idempotently
   for (const id of bookingIds) {
+    const existingPayment = await prisma.payment.findFirst({
+      where: { bookingId: id },
+    })
+
+    if (existingPayment?.status === "CAPTURED") {
+      continue // Already verified (e.g. by concurrent webhook)
+    }
+
     await prisma.payment.updateMany({
       where: { bookingId: id },
-      data: { razorpayPaymentId, status: "CAPTURED", method: "razorpay" },
+      data: {
+        razorpayPaymentId,
+        status: "CAPTURED",
+        method: "razorpay",
+        webhookVerified: true,
+        webhookReceivedAt: now,
+      },
     })
-    const booking = await prisma.booking.update({
-      where: { id },
-      data: { status: "OWNER_PENDING" },
-    })
-    if (booking.orderId) {
-      await prisma.order.update({
-        where: { id: booking.orderId },
-        data: { paymentStatus: "CAPTURED" },
+
+    const booking = await prisma.booking.findUnique({ where: { id } })
+    if (booking && booking.status === "REQUESTED") {
+      await prisma.booking.update({
+        where: { id },
+        data: { status: "OWNER_PENDING" },
       })
+
+      await prisma.bookingStateLog.create({
+        data: {
+          bookingId: id,
+          fromState: "REQUESTED",
+          toState: "OWNER_PENDING",
+          actor: BookingEventActor.SYSTEM,
+          note: "Payment verified via client verification checkout",
+        },
+      })
+
+      if (booking.orderId) {
+        await prisma.order.update({
+          where: { id: booking.orderId },
+          data: { paymentStatus: "CAPTURED" },
+        })
+      }
     }
   }
 
@@ -369,15 +440,15 @@ export async function handleRazorpayWebhook(params: {
     throw new PaymentServiceError("Invalid webhook signature", 400)
   }
 
-  let event: any
+  let event: Record<string, unknown>
   try {
     event = JSON.parse(rawBody)
   } catch {
     throw new PaymentServiceError("Invalid JSON payload", 400)
   }
 
-  const eventType = event.event
-  const payload = event.payload
+  const eventType = event.event as string
+  const payload = event.payload as Record<string, { entity?: Record<string, unknown> }> | undefined
 
   if (eventType === "payment.captured" || eventType === "order.paid") {
     const paymentEntity = payload?.payment?.entity

@@ -108,14 +108,22 @@ export function useOperatorBooking(bookingId: string | null) {
   }, [bookingId])
 
   const transition = useCallback(
-    async (to: string, note?: string): Promise<TransitionResult> => {
+    async (
+      to: string,
+      noteOrOptions?: string | { note?: string; conditionGrade?: string; photos?: string[] },
+    ): Promise<TransitionResult> => {
       if (!bookingId) return { error: "No job selected" }
       setError(null)
       try {
+        const payload =
+          typeof noteOrOptions === "string"
+            ? { to, ...(noteOrOptions ? { note: noteOrOptions } : {}) }
+            : { to, ...(noteOrOptions || {}) }
+
         const res = await fetch(`/api/rentals/${bookingId}/transition`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ to, ...(note ? { note } : {}) }),
+          body: JSON.stringify(payload),
         })
         const json = await res.json()
         if (!res.ok) {

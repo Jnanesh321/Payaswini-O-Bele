@@ -88,5 +88,33 @@
   "footer": {
     "productOf": "A product of Payaswini.com",
     "tagline": "The Farmer's Companion"
+  },
+  "homeUtility": {
+    "searchPlaceholder": "Search power tiller, arecanut pole...",
+    "selectLocation": "Select Taluk / Area",
+    "locationKasPuttur": "Kasaragod / Puttur",
+    "activeRental": "Active Rental",
+    "viewStatus": "View Status",
+    "availableNearYou": "Available Near You Today",
+    "toolsCount": "{count} tools",
+    "bookNow": "Book Now",
+    "rentNow": "Rent Now",
+    "perDay": "/day",
+    "refDeposit": "ref. deposit",
+    "certifiedOperator": "Certified Operator Included",
+    "selfOperate": "Self-Operate Permitted",
+    "withOperator": "With Operator Option",
+    "allEquipment": "All Equipment",
+    "harvestTask": "Arecanut & Coconut Harvest",
+    "harvestDesc": "Poles & climbers",
+    "tillingTask": "Soil Prep & Tilling",
+    "tillingDesc": "Tillers & rotavators",
+    "weedingTask": "Weeding & Clearing",
+    "weedingDesc": "Cutters & weeders",
+    "sprayingTask": "Spraying & Pest Control",
+    "sprayingDesc": "HTP & pumps",
+    "explore": "Explore",
+    "bookings": "Bookings",
+    "profile": "Profile"
   }
 }

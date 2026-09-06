@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "@/lib/auth"
-import { listFarmerBookings, createBooking } from "@/server/services/bookings"
+import { listFarmerBookings, createBooking, CreateBookingError } from "@/server/services/bookings"
 
 export async function GET() {
   const session = await getServerSession()
@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
     const booking = await createBooking(session.user.id, body)
     return NextResponse.json({ success: true, data: booking }, { status: 201 })
   } catch (error) {
+    if (error instanceof CreateBookingError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     return NextResponse.json({ success: false, error: "Failed to create booking" }, { status: 500 })
   }
 }

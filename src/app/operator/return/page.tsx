@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import OperatorShell from "../_components/operator-shell"
 import { useOperatorBooking } from "../_components/use-operator-booking"
+import { AssetQRCard } from "@/components/tools/asset-qr-card"
 
 function OperatorReturnInner() {
   const router = useRouter()
@@ -12,6 +13,7 @@ function OperatorReturnInner() {
   const bookingId = searchParams.get("booking")
   const { booking, loading, error, transition, can } = useOperatorBooking(bookingId)
   const [checks, setChecks] = useState([false, false])
+  const [conditionGrade, setConditionGrade] = useState<"GOOD" | "FAIR" | "DAMAGED">("GOOD")
   const [busy, setBusy] = useState(false)
   const allChecked = checks.every(Boolean)
 
@@ -33,7 +35,10 @@ function OperatorReturnInner() {
 
   const returned = async () => {
     setBusy(true)
-    await transition("TOOL_RETURNED", "Operator returned the tool to its owner")
+    await transition("TOOL_RETURNED", {
+      note: `Operator returned tool to owner (Condition: ${conditionGrade})`,
+      conditionGrade,
+    })
     setBusy(false)
     router.push(`/operator/returned?booking=${bookingId}`)
   }
@@ -46,6 +51,20 @@ function OperatorReturnInner() {
 
         {booking && (
           <>
+            {/* Physical Asset Tag & QR Card */}
+            {booking.toolInstance?.assetCode && (
+              <AssetQRCard
+                assetCode={booking.toolInstance.assetCode}
+                toolName={booking.tool.name}
+                status={booking.toolInstance.status}
+                ownerName={booking.toolOwner.name}
+                custodianName={booking.toolOwner.name}
+                conditionGrade={conditionGrade}
+                onConditionChange={setConditionGrade}
+                interactiveCondition={returning}
+              />
+            )}
+
             <div className="rounded-[22px] border border-accent bg-[#fffaf0] p-5">
               <div className="flex items-start gap-3.5">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-2xl text-secondary">✦</span>

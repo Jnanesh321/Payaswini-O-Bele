@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import Image from "next/image"
+import { AppLogo } from "@/components/ui/app-logo"
 import Link from "next/link"
-import { Sprout, User, Phone, MapPin, Loader2 } from "lucide-react"
+import { User, Phone, MapPin, Loader2 } from "lucide-react"
 import { Button, Input, Card } from "@/components/ui"
 
 export default function RegisterPage() {
@@ -35,11 +37,13 @@ export default function RegisterPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <Card className="p-8">
+        <Card className="p-8 border-border">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <Sprout className="h-8 w-8 text-primary" />
-            </div>
+            <Link href="/" className="inline-block mb-3">
+              <div className="rounded-2xl p-2 inline-block">
+                <AppLogo width={140} height={50} className="h-11 w-auto mx-auto" priority />
+              </div>
+            </Link>
             <h1 className="text-2xl font-bold">Create Account</h1>
             <p className="mt-1 text-sm text-muted-foreground">Register for a new account</p>
           </div>

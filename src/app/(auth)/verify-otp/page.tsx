@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { AppLogo } from "@/components/ui/app-logo"
 import { Loader2, ArrowRight, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui"
 
@@ -82,7 +84,7 @@ export default function VerifyOTPPage() {
         return
       }
       
-      const result = await signIn("phone", { phone, redirect: false })
+      const result = await signIn("phone", { phone, token: data.token || data.data?.token, redirect: false })
       if (result?.ok) {
         // Query capability state to see if they need onboarding
         try {
@@ -128,9 +130,9 @@ export default function VerifyOTPPage() {
 
   if (!phone) {
     return (
-      <div className="min-h-screen bg-[#FAF7F0] flex items-center justify-center p-4 font-sans text-[#1C1208]">
-        <div className="bg-white rounded-2xl p-8 border border-[#D5D9C9] text-center max-w-sm w-full shadow-sm">
-          <p className="text-[#6B706E] mb-6 font-semibold">No phone number provided.</p>
+      <div className="min-h-screen bg-background dark:bg-[#121512] flex items-center justify-center p-4 font-sans text-foreground">
+        <div className="bg-card dark:bg-card/90 rounded-2xl p-8 border border-border text-center max-w-sm w-full shadow-sm">
+          <p className="text-muted-foreground mb-6 font-semibold">No phone number provided.</p>
           <Button
             onClick={() => router.push("/login")}
             className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-12 rounded-xl"
@@ -143,51 +145,51 @@ export default function VerifyOTPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F0] flex flex-col items-center justify-center p-4 font-sans text-[#1C1208]">
+    <div className="min-h-screen bg-background dark:bg-[#121512] flex flex-col items-center justify-center p-4 font-sans text-foreground transition-colors duration-200">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-[390px] bg-[#FAF7F0] min-h-[85vh] flex flex-col justify-between"
+        className="w-full max-w-[390px] min-h-[85vh] flex flex-col justify-between"
       >
         {/* Brand Header */}
         <div className="pt-6 text-center">
-          <div className="relative w-12 h-12 mx-auto mb-3">
-            <Image
-              src="/images/brand-badge.webp"
-              alt="O~Bele Logo"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
-          <h1 className="text-[30px] font-bold text-[#143626] font-heading leading-tight tracking-tight">
-            O~Bele
-          </h1>
-          <p className="text-[13px] text-[#6B706E] font-sans font-medium tracking-wide">
+          <Link href="/" className="inline-block">
+            <div className="rounded-2xl p-2.5 mb-2 inline-block transition-transform hover:scale-105">
+              <AppLogo width={150} height={53} className="h-12 w-auto mx-auto" priority />
+            </div>
+          </Link>
+          <p className="text-[13px] text-muted-foreground font-sans font-medium tracking-wide">
             Farm tools, shared.
           </p>
         </div>
 
-        {/* Scenic Illustration */}
-        <div className="relative w-full h-[130px] my-6 rounded-2xl overflow-hidden shadow-sm">
+        {/* Scenic Illustration (Light: Sun / Green Farm | Dark: Moonlit Starry Farm) */}
+        <div className="relative w-full h-[130px] my-6 rounded-2xl overflow-hidden shadow-sm border border-border/50">
           <Image
             src="/images/scenic-illustration.webp"
-            alt="Scenic Farm Illustration"
+            alt="Scenic Farm Illustration (Day)"
             fill
-            className="object-cover"
+            className="object-cover block dark:hidden"
+            priority
+          />
+          <Image
+            src="/images/scenic-night-illustration.webp"
+            alt="Scenic Farm Illustration (Night)"
+            fill
+            className="object-cover hidden dark:block"
             priority
           />
         </div>
 
         {/* Input Card */}
-        <div className="bg-white rounded-2xl p-6 border border-[#D5D9C9] shadow-[0_4px_12px_rgba(45,80,22,0.03)] flex-1 flex flex-col justify-between">
+        <div className="bg-card dark:bg-card/90 rounded-2xl p-6 border border-border shadow-[0_4px_12px_rgba(45,80,22,0.05)] flex-1 flex flex-col justify-between">
           <div>
-            <h2 className="text-[21px] font-bold text-[#143626] font-heading tracking-tight leading-snug">
+            <h2 className="text-[21px] font-bold text-foreground font-heading tracking-tight leading-snug">
               Verify OTP
             </h2>
-            <p className="text-[13px] text-[#6B706E] font-sans mt-2 leading-relaxed font-medium">
-              Enter the OTP sent to <span className="font-bold text-[#143626]">+91 {formattedPhone}</span>
+            <p className="text-[13px] text-muted-foreground font-sans mt-2 leading-relaxed font-medium">
+              Enter the OTP sent to <span className="font-bold text-foreground">+91 {formattedPhone}</span>
             </p>
 
             {/* Verification label and change number */}

@@ -20,6 +20,12 @@ import {
   OPERATOR_REJECTION_LIMIT,
   type TransitionOptions,
 } from "@/server/lib/booking-state-machine"
+import {
+  BookingPricingError,
+  computeBookingPricing,
+  isRequestedServiceType,
+  resolveDeliveryCharge,
+} from "@/server/lib/booking-pricing"
 import { sendSmsNotification } from "@/server/lib/sms"
 import { isDepositResolutionRequired } from "@/server/lib/deposit-resolution"
 import { isBookingActor, resolveActorForUser } from "@/server/lib/booking-actor"
@@ -43,11 +49,147 @@ export async function listFarmerBookings(userId: string) {
 
 // ─── Create booking ─────────────────────────────────────────────────────────
 
-export async function createBooking(userId: string, data: Prisma.BookingUncheckedCreateInput) {
-  return prisma.booking.create({
-    data: { ...data, farmerId: userId },
+export interface CreateBookingInput {
+  toolId: string
+  toolInstanceId?: string
+  serviceType: string
+  startDate: string | Date
+  endDate: string | Date
+  deliveryType?: string
+  notes?: string
+}
+
+export class CreateBookingError extends Error {
+  readonly statusCode: number
+  constructor(message: string, statusCode: number = 400) {
+    super(message)
+    this.name = "CreateBookingError"
+    this.statusCode = statusCode
+  }
+}
+
+export async function createBooking(userId: string, input: CreateBookingInput) {
+  const { toolId, toolInstanceId, serviceType, deliveryType, notes } = input
+
+  // ── Validate toolId ──────────────────────────────────────────────────────
+  if (!toolId || typeof toolId !== "string") {
+    throw new CreateBookingError("toolId is required")
+  }
+  const tool = await prisma.tool.findUnique({ where: { id: toolId } })
+  if (!tool || !tool.isActive) {
+    throw new CreateBookingError("Tool not found or not available for booking", 400)
+  }
+
+  // ── Validate serviceType ─────────────────────────────────────────────────
+  if (!isRequestedServiceType(serviceType)) {
+    throw new CreateBookingError(
+      `Invalid serviceType "${String(serviceType)}" — must be SELF_SERVICE_RENTAL or OPERATOR_ONLY`,
+    )
+  }
+
+  // ── Validate & parse dates ───────────────────────────────────────────────
+  const startDate = new Date(String(input.startDate ?? ""))
+  const endDate = new Date(String(input.endDate ?? ""))
+  if (Number.isNaN(startDate.getTime())) {
+    throw new CreateBookingError("startDate is required and must be a valid date")
+  }
+  if (Number.isNaN(endDate.getTime())) {
+    throw new CreateBookingError("endDate is required and must be a valid date")
+  }
+
+  // ── Resolve tool instance & owner ────────────────────────────────────────
+  let resolvedInstanceId: string | undefined = undefined
+  let toolOwnerId: string
+
+  if (toolInstanceId) {
+    const instance = await prisma.toolInstance.findUnique({ where: { id: toolInstanceId } })
+    if (!instance || instance.toolId !== toolId) {
+      throw new CreateBookingError("Tool instance not found or does not belong to the specified tool")
+    }
+    if (instance.status !== ToolInstanceStatus.AVAILABLE) {
+      throw new CreateBookingError("Tool instance is not available")
+    }
+    resolvedInstanceId = instance.id
+    toolOwnerId = instance.ownerId
+  } else {
+    // Auto-select an available instance
+    const availableInstance = await prisma.toolInstance.findFirst({
+      where: {
+        toolId,
+        status: { in: [ToolInstanceStatus.AVAILABLE, ToolInstanceStatus.RETURNED, ToolInstanceStatus.INSPECTION] },
+      },
+    })
+    if (!availableInstance) {
+      throw new CreateBookingError("No available tool instance for the selected dates")
+    }
+    resolvedInstanceId = availableInstance.id
+    toolOwnerId = availableInstance.ownerId
+  }
+
+  // ── Server-authoritative pricing ─────────────────────────────────────────
+  const deliveryFee = resolveDeliveryCharge(deliveryType)
+  const mappedServiceType: BookingServiceType =
+    serviceType === "OPERATOR_ONLY"
+      ? BookingServiceType.OPERATOR_ONLY
+      : BookingServiceType.SELF_SERVICE_RENTAL
+
+  let pricing: ReturnType<typeof computeBookingPricing>
+  try {
+    pricing = computeBookingPricing({
+      tool,
+      serviceType,
+      startDate,
+      endDate,
+      deliveryFee,
+    })
+  } catch (error) {
+    if (error instanceof BookingPricingError) {
+      throw new CreateBookingError(error.message)
+    }
+    throw error
+  }
+
+  // ── Create order container ───────────────────────────────────────────────
+  const orderRecord = await prisma.order.create({
+    data: {
+      orderRef: `ORD${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      userId,
+      totalAmount: pricing.totalAmount,
+      paymentStatus: "PENDING",
+    },
+  })
+
+  // ── Persist booking with ONLY server-computed fields ─────────────────────
+  const booking = await prisma.booking.create({
+    data: {
+      orderId: orderRecord.id,
+      farmerId: userId,
+      toolId,
+      toolInstanceId: resolvedInstanceId,
+      toolOwnerId,
+      servicePerformerId: userId,
+      serviceType: mappedServiceType,
+      startDate,
+      endDate,
+      totalDays: pricing.days,
+      toolFeePerDay: pricing.toolFeePerDay,
+      operatorFeePerDay: pricing.operatorFeePerDay,
+      totalToolFee: pricing.totalToolFee,
+      totalOperatorFee: pricing.totalOperatorFee,
+      deposit: pricing.deposit,
+      deliveryFee: pricing.deliveryFee,
+      platformFee: pricing.platformFee,
+      subtotal: pricing.subtotal,
+      pricePerDay: pricing.toolFeePerDay,
+      totalAmount: pricing.totalAmount,
+      status: BookingStatus.REQUESTED,
+      bookingRef: `BK${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      notes: typeof notes === "string" ? notes : undefined,
+    },
     include: { tool: true, payment: true, toolInstance: true },
   })
+
+  return booking
 }
 
 // ─── Get booking by ID ──────────────────────────────────────────────────────
@@ -86,7 +228,7 @@ export async function getBookingWithTransitions(id: string) {
       tool: true,
       toolInstance: true,
       payment: true,
-      farmer: true,
+      farmer: { select: { id: true, name: true, phone: true } },
       toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
       servicePerformer: { select: { id: true, name: true, phone: true } },
       stateLogs: { orderBy: { createdAt: "asc" } },
@@ -140,6 +282,9 @@ interface TransitionBody {
   note?: string
   actor?: string
   operatorMode?: "assign_operator" | "self_service"
+  conditionGrade?: string
+  photos?: string[]
+  toolInstanceId?: string
 }
 
 function isBookingStatus(value: unknown): value is BookingStatus {
@@ -359,36 +504,85 @@ export async function transitionBooking(params: {
       })
     }
 
-    // Physical tool custody and handover tracking
-    if (booking.toolInstanceId) {
-      if (effectiveTo === BookingStatus.TOOL_COLLECTED) {
+    // Physical tool custody, instance allocation, and handover tracking
+    let activeToolInstanceId = booking.toolInstanceId || body.toolInstanceId
+
+    // If no tool instance linked yet, auto-allocate an available instance owned by toolOwner
+    if (!activeToolInstanceId) {
+      const availableInstance = await tx.toolInstance.findFirst({
+        where: {
+          toolId: booking.toolId,
+          ownerId: booking.toolOwnerId,
+          status: { in: [ToolInstanceStatus.AVAILABLE, ToolInstanceStatus.RESERVED] },
+        },
+      })
+      if (availableInstance) {
+        activeToolInstanceId = availableInstance.id
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { toolInstanceId: activeToolInstanceId },
+        })
+      }
+    }
+
+    if (activeToolInstanceId) {
+      const conditionGrade = body.conditionGrade || "GOOD"
+      const photos = body.photos || []
+
+      if (
+        effectiveTo === BookingStatus.OWNER_ACCEPTED ||
+        effectiveTo === BookingStatus.OPERATOR_ASSIGNED ||
+        effectiveTo === BookingStatus.FETCHING_TOOL
+      ) {
         await tx.toolInstance.update({
-          where: { id: booking.toolInstanceId },
+          where: { id: activeToolInstanceId },
+          data: { status: ToolInstanceStatus.RESERVED },
+        })
+      } else if (effectiveTo === BookingStatus.TOOL_COLLECTED) {
+        const custodianId =
+          deriveModeFromServiceType(booking.serviceType) === "SELF_OPERATE"
+            ? booking.farmerId
+            : booking.servicePerformerId || userId
+
+        await tx.toolInstance.update({
+          where: { id: activeToolInstanceId },
           data: {
             status: ToolInstanceStatus.HANDED_OVER,
-            currentCustodianId: booking.servicePerformerId || userId,
+            currentCustodianId: custodianId,
           },
         })
         await tx.handoverLog.create({
           data: {
             bookingId: booking.id,
-            toolInstanceId: booking.toolInstanceId,
+            toolInstanceId: activeToolInstanceId,
             actorId: userId,
             handoverType: HandoverType.PICKUP_FROM_OWNER,
-            conditionGrade: "GOOD",
-            notes: body.note || "Operator collected tool from owner",
+            conditionGrade,
+            photos,
+            notes: body.note || "Tool collected from owner",
           },
         })
       } else if (effectiveTo === BookingStatus.WORK_STARTED) {
         await tx.toolInstance.update({
-          where: { id: booking.toolInstanceId },
+          where: { id: activeToolInstanceId },
           data: {
             status: ToolInstanceStatus.IN_USE,
           },
         })
+        await tx.handoverLog.create({
+          data: {
+            bookingId: booking.id,
+            toolInstanceId: activeToolInstanceId,
+            actorId: userId,
+            handoverType: HandoverType.DELIVERY_TO_FARMER,
+            conditionGrade,
+            photos,
+            notes: body.note || "Work started on farm",
+          },
+        })
       } else if (effectiveTo === BookingStatus.TOOL_RETURNED) {
         await tx.toolInstance.update({
-          where: { id: booking.toolInstanceId },
+          where: { id: activeToolInstanceId },
           data: {
             status: ToolInstanceStatus.RETURNED,
             currentCustodianId: booking.toolOwnerId,
@@ -397,16 +591,17 @@ export async function transitionBooking(params: {
         await tx.handoverLog.create({
           data: {
             bookingId: booking.id,
-            toolInstanceId: booking.toolInstanceId,
+            toolInstanceId: activeToolInstanceId,
             actorId: userId,
             handoverType: HandoverType.RETURN_TO_OWNER,
-            conditionGrade: "GOOD",
-            notes: body.note || "Operator returned tool to owner",
+            conditionGrade,
+            photos,
+            notes: body.note || "Tool returned to owner",
           },
         })
       } else if (effectiveTo === BookingStatus.INSPECTION) {
         await tx.toolInstance.update({
-          where: { id: booking.toolInstanceId },
+          where: { id: activeToolInstanceId },
           data: {
             status: ToolInstanceStatus.INSPECTION,
           },
@@ -417,7 +612,7 @@ export async function transitionBooking(params: {
         effectiveTo === BookingStatus.FAILED_NO_OPERATOR
       ) {
         await tx.toolInstance.update({
-          where: { id: booking.toolInstanceId },
+          where: { id: activeToolInstanceId },
           data: {
             status: ToolInstanceStatus.AVAILABLE,
             currentCustodianId: booking.toolOwnerId,
@@ -731,6 +926,113 @@ export async function assignOperator(params: {
   }
 }
 
+// ─── Record Handover Log ──────────────────────────────────────────────────
+
+export async function recordHandoverLog(params: {
+  bookingId: string
+  userId: string
+  handoverType: HandoverType
+  conditionGrade?: string
+  notes?: string
+  photos?: string[]
+}) {
+  const { bookingId, userId, handoverType, conditionGrade = "GOOD", notes, photos = [] } = params
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { toolInstance: true },
+  })
+
+  if (!booking) {
+    throw new TransitionError("Booking not found", 404)
+  }
+
+  if (!booking.toolInstanceId) {
+    throw new TransitionError("No physical tool instance assigned to this booking", 400)
+  }
+
+  const log = await prisma.handoverLog.create({
+    data: {
+      bookingId: booking.id,
+      toolInstanceId: booking.toolInstanceId,
+      actorId: userId,
+      handoverType,
+      conditionGrade,
+      notes: notes || `Handover completed: ${handoverType}`,
+      photos,
+    },
+    include: {
+      actorUser: { select: { id: true, name: true, phone: true } },
+      toolInstance: { select: { assetCode: true, status: true } },
+    },
+  })
+
+  return log
+}
+
+// ─── Get Asset by Code ──────────────────────────────────────────────────────
+
+export async function getAssetByCode(assetCode: string) {
+  const instance = await prisma.toolInstance.findUnique({
+    where: { assetCode },
+    include: {
+      tool: true,
+      owner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true } },
+      custodian: { select: { id: true, name: true, phone: true } },
+      bookings: {
+        where: {
+          status: {
+            in: [
+              BookingStatus.TOOL_COLLECTED,
+              BookingStatus.TRAVELLING_TO_FARM,
+              BookingStatus.ARRIVED,
+              BookingStatus.WORK_STARTED,
+              BookingStatus.WORK_PAUSED,
+              BookingStatus.WORK_RESUMED,
+              BookingStatus.WORK_COMPLETED,
+              BookingStatus.RETURNING_TOOL,
+              BookingStatus.INSPECTION,
+            ],
+          },
+        },
+        include: {
+          farmer: { select: { id: true, name: true, phone: true } },
+          servicePerformer: { select: { id: true, name: true, phone: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+      handoverLogs: {
+        include: { actorUser: { select: { id: true, name: true, phone: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      },
+    },
+  })
+
+  if (!instance) return null
+
+  return {
+    id: instance.id,
+    assetCode: instance.assetCode,
+    status: instance.status,
+    notes: instance.notes,
+    tool: {
+      id: instance.tool.id,
+      name: instance.tool.name,
+      slug: instance.tool.slug,
+      category: instance.tool.category,
+      pricePerDay: instance.tool.pricePerDay,
+      thumbnailUrl: instance.tool.thumbnailUrl ?? instance.tool.images[0] ?? null,
+      requiresCertifiedOperator: instance.tool.requiresCertifiedOperator,
+    },
+    owner: instance.owner,
+    custodian: instance.custodian,
+    activeBooking: instance.bookings[0] ?? null,
+    recentHandovers: instance.handoverLogs,
+  }
+}
+
 // ─── Error class ────────────────────────────────────────────────────────────
 
 export class TransitionError extends Error {
@@ -744,3 +1046,4 @@ export class TransitionError extends Error {
     this.data = data
   }
 }
+

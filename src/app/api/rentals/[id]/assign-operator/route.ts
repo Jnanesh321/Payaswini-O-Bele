@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth"
+import { requireAdmin, AuthGuardError } from "@/server/lib/auth-guard"
 import { assignOperator, TransitionError } from "@/server/services/bookings"
 
 /**
@@ -9,13 +9,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession()
-  if (!session?.user) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
-  }
-  if (!session.user.isAdmin) {
-    return NextResponse.json({ success: false, error: "Forbidden — admin only" }, { status: 403 })
-  }
+  try {
+    const user = await requireAdmin()
 
   const { id } = await params
   let operatorId: unknown
@@ -32,20 +27,22 @@ export async function POST(
     )
   }
 
-  try {
     const result = await assignOperator({
       bookingId: id,
-      userId: session.user.id,
+      userId: user.id,
       operatorId,
     })
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
+    if (error instanceof AuthGuardError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     if (error instanceof TransitionError) {
       return NextResponse.json(
         { success: false, error: error.message, ...(error.data ? { data: error.data } : {}) },
         { status: error.statusCode },
       )
     }
-    throw error
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

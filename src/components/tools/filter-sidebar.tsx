@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { X, RotateCcw, Check } from "lucide-react"
 import { Button, Input, Select } from "@/components/ui"
 import type { ToolFilters } from "@/types"
 
@@ -39,86 +39,112 @@ export function FilterSidebar({ filters, onFiltersChange, open, onClose }: Filte
     onFiltersChange({ category: "", minPrice: "", maxPrice: "", available: "" })
   }
 
-  const hasFilters = filters.category || filters.minPrice || filters.maxPrice || filters.available
+  const hasFilters = Boolean(
+    filters.category || filters.minPrice || filters.maxPrice || filters.available
+  )
+
+  if (!open) return null
 
   return (
-    <>
-      {open && (
-        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} />
-      )}
-      <aside
-        className={`
-          fixed inset-y-0 left-0 z-50 w-72 -translate-x-full bg-white p-6 shadow-xl transition-transform lg:inset-auto lg:z-auto lg:block lg:w-64 lg:shrink-0 lg:translate-x-0 lg:shadow-none lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto
-          ${open ? "translate-x-0" : ""}
-        `}
-      >
-        <div className="mb-6 flex items-center justify-between lg:hidden">
-          <h3 className="font-heading font-semibold text-foreground">Filters</h3>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      {/* Backdrop click dismiss */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Modal Dialog / Sheet */}
+      <div className="relative z-10 w-full max-w-[430px] rounded-t-[28px] sm:rounded-[28px] border border-border bg-card p-6 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-6 duration-200">
+        <div className="mb-5 flex items-center justify-between border-b border-border pb-3">
+          <div>
+            <h3 className="font-display text-lg font-bold text-foreground">Filter Equipment</h3>
+            <p className="text-xs text-muted-foreground">Narrow down machinery by type & rate</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+          >
+            <X size={16} />
+          </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
+          {/* Category */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">
+            <label className="mb-1.5 block text-xs font-bold text-foreground uppercase tracking-wider">
               Category
             </label>
             <Select
               value={filters.category || ""}
               onChange={(e) => update("category", e.target.value)}
+              className="w-full rounded-xl border border-border bg-background py-2 text-sm"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                  {cat._count ? ` (${cat._count.tools})` : ""}
+                  {cat.name} {cat._count ? `(${cat._count.tools})` : ""}
                 </option>
               ))}
             </Select>
           </div>
 
+          {/* Price Range */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">
-              Price Range / Day
+            <label className="mb-1.5 block text-xs font-bold text-foreground uppercase tracking-wider">
+              Daily Rate (₹ / day)
             </label>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Min"
+                placeholder="Min ₹"
                 type="number"
                 value={filters.minPrice || ""}
                 onChange={(e) => update("minPrice", e.target.value)}
+                className="w-full rounded-xl"
               />
-              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground font-bold">—</span>
               <Input
-                placeholder="Max"
+                placeholder="Max ₹"
                 type="number"
                 value={filters.maxPrice || ""}
                 onChange={(e) => update("maxPrice", e.target.value)}
+                className="w-full rounded-xl"
               />
             </div>
           </div>
 
+          {/* Availability */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">
+            <label className="mb-1.5 block text-xs font-bold text-foreground uppercase tracking-wider">
               Availability
             </label>
             <Select
               value={filters.available || ""}
               onChange={(e) => update("available", e.target.value)}
+              className="w-full rounded-xl border border-border bg-background py-2 text-sm"
             >
-              <option value="">All</option>
-              <option value="true">Available Now</option>
+              <option value="">All Statuses</option>
+              <option value="true">Available Now Only</option>
             </Select>
           </div>
 
-          {hasFilters && (
-            <Button variant="ghost" size="sm" onClick={clear} className="w-full text-muted-foreground">
-              Clear All Filters
+          {/* Actions */}
+          <div className="mt-6 flex items-center gap-2.5 pt-2">
+            {hasFilters && (
+              <Button
+                variant="outline"
+                onClick={clear}
+                className="flex-1 rounded-xl gap-1 text-xs font-bold"
+              >
+                <RotateCcw size={14} /> Clear
+              </Button>
+            )}
+            <Button
+              onClick={onClose}
+              className="flex-1 rounded-xl bg-primary text-white hover:bg-primary/90 gap-1 text-xs font-bold shadow-sm"
+            >
+              <Check size={14} /> Apply Filters
             </Button>
-          )}
+          </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </div>
   )
 }

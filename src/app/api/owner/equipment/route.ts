@@ -1,31 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "@/lib/auth"
+import { requireCapability, AuthGuardError } from "@/server/lib/auth-guard"
 import { getOwnerEquipment } from "@/server/services/owners"
 import { prisma } from "@/server/db/prisma"
-import { ToolCategory, ToolInstanceStatus } from "@prisma/client"
+import { CapabilityType, ToolCategory, ToolInstanceStatus } from "@prisma/client"
 
 export async function GET() {
-  const session = await getServerSession()
-  if (!session?.user) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
-  }
-
   try {
-    const data = await getOwnerEquipment(session.user.id)
+    const user = await requireCapability(CapabilityType.TOOL_OWNER)
+    const data = await getOwnerEquipment(user.id)
     return NextResponse.json({ success: true, data })
   } catch (error) {
+    if (error instanceof AuthGuardError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     console.error("Failed to fetch equipment:", error)
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession()
-  if (!session?.user?.id) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
-  }
-
   try {
+    const user = await requireCapability(CapabilityType.TOOL_OWNER)
     const body = await request.json()
     const {
       name,
@@ -81,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Tool and ToolInstance in a transaction
-    const userId = session.user.id
+    const userId = user.id
     
     const result = await prisma.$transaction(async (tx) => {
       // Create Tool
@@ -128,6 +123,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, tool: result })
   } catch (error) {
+    if (error instanceof AuthGuardError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     console.error("Failed to add new tool:", error)
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }

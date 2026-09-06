@@ -54,7 +54,7 @@
   --font-sans: var(--font-sans);
   --font-heading: var(--font-heading);
   --font-kannada: 'Noto Sans Kannada', system-ui, sans-serif;
-  --font-display: var(--font-operator-display);
+  --font-display: var(--font-display, var(--font-heading));
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -74,25 +74,29 @@
 }
 
 .dark {
-  --color-background: #1A1A1A;
+  --color-background: #0F150D;
   --color-foreground: #FAF7F0;
-  --color-card: #1A2514;
+  --color-card: #162013;
   --color-card-foreground: #FAF7F0;
-  --color-popover: #1A1A1A;
+  --color-popover: #162013;
   --color-popover-foreground: #FAF7F0;
-  --color-primary: #4A7A28;
-  --color-primary-foreground: #FAF7F0;
-  --color-secondary: #A0522D;
-  --color-secondary-foreground: #FAF7F0;
-  --color-muted: #2A3524;
-  --color-muted-foreground: #9CA3AF;
-  --color-accent: #E8B830;
-  --color-accent-foreground: #1A1A1A;
-  --color-destructive: #DC2626;
-  --color-destructive-foreground: #FAF7F0;
-  --color-border: #2A3524;
-  --color-input: #2A3524;
-  --color-ring: #4A7A28;
+  --color-primary: #4E8A2C;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #A05A2C;
+  --color-secondary-foreground: #FFFFFF;
+  --color-muted: #1E2B1A;
+  --color-muted-foreground: #A3B19B;
+  --color-accent: #E5B429;
+  --color-accent-foreground: #1C1208;
+  --color-destructive: #E74C3C;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #23331E;
+  --color-input: #23331E;
+  --color-ring: #4E8A2C;
+}
+
+:root {
+  --font-display: var(--font-heading);
 }
 
 body {
@@ -176,4 +180,20 @@ body {
   @media (width >= 1024px) {
     padding-inline: 2rem;
   }
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

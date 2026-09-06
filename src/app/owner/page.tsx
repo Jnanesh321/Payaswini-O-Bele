@@ -1,11 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 import OwnerShell from "./_components/owner-shell"
-import { Plus, Wrench, Loader2, Bell } from "lucide-react"
+import { Plus, Wrench, Loader2, Bell, ShieldCheck } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { useLocale } from "next-intl"
 import { useRouter } from "next/navigation"
+import { ToolImage } from "@/components/ui"
 
 interface EquipmentItem {
   id: string
@@ -109,6 +111,23 @@ export default function OwnerEquipmentPage() {
         </p>
       )}
 
+      {/* ── Certified Permissions Quick Entry ─────────────── */}
+      {!loading && tools.some((t) => t.requiresCertifiedOperator) && (
+        <Link
+          href="/owner/permissions"
+          className="mb-4 flex items-center justify-between rounded-2xl border border-primary/20 bg-bele-green-muted px-4 py-3 text-xs text-primary transition hover:border-primary/40 hover:brightness-95"
+        >
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck size={18} className="shrink-0" />
+            <div>
+              <span className="font-bold">Certified Machinery Permissions</span>
+              <p className="text-[11px] text-primary/80">Manage farmers certified to self-operate</p>
+            </div>
+          </div>
+          <span className="font-bold">Manage →</span>
+        </Link>
+      )}
+
       {loading ? (
         <div className="flex flex-1 items-center justify-center py-24">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -145,15 +164,16 @@ export default function OwnerEquipmentPage() {
               className="overflow-hidden rounded-[20px] border border-border bg-card shadow-[0_2px_10px_rgba(45,80,22,0.06)]"
             >
               {/* Photo */}
-              <div className="relative h-[130px] bg-[#C5D5BD]">
-                {tool.image ? (
-                  <img src={tool.image} alt={tool.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-bele-green-muted">
-                    <Wrench size={36} className="text-primary" strokeWidth={1.5} />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(28,20,9,0.35)]" />
+              <div className="relative h-[130px] bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center p-3">
+                <ToolImage
+                  src={tool.image}
+                  alt={tool.name}
+                  category={tool.category}
+                  toolName={tool.name}
+                  className="h-full w-full object-cover"
+                  fallbackClassName="h-full w-full max-h-[90%] object-contain drop-shadow-md"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(28,20,9,0.35)] pointer-events-none" />
                 <span className="absolute left-3.5 top-3 rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-white shadow-[0_1px_6px_rgba(0,0,0,0.2)]">
                   {fp(tool.pricePerDay)}/day
                 </span>

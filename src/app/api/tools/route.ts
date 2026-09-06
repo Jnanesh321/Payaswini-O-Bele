@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdmin, AuthGuardError } from "@/server/lib/auth-guard"
 import { listTools, createTool } from "@/server/services/tools"
 
 export async function GET(request: NextRequest) {
@@ -25,10 +26,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAdmin()
     const body = await request.json()
     const tool = await createTool(body)
     return NextResponse.json({ success: true, data: tool }, { status: 201 })
   } catch (error) {
+    if (error instanceof AuthGuardError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.statusCode })
+    }
     return NextResponse.json({ success: false, error: "Failed to create tool" }, { status: 500 })
   }
 }

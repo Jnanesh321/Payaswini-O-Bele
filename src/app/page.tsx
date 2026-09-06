@@ -1,56 +1,125 @@
 import { prisma } from "@/server/db/prisma"
-import type { ToolTranslations } from "@/lib/utils"
-import Hero from "@/components/landing/hero"
-import Stats from "@/components/landing/stats"
-import FeaturedTools, { type FeaturedToolItem } from "@/components/landing/featured-tools"
-import HowItWorks from "@/components/landing/how-it-works"
-import ToolOperators from "@/components/landing/tool-operators"
-import Testimonials from "@/components/landing/testimonials"
-import TrustBadges from "@/components/landing/trust-badges"
-import { LeafDivider } from "@/components/ui"
+import { getServerSession } from "@/server/lib/auth"
+import { UtilityFeedClient } from "@/components/home/utility-feed-client"
+import type { ToolCard as ToolCardType } from "@/types"
+import type { ActiveBookingData } from "@/components/home/active-rental-banner"
+import type { BookingStatus } from "@prisma/client"
 
-async function getFeaturedTools(): Promise<FeaturedToolItem[]> {
+export const dynamic = "force-dynamic"
+
+async function getToolsForFeed(): Promise<ToolCardType[]> {
   try {
     const rows = await prisma.tool.findMany({
       where: { isActive: true },
       orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        translations: true,
-        images: true,
-        pricePerDay: true,
-        deposit: true,
-        category: true,
+      include: {
+        instances: {
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                taluk: true,
+                district: true,
+              },
+            },
+          },
+        },
       },
-      take: 8,
     })
-    return rows.map((t) => ({
-      ...t,
-      translations: t.translations as ToolTranslations | null,
-    }))
+
+    return rows.map((t) => {
+      const totalCount = t.instances.length
+      const availableCount = t.instances.filter((i) => i.status === "AVAILABLE").length
+      const owner = t.instances[0]?.owner
+
+      return {
+        id: t.id,
+        slug: t.slug,
+        name: t.name,
+        translations: t.translations as ToolCardType["translations"],
+        description: t.description,
+        category: t.category,
+        images: t.images,
+        thumbnailUrl: t.thumbnailUrl,
+        pricePerDay: t.pricePerDay,
+        deposit: t.deposit,
+        availableCount,
+        totalCount,
+        minRentalDays: t.minRentalDays,
+        maxRentalDays: t.maxRentalDays,
+        isActive: t.isActive,
+        isFeatured: t.isFeatured,
+        deliveryAvailable: t.deliveryAvailable,
+        deliveryRadiusKm: t.deliveryRadiusKm,
+        freeDeliveryRadiusKm: t.freeDeliveryRadiusKm,
+        requiresCertifiedOperator: t.requiresCertifiedOperator,
+        operatorFeePerDay: t.operatorFeePerDay,
+        taluk: owner?.taluk || "Badiadka",
+        createdAt: t.createdAt.toISOString(),
+      }
+    })
   } catch (err) {
-    console.warn("[HomePage] DB unavailable — rendering without featured tools:", err)
+    console.warn("[HomePage] DB error fetching tools:", err)
     return []
   }
 }
 
+async function getActiveBookingForUser(): Promise<ActiveBookingData | null> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.id) return null
+
+    const terminalStatuses: BookingStatus[] = [
+      "COMPLETED",
+      "CANCELLED_BY_FARMER",
+      "CANCELLED_BY_OWNER",
+      "CANCELLED_BY_OPERATOR",
+      "CANCELLED_BY_PLATFORM",
+      "FAILED_NO_OPERATOR",
+      "DISPUTED",
+    ]
+
+    const booking = await prisma.booking.findFirst({
+      where: {
+        farmerId: session.user.id,
+        status: { notIn: terminalStatuses },
+      },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        tool: { select: { name: true } },
+        servicePerformer: { select: { name: true } },
+      },
+    })
+
+    if (!booking) return null
+
+    return {
+      id: booking.id,
+      bookingRef: booking.bookingRef,
+      status: booking.status,
+      toolName: booking.tool?.name || "Machinery Rental",
+      operatorName: booking.servicePerformer?.name || null,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      serviceType: booking.serviceType,
+    }
+  } catch (err) {
+    console.warn("[HomePage] Error fetching active booking:", err)
+    return null
+  }
+}
+
 export default async function HomePage() {
-  const featuredTools = await getFeaturedTools()
+  const [tools, activeBooking] = await Promise.all([
+    getToolsForFeed(),
+    getActiveBookingForUser(),
+  ])
 
   return (
-    <>
-      <Hero />
-      <Stats />
-      <LeafDivider className="mx-auto w-full max-w-2xl" />
-      <FeaturedTools tools={featuredTools} />
-      <LeafDivider className="mx-auto w-full max-w-2xl" />
-      <HowItWorks />
-      <ToolOperators />
-      <LeafDivider className="mx-auto w-full max-w-2xl" />
-      <Testimonials />
-      <TrustBadges />
-    </>
+    <UtilityFeedClient
+      initialTools={tools}
+      activeBooking={activeBooking}
+    />
   )
 }

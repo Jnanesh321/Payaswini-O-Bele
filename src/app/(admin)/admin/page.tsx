@@ -1,134 +1,109 @@
 "use client"
 
-import { motion } from "framer-motion"
 import Link from "next/link"
+import { useLocale } from "next-intl"
+import AdminShell from "./_components/admin-shell"
+import { formatPrice } from "@/lib/utils"
 import {
   Package,
   ShoppingBag,
   Users,
   IndianRupee,
-  TrendingUp,
-  ChevronRight,
+  ShieldCheck,
+  Truck,
   Plus,
+  ChevronRight,
 } from "lucide-react"
-import { Button, Card, Badge } from "@/components/ui"
-import { formatPrice } from "@/lib/utils"
-import { useLocale } from "next-intl"
 
 const stats = [
-  { label: "Total Tools", value: 24, icon: Package, change: "+2 this month" },
-  { label: "Active Rentals", value: 18, icon: ShoppingBag, change: "+5 this week" },
-  { label: "Total Users", value: 156, icon: Users, change: "+12 this month" },
-  { label: "Revenue (This Month)", value: 4560000, icon: IndianRupee, isPrice: true, change: "+15% vs last month" },
+  { label: "Active Rentals", value: "18", icon: ShoppingBag, color: "text-primary" },
+  { label: "Total Tools", value: "24", icon: Package, color: "text-secondary" },
+  { label: "Registered Users", value: "156", icon: Users, color: "text-foreground" },
+  { label: "Monthly GMV", value: 4560000, icon: IndianRupee, isPrice: true, color: "text-accent" },
 ]
 
-const recentBookings = [
-  { id: "1", user: "Ramachandra Shetty", tool: "Carbon Fiber Pole - 30ft", amount: 4470, status: "ACTIVE" },
-  { id: "2", user: "Parvati Nayak", tool: "Battery Sprayer - 16L", amount: 990, status: "PENDING" },
-  { id: "3", user: "Gopala Poojari", tool: "Carbon Fiber Pole - 25ft", amount: 3612, status: "RETURNED" },
-]
-
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
   const locale = useLocale()
   const fp = (n: number) => formatPrice(n, locale)
+
   return (
-    <div className="container py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your rental platform</p>
-        </div>
-        <Link href="/admin/inventory">
-          <Button variant="accent" className="gap-2">
-            <Plus className="h-4 w-4" /> Add Tool
-          </Button>
-        </Link>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        {stats.map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+    <AdminShell
+      eyebrow="Admin Portal"
+      title="Platform Operations"
+      subtitle="Overview of machinery, dispatch, and verification workflows"
+    >
+      <div className="flex flex-col gap-4">
+        {/* ── Operational Quick Action Cards ──────────────── */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <Link
+            href="/admin/verifications"
+            className="flex flex-col justify-between rounded-2xl border border-primary/20 bg-bele-green-muted p-3.5 transition hover:brightness-95"
           >
-            <Card className="rounded-2xl p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{item.label}</p>
-                  <p className="mt-1 text-2xl font-bold">
-                    {item.isPrice ? fp(item.value) : item.value}
-                  </p>
-                  <p className="mt-1 text-xs text-success">{item.change}</p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <item.icon className="h-5 w-5 text-primary" />
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-primary shadow-sm">
+                <ShieldCheck size={18} />
               </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">Queue</span>
+            </div>
+            <div className="mt-3">
+              <h3 className="font-display text-sm font-bold text-primary">KYC Approvals</h3>
+              <p className="text-[11px] text-primary/80">Farmer & Operator verifications</p>
+            </div>
+          </Link>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-2xl p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-heading font-semibold">Recent Bookings</h2>
-            <Link href="/admin/bookings">
-              <Button variant="ghost" size="sm" className="gap-1">
-                View All <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {recentBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="flex items-center justify-between rounded-lg border border-border p-3"
-              >
-                <div>
-                  <p className="text-sm font-medium">{booking.user}</p>
-                  <p className="text-xs text-muted-foreground">{booking.tool}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">{fp(booking.amount)}</p>
-                  <Badge
-                    variant={
-                      booking.status === "ACTIVE"
-                        ? "success"
-                        : booking.status === "PENDING"
-                        ? "warning"
-                        : "secondary"
-                    }
-                  >
-                    {booking.status}
-                  </Badge>
-                </div>
+          <Link
+            href="/admin/assignments"
+            className="flex flex-col justify-between rounded-2xl border border-secondary/20 bg-secondary/10 p-3.5 transition hover:brightness-95"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-secondary shadow-sm">
+                <Truck size={18} />
               </div>
-            ))}
-          </div>
-        </Card>
+              <span className="rounded-full bg-secondary/15 px-2 py-0.5 text-[10px] font-bold text-secondary">Live</span>
+            </div>
+            <div className="mt-3">
+              <h3 className="font-display text-sm font-bold text-secondary">Dispatch Shift</h3>
+              <p className="text-[11px] text-secondary/80">Assign operators to bookings</p>
+            </div>
+          </Link>
+        </div>
 
-        <Card className="rounded-2xl p-6">
-          <h2 className="mb-4 font-heading font-semibold">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { href: "/admin/inventory", label: "Inventory", icon: Package },
-              { href: "/admin/bookings", label: "Bookings", icon: ShoppingBag },
-              { href: "/admin/users", label: "Users", icon: Users },
-              { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
-            ].map((action) => (
-              <Link key={action.href} href={action.href}>
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-border p-4 text-center transition-colors hover:bg-card">
-                  <action.icon className="h-6 w-6 text-primary" />
-                  <span className="text-sm font-medium">{action.label}</span>
-                </div>
-              </Link>
-            ))}
+        {/* ── Stats Summary Grid ────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-2.5">
+          {stats.map((s, idx) => (
+            <div key={idx} className="rounded-2xl border border-border bg-card p-3.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {s.label}
+                </span>
+                <s.icon size={16} className={s.color} />
+              </div>
+              <p className="mt-2 font-display text-xl font-bold text-foreground">
+                {s.isPrice ? fp(s.value as number) : s.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Quick Tools Link ──────────────────────────────── */}
+        <div className="mt-2 flex items-center justify-between rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-primary">
+              <Package size={20} />
+            </div>
+            <div>
+              <h3 className="font-display text-sm font-bold text-foreground">Machinery Inventory</h3>
+              <p className="text-[11px] text-muted-foreground">Manage tillers, poles & sprayers</p>
+            </div>
           </div>
-        </Card>
+          <Link
+            href="/admin/inventory"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-sm transition hover:brightness-110"
+          >
+            <ChevronRight size={16} />
+          </Link>
+        </div>
       </div>
-    </div>
+    </AdminShell>
   )
 }

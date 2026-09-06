@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Sprout, Phone, Mail, MapPin, ExternalLink, Play, MessageCircle } from "lucide-react"
+import { AppLogo } from "@/components/ui/app-logo"
+import { Phone, Mail, MapPin, ExternalLink, Play, MessageCircle } from "lucide-react"
 
 const footerLinks = {
   Products: {
@@ -30,18 +31,12 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-bele-green-dark text-white">
+    <footer className="border-t border-border bg-bele-green-dark dark:bg-card/90 text-white transition-colors duration-200">
       <div className="container py-12">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                <Sprout className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-white">Payaswini</span>
-                <span className="text-lg font-bold text-accent"> O Bele</span>
-              </div>
+            <Link href="/" className="inline-block mb-4">
+              <AppLogo width={130} height={46} className="h-10 w-auto" />
             </Link>
             <p className="mb-4 text-sm text-white/70">
               Affordable farm tool rentals for farmers in Dakshina Karnataka. No upfront purchase needed.
