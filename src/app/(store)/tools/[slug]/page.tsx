@@ -18,6 +18,7 @@ import { formatPrice, calculateRentalPrice, getLocaleName, getLocaleDescription 
 import { useLocale, useTranslations } from "next-intl"
 import { FarmerShell } from "@/components/layout/farmer-shell"
 import { ToolImage } from "@/components/ui"
+import { BookingBottomSheet } from "@/components/tools/booking-bottom-sheet"
 
 interface ToolOwner {
   id: string
@@ -66,6 +67,7 @@ export default function ToolDetailPage() {
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [scenario, setScenario] = useState<Scenario>("self")
+  const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
 
   useEffect(() => {
     const fetchTool = async () => {
@@ -290,12 +292,27 @@ export default function ToolDetailPage() {
 
           <button
             type="button"
-            onClick={handleAddToCart}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-xs font-bold text-white shadow-md transition hover:brightness-110 active:scale-[0.98]"
+            onClick={() => setIsBookingSheetOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-xs font-bold text-white shadow-md transition hover:brightness-110 active:scale-[0.98]"
           >
             <span>Book Now & Reserve</span>
           </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="mt-2 flex w-full items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition"
+          >
+            Or add to cart for multiple items
+          </button>
         </div>
+
+        {/* ── Mobile Instant Booking Bottom Sheet ───────────── */}
+        <BookingBottomSheet
+          isOpen={isBookingSheetOpen}
+          onClose={() => setIsBookingSheetOpen(false)}
+          tool={tool}
+          initialServiceType={serviceType}
+        />
       </div>
     </FarmerShell>
   )

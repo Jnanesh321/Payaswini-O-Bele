@@ -58,7 +58,7 @@ export function BottomNav({ className }: BottomNavProps) {
         className
       )}
     >
-      <div className="mx-auto flex h-16 max-w-[440px] items-center justify-around px-2">
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
         {navItems.map((item) => {
           const Icon = item.icon
           const active = item.isActive

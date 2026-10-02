@@ -1,6 +1,6 @@
 /**
- * Helper utilities for mapping tools and categories to their corresponding image assets
- * and handling fallbacks gracefully.
+ * Helper utilities for mapping tools and categories to real machinery photography
+ * exported from Figma and handling fallbacks gracefully.
  */
 
 export function getCategoryFallbackImage(category?: string, name?: string): string {
@@ -12,18 +12,11 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     cat.includes("POLE") ||
     n.includes("pole") ||
     n.includes("carbon") ||
-    n.includes("areca")
+    n.includes("areca") ||
+    cat.includes("HARVEST") ||
+    n.includes("harvest")
   ) {
-    return "/images/carbon-fiber-pole.svg"
-  }
-
-  if (
-    cat.includes("SPRAY") ||
-    n.includes("sprayer") ||
-    n.includes("spray") ||
-    n.includes("knapsack")
-  ) {
-    return "/images/battery-sprayer.svg"
+    return "/images/tools/arecanut-pole.png"
   }
 
   if (
@@ -31,9 +24,9 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     cat.includes("TRACTOR") ||
     n.includes("tiller") ||
     n.includes("cultivator") ||
-    n.includes("tractor")
+    n.includes("shakti")
   ) {
-    return "/images/power-tiller.svg"
+    return "/images/tools/power-tiller.png"
   }
 
   if (
@@ -45,68 +38,27 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     n.includes("brush") ||
     n.includes("grass")
   ) {
-    return "/images/weed-cutter.svg"
+    return "/images/tools/brush-cutter.png"
   }
 
-  if (
-    cat.includes("PUMP") ||
-    cat.includes("WATER") ||
-    n.includes("pump") ||
-    n.includes("motor") ||
-    n.includes("irrigation")
-  ) {
-    return "/images/water-pump.svg"
+  if (n.includes("tractor") || cat.includes("TRACTOR")) {
+    return "/images/tools/tractor.png"
   }
 
-  if (
-    cat.includes("NET") ||
-    cat.includes("COVER") ||
-    n.includes("net") ||
-    n.includes("cover") ||
-    n.includes("tarpaulin") ||
-    n.includes("shade")
-  ) {
-    return "/images/nets-covers.svg"
-  }
-
-  if (
-    cat.includes("TRANSPLANTER") ||
-    cat.includes("PLANTER") ||
-    n.includes("transplanter") ||
-    n.includes("planter") ||
-    n.includes("seeder")
-  ) {
-    return "/images/transplanter.svg"
-  }
-
-  if (
-    cat.includes("HARVEST") ||
-    n.includes("harvest") ||
-    n.includes("sickle") ||
-    n.includes("reaper")
-  ) {
-    return "/images/harvesting-tool.svg"
-  }
-
-  return "/images/carbon-fiber-pole.svg"
+  return "/images/tools/power-tiller.png"
 }
 
 /**
- * Resolves an initial tool image URL.
- * Automatically catches placeholder/broken domains (like mock Cloudinary URLs in seeds)
- * and returns the proper category SVG upfront to avoid broken image flicker or 404 network errors.
+ * Resolves an initial tool image URL to real machinery photography.
+ * Automatically replaces placeholder/broken domains (like mock Cloudinary URLs in seeds)
+ * and SVGs with real machinery photography from /images/tools/.
  */
 export function resolveToolImage(
   src?: string | null,
   category?: string,
   name?: string
 ): string {
-  if (!src || src.trim() === "") {
-    return getCategoryFallbackImage(category, name)
-  }
-
-  // Placeholder Cloudinary URLs from seed data that don't exist on CDN
-  if (src.includes("res.cloudinary.com/obele/")) {
+  if (!src || src.trim() === "" || src.includes("res.cloudinary.com") || src.endsWith(".svg")) {
     return getCategoryFallbackImage(category, name)
   }
 

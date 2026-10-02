@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
@@ -9,74 +9,37 @@ import Image from "next/image"
 import { AppLogo } from "@/components/ui/app-logo"
 import { Loader2, ArrowRight, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui"
+import { OtpBoxedInput } from "@/components/otp/otp-boxed-input"
 
 export default function VerifyOTPPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const phone = searchParams.get("phone") || ""
   const callbackUrl = searchParams.get("callbackUrl") || "/"
-  const [otp, setOtp] = useState(["", "", "", "", "", ""])
+  const [otpCode, setOtpCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [timer, setTimer] = useState(30)
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // Format phone number nicely (e.g. 98450 12345)
   const formattedPhone = phone.length === 10
     ? `${phone.slice(0, 5)} ${phone.slice(5)}`
     : phone
 
-  // Countdown timer for Resend OTP
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1)
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [timer])
-
-  const handleChange = (index: number, value: string) => {
-    // Only accept numeric inputs
-    if (value && !/^\d$/.test(value)) return
-
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
-  }
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace") {
-      if (!otp[index] && index > 0) {
-        const newOtp = [...otp]
-        newOtp[index - 1] = ""
-        setOtp(newOtp)
-        inputRefs.current[index - 1]?.focus()
-      } else {
-        const newOtp = [...otp]
-        newOtp[index] = ""
-        setOtp(newOtp)
-      }
-    }
-  }
-
-  const handleVerify = async () => {
+  const handleVerify = async (codeToVerify?: string) => {
     if (!phone) {
       router.push("/login")
       return
     }
+    const finalOtp = codeToVerify || ""
+    if (!finalOtp || finalOtp.length !== 6) return
+
     setLoading(true)
     setError("")
     try {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp: otp.join("") }),
+        body: JSON.stringify({ phone, otp: finalOtp }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -113,14 +76,12 @@ export default function VerifyOTPPage() {
   const handleResend = async () => {
     setLoading(true)
     setError("")
-    setOtp(["", "", "", "", "", ""])
     try {
       await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
       })
-      setTimer(30)
     } catch {
       setError("Failed to resend OTP")
     } finally {
@@ -182,90 +143,32 @@ export default function VerifyOTPPage() {
           />
         </div>
 
-        {/* Input Card */}
-        <div className="bg-card dark:bg-card/90 rounded-2xl p-6 border border-border shadow-[0_4px_12px_rgba(45,80,22,0.05)] flex-1 flex flex-col justify-between">
+        {/* Input Card with OpenSource UI OtpBoxedInput */}
+        <div className="bg-card dark:bg-card/90 rounded-2xl p-5 border border-border shadow-md flex-1 flex flex-col justify-between">
           <div>
-            <h2 className="text-[21px] font-bold text-foreground font-heading tracking-tight leading-snug">
-              Verify OTP
-            </h2>
-            <p className="text-[13px] text-muted-foreground font-sans mt-2 leading-relaxed font-medium">
-              Enter the OTP sent to <span className="font-bold text-foreground">+91 {formattedPhone}</span>
-            </p>
-
-            {/* Verification label and change number */}
-            <div className="flex items-center justify-between mt-6">
-              <label className="text-[11px] font-bold text-[#6B706E] tracking-wider uppercase">
-                Verification Code
-              </label>
+            <div className="flex items-center justify-between pb-1">
               <button
+                type="button"
                 onClick={() => router.push(`/login?phone=${phone}&callbackUrl=${callbackUrl}`)}
-                className="text-[12px] font-bold text-[#C85A32] hover:underline inline-flex items-center gap-1 focus:outline-none"
+                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 focus:outline-none"
               >
-                <ArrowLeft className="h-3 w-3" /> Change
+                <ArrowLeft className="h-3 w-3" /> Change Number
               </button>
             </div>
 
-            {/* Digit boxes */}
-            <div className="flex justify-between gap-1.5 mt-2.5">
-              {otp.map((digit, i) => {
-                const isActive = otp.findIndex((val) => val === "") === i
-                return (
-                  <div
-                    key={i}
-                    onClick={() => inputRefs.current[i]?.focus()}
-                    className="relative flex-1 aspect-square max-h-[46px] min-h-[40px] bg-white border border-[#D5D9C9] rounded-xl flex items-center justify-center cursor-text transition-all focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016]"
-                  >
-                    <input
-                      ref={(el) => {
-                        inputRefs.current[i] = el
-                      }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleChange(i, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(i, e)}
-                      className="absolute inset-0 w-full h-full text-center text-[20px] font-bold text-[#143626] bg-transparent border-0 outline-none p-0 focus:ring-0 focus:outline-none"
-                    />
-                    {/* Flashing Caret if active and empty */}
-                    {isActive && !digit && (
-                      <motion.div
-                        animate={{ opacity: [1, 0, 1] }}
-                        transition={{ repeat: Infinity, duration: 1 }}
-                        className="w-[2dp] h-5 bg-[#C85A32] rounded"
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Resend Timer Info */}
-            <div className="flex items-center justify-between mt-6 text-[13px] text-[#6B706E]">
-              <span className="font-medium">Didn&apos;t receive the OTP?</span>
-              {timer > 0 ? (
-                <span className="font-bold text-[#C85A32]">
-                  Resend in 0:{timer < 10 ? `0${timer}` : timer}
-                </span>
-              ) : (
-                <button
-                  onClick={handleResend}
-                  className="font-bold text-[#C85A32] hover:underline focus:outline-none"
-                >
-                  Resend OTP
-                </button>
-              )}
-            </div>
-
-            {error && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-[#C0392B] font-semibold mt-4 text-center"
-              >
-                {error}
-              </motion.p>
-            )}
+            <OtpBoxedInput
+              length={6}
+              destination={`+91 ${formattedPhone}`}
+              label="Verify Phone Number"
+              hint={`Enter the 6-digit code sent to +91 ${formattedPhone}`}
+              error={!!error}
+              errorMessage={error || "Invalid OTP code"}
+              resendCooldown={30}
+              onChange={setOtpCode}
+              onResend={handleResend}
+              onComplete={(code) => handleVerify(code)}
+              className="px-0 py-2"
+            />
           </div>
 
           {/* Sticky Bottom Actions */}
@@ -282,9 +185,9 @@ export default function VerifyOTPPage() {
             </p>
 
             <Button
-              onClick={handleVerify}
+              onClick={() => handleVerify(otpCode)}
               className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
-              disabled={otp.some((d) => !d) || loading}
+              disabled={otpCode.length !== 6 || loading}
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin text-white" />

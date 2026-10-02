@@ -29,6 +29,14 @@ export interface ToolCard {
   operatorFeePerDay?: number
   taluk?: string
   distanceKm?: number
+  canSelfOperate?: boolean
+  ownerName?: string
+  ownerVerified?: boolean
+  owner?: {
+    id?: string
+    name?: string | null
+    isVerified?: boolean
+  } | null
   createdAt: string
 }
 

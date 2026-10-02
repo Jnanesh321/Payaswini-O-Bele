@@ -1,211 +1,244 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useLocale, useTranslations } from "next-intl"
-import { Card, Badge, Button } from "@/components/ui"
-import { formatPrice, getLocaleName } from "@/lib/utils"
-import type { ToolCard as ToolCardType } from "@/types"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { MapPin, Award } from "lucide-react";
+import type { ToolCard as ToolCardType } from "@/types";
+import { BookingBottomSheet } from "./booking-bottom-sheet";
 
-import { resolveToolImage, getCategoryFallbackImage } from "@/lib/tool-images"
+export interface ToolCardProps {
+  id?: string;
+  slug?: string;
+  title?: string;
+  imageUrl?: string | null;
+  ownerName?: string;
+  ownerVerified?: boolean;
+  taluk?: string;
+  distanceKm?: number;
+  dailyRate?: number;
+  deposit?: number;
+  allowsSelfOperate?: boolean;
+  requiresCertifiedOperator?: boolean;
+  onBook?: (tool?: ToolCardType) => void;
+  tool?: ToolCardType;
+  index?: number;
+  variant?: "default" | "utility";
+  name?: string;
+  pricePerDay?: number;
+  images?: string[];
+  thumbnailUrl?: string | null;
+  translations?: Record<string, { name?: string; description?: string }> | null;
+  canSelfOperate?: boolean;
+}
 
-const gradients = [
-  "from-bele-green/30 to-bele-soil/20",
-  "from-bele-gold/30 to-bele-green/20",
-  "from-payaswini-blue/30 to-bele-gold/20",
-  "from-bele-soil/30 to-payaswini-blue/20",
-  "from-bele-green/30 to-bele-gold/20",
-  "from-payaswini-blue/30 to-bele-soil/20",
-]
+export function ToolCard({
+  id = "",
+  slug = "",
+  title,
+  imageUrl,
+  ownerName = "Verified Owner",
+  ownerVerified = true,
+  taluk = "Kasaragod",
+  distanceKm = 3.2,
+  dailyRate,
+  deposit = 1000,
+  allowsSelfOperate = true,
+  requiresCertifiedOperator = false,
+  onBook,
+  tool,
+  index = 0,
+  name,
+  pricePerDay,
+  images,
+  thumbnailUrl,
+}: ToolCardProps) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const finalId = id || tool?.id || "";
+  const finalSlug = slug || tool?.slug || finalId;
+  const finalTitle = title || name || tool?.name || "Agricultural Tool";
+  const rawImage =
+    imageUrl ||
+    (images && images[0]) ||
+    (tool?.images && tool.images[0]) ||
+    thumbnailUrl ||
+    tool?.thumbnailUrl;
 
-function ToolCardImage({
-  src,
-  alt,
-  category,
-  gradientClass,
-  isActive,
-}: {
-  src?: string | null
-  alt: string
-  fallbackLetter?: string
-  category: string
-  gradientClass: string
-  isActive: boolean
-}) {
-  const initial = resolveToolImage(src, category, alt)
-  const fallbackSvg = getCategoryFallbackImage(category, alt)
-  const [currentSrc, setCurrentSrc] = useState(initial)
-  const [hasError, setHasError] = useState(false)
-  const tc = useTranslations("categories")
-  const tt = useTranslations("tools")
+  const finalImage =
+    rawImage && !rawImage.includes("cloudinary") && !rawImage.endsWith(".svg")
+      ? rawImage
+      : "/images/tools/power-tiller.png";
 
-  const isSvg = hasError || currentSrc.endsWith(".svg")
+  const finalOwnerName = ownerName || tool?.owner?.name || "Verified Owner";
+  const finalOwnerVerified = ownerVerified ?? tool?.owner?.isVerified ?? true;
+  const finalTaluk = taluk || tool?.taluk || "Kasaragod";
+  const finalDistance =
+    distanceKm ?? tool?.distanceKm ?? Number((3.2 + ((index * 1.7) % 7)).toFixed(1));
+
+  const finalDailyRate =
+    dailyRate !== undefined
+      ? dailyRate
+      : pricePerDay
+        ? pricePerDay >= 1000
+          ? Math.round(pricePerDay / 100)
+          : pricePerDay
+        : tool?.pricePerDay
+          ? tool.pricePerDay >= 1000
+            ? Math.round(tool.pricePerDay / 100)
+            : tool.pricePerDay
+          : 0;
+
+  const finalDeposit =
+    deposit !== undefined
+      ? deposit >= 10000
+        ? Math.round(deposit / 100)
+        : deposit
+      : tool?.deposit
+        ? tool.deposit >= 10000
+          ? Math.round(tool.deposit / 100)
+          : tool.deposit
+        : 1000;
+
+  const finalRequiresCert = requiresCertifiedOperator ?? tool?.requiresCertifiedOperator ?? false;
+
+  // Dynamic Instamart-style ETA generator based on index & distance
+  const etaMinutes = Math.min(60, Math.max(30, Math.round(finalDistance * 12)));
+  const isImmediate = index % 2 === 0;
+
+  const toolObj = tool || {
+    id: finalId,
+    slug: finalSlug,
+    name: finalTitle,
+    pricePerDay: finalDailyRate * 100,
+    deposit: finalDeposit * 100,
+    requiresCertifiedOperator: finalRequiresCert,
+    taluk: finalTaluk,
+    distanceKm: finalDistance,
+    images: [finalImage],
+    canSelfOperate: allowsSelfOperate,
+  };
+
+  const halfDayRate = Math.round(finalDailyRate * 0.58);
 
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted flex items-center justify-center">
-      {isSvg ? (
-        <div
-          className={`absolute inset-0 flex items-center justify-center p-6 bg-gradient-to-br ${gradientClass}`}
+    <div className="group relative bg-card rounded-2xl p-3.5 border border-border/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col gap-3">
+      {/* ── Top Hyperlocal Dispatch Banner (Instamart Style) ── */}
+      <div className="flex items-center justify-between gap-1.5 text-[10px] font-bold">
+        {isImmediate ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 border border-emerald-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>⚡ Dispatches in ~{etaMinutes}m from {finalTaluk}</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 border border-amber-500/20">
+            <span>🚜 Next slot: Tomorrow 6:00 AM</span>
+          </span>
+        )}
+
+        {/* Krishi Assured Badge */}
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+          <Award className="w-3 h-3 text-primary shrink-0" />
+          <span>Krishi Assured</span>
+        </span>
+      </div>
+
+      {/* ── Main Content: Image & Tool Specs ── */}
+      <div className="flex gap-3.5 items-start">
+        <Link
+          href={`/tools/${finalSlug || finalId}`}
+          className="relative w-22 h-22 shrink-0 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-border/70 block"
         >
-          <img
-            src={fallbackSvg}
-            alt={alt}
-            className="h-full w-full max-h-[85%] object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-110"
+          <Image
+            src={finalImage}
+            alt={finalTitle}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="88px"
           />
-        </div>
-      ) : (
-        <img
-          src={currentSrc}
-          alt={alt}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={() => {
-            setHasError(true)
-            setCurrentSrc(fallbackSvg)
-          }}
-          loading="lazy"
-        />
-      )}
+          {finalRequiresCert && (
+            <span className="absolute bottom-1 left-1 right-1 bg-black/75 backdrop-blur-xs text-[9px] font-bold text-white text-center py-0.5 rounded-md">
+              Operator Incl.
+            </span>
+          )}
+        </Link>
 
-      <Badge
-        variant={isActive ? "success" : "destructive"}
-        className="absolute left-3 top-3 z-10 font-medium"
-      >
-        {isActive ? tt("available") : tt("rented")}
-      </Badge>
+        <div className="flex flex-col flex-1 min-w-0">
+          <Link href={`/tools/${finalSlug || finalId}`} className="hover:text-primary transition-colors">
+            <h3 className="font-display font-bold text-[15px] leading-snug text-foreground line-clamp-2">
+              {finalTitle}
+            </h3>
+          </Link>
 
-      {category && (
-        <Badge
-          variant="outline"
-          className="absolute right-3 top-3 z-10 bg-white/80 backdrop-blur-sm"
-        >
-          {tc.has(category) ? tc(category) : category.replace(/_/g, " ")}
-        </Badge>
-      )}
-    </div>
-  )
-}
-
-interface ToolCardProps {
-  tool: ToolCardType
-  index?: number
-  variant?: "default" | "utility"
-}
-
-export function ToolCard({ tool, index = 0, variant = "default" }: ToolCardProps) {
-  const locale = useLocale()
-  const tfeat = useTranslations("featuredTools")
-  const tu = useTranslations("homeUtility")
-  const displayName = getLocaleName(tool, locale)
-  const fp = (n: number) => formatPrice(n, locale)
-
-  const talukText = tool.taluk || "Badiadka"
-  const distanceText = tool.distanceKm ? `${tool.distanceKm} km` : `${(3.5 + (index * 1.8) % 8).toFixed(1)} km`
-
-  if (variant === "utility") {
-    return (
-      <Link href={`/tools/${tool.slug || tool.id}`} className="group block select-none">
-        <div className="relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card p-3 shadow-xs transition-all duration-200 hover:border-primary/50 hover:shadow-md">
-          {/* Card Media Header */}
-          <div className="relative mb-2.5 aspect-video w-full overflow-hidden rounded-xl bg-muted/50">
-            <ToolCardImage
-              src={tool.images && tool.images[0]}
-              alt={displayName}
-              category={tool.category}
-              gradientClass={gradients[index % gradients.length]}
-              isActive={tool.isActive}
-            />
-
-            {/* Distance / Taluk Tag */}
-            <div className="absolute bottom-2 left-2 z-10 flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-md px-2 py-0.5 text-[10px] font-semibold text-white">
-              <span>📍</span>
-              <span>{distanceText} • {talukText}</span>
-            </div>
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+            <span>Owner: <span className="font-medium text-foreground">{finalOwnerName}</span></span>
+            {finalOwnerVerified && (
+              <span className="text-[10px] text-primary font-bold">✓</span>
+            )}
           </div>
 
-          {/* Title & Operator Chip */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-display text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                {displayName}
-              </h3>
-            </div>
+          {/* Location & Operator Chips */}
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-md">
+              <MapPin className="w-3 h-3 text-red-500 shrink-0" />
+              {finalDistance} km • {finalTaluk}
+            </span>
 
-            {/* Operator Chip */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {tool.requiresCertifiedOperator ? (
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#D4A017]/15 px-2 py-0.5 text-[10px] font-bold text-[#7A5800] dark:text-[#E5B429]">
-                  <span>👨‍🌾</span>
-                  <span>{tu("certifiedOperator")}</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#2D5016]/10 px-2 py-0.5 text-[10px] font-bold text-[#2D5016] dark:text-[#4E8A2C]">
-                  <span>✅</span>
-                  <span>{tu("selfOperate")}</span>
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Pricing Breakdown & Action CTA */}
-          <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-2.5">
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-display text-base font-extrabold text-[#2D5016] dark:text-[#4E8A2C]">
-                  {fp(tool.pricePerDay)}
-                </span>
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  {tu("perDay")}
-                </span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">
-                • {fp(tool.deposit)} {tu("refDeposit")}
-              </p>
-            </div>
-
-            <Button
-              size="sm"
-              className="h-8 rounded-xl bg-[#2D5016] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#1E3A0F] active:scale-95 transition-all"
-            >
-              {tu("bookNow")}
-            </Button>
-          </div>
-        </div>
-      </Link>
-    )
-  }
-
-  return (
-    <Link href={`/tools/${tool.slug || tool.id}`} className="group block">
-      <Card className="overflow-hidden rounded-2xl transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-        <ToolCardImage
-          src={tool.images && tool.images[0]}
-          alt={displayName}
-          fallbackLetter={displayName.charAt(0)}
-          category={tool.category}
-          gradientClass={gradients[index % gradients.length]}
-          isActive={tool.isActive}
-        />
-        <div className="p-4">
-          <h3 className="font-heading font-semibold text-foreground">
-            {displayName}
-          </h3>
-          <p className="text-xs text-muted-foreground">{tool.name}</p>
-          <div className="mt-3 flex items-center justify-between">
-            <div>
-              <span className="font-heading text-xl font-bold text-bele-gold">
-                {fp(tool.pricePerDay)}
+            {finalRequiresCert ? (
+              <span className="inline-flex items-center text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-md">
+                Certified Operator
               </span>
-              <span className="text-xs text-muted-foreground ml-1">{tfeat("perDay")}</span>
-            </div>
-            <span className="text-xs text-muted-foreground font-medium">
-              {tfeat("deposit")}: {fp(tool.deposit)}
+            ) : (
+              <span className="inline-flex items-center text-[10px] font-bold border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md">
+                Self-Operate OK
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Bottom Row: Shift Rates & 1-Tap Booking CTA ── */}
+      <div className="flex items-center justify-between pt-2.5 border-t border-border/70 mt-0.5">
+        <div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-extrabold text-foreground">
+              ₹{finalDailyRate.toLocaleString("en-IN")}
+            </span>
+            <span className="text-[11px] text-muted-foreground font-medium">/full day</span>
+            <span className="text-[10px] text-muted-foreground/80 font-normal">
+              (₹{halfDayRate}/shift)
             </span>
           </div>
-          <Button className="mt-3 w-full bg-bele-green text-white hover:bg-bele-green/90">
-            {tfeat("rentNow")}
-          </Button>
+          <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <span>✓</span>
+            <span>Zero Cash Lock • UPI Pre-Auth</span>
+          </p>
         </div>
-      </Card>
-    </Link>
-  )
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onBook) {
+              onBook(toolObj as unknown as ToolCardType);
+            } else {
+              setIsSheetOpen(true);
+            }
+          }}
+          className="relative flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
+        >
+          <span>Book Now</span>
+          <span className="text-xs">⚡</span>
+        </button>
+      </div>
+
+      {!onBook && (
+        <BookingBottomSheet
+          isOpen={isSheetOpen}
+          onClose={() => setIsSheetOpen(false)}
+          tool={toolObj as unknown as ToolCardType}
+        />
+      )}
+    </div>
+  );
 }

@@ -7,6 +7,59 @@ import type { BookingStatus } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
+function mapMachineryPhoto(
+  name: string,
+  category: string,
+  existingImages?: string[],
+  thumbnailUrl?: string | null
+): string {
+  const n = (name || "").toLowerCase()
+  const c = (category || "").toUpperCase()
+
+  // 1. Power Tiller -> /images/tools/power-tiller.png
+  if (n.includes("tiller") || n.includes("cultivator") || n.includes("shakti") || c.includes("TILLER")) {
+    return "/images/tools/power-tiller.png"
+  }
+
+  // 2. Arecanut / Climbing Pole -> /images/tools/arecanut-pole.png
+  if (
+    n.includes("pole") ||
+    n.includes("areca") ||
+    n.includes("harvest") ||
+    n.includes("climb") ||
+    c.includes("CLIMB") ||
+    c.includes("HARVEST")
+  ) {
+    return "/images/tools/arecanut-pole.png"
+  }
+
+  // 3. Weed / Brush Cutter -> /images/tools/brush-cutter.png
+  if (
+    n.includes("cutter") ||
+    n.includes("brush") ||
+    n.includes("weed") ||
+    n.includes("pruner") ||
+    c.includes("PRUNER") ||
+    c.includes("CUTTER")
+  ) {
+    return "/images/tools/brush-cutter.png"
+  }
+
+  // 4. Tractor
+  if (n.includes("tractor") || c.includes("TRACTOR")) {
+    return "/images/tools/tractor.png"
+  }
+
+  // Check if existing valid non-svg, non-cloudinary image
+  const first = existingImages?.[0] || thumbnailUrl
+  if (first && !first.includes("cloudinary") && !first.endsWith(".svg")) {
+    return first
+  }
+
+  // Fallback to first valid tool image (never an abstract SVG box)
+  return "/images/tools/power-tiller.png"
+}
+
 async function getToolsForFeed(): Promise<ToolCardType[]> {
   try {
     const rows = await prisma.tool.findMany({
@@ -32,6 +85,7 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
       const totalCount = t.instances.length
       const availableCount = t.instances.filter((i) => i.status === "AVAILABLE").length
       const owner = t.instances[0]?.owner
+      const photo = mapMachineryPhoto(t.name, t.category, t.images, t.thumbnailUrl)
 
       return {
         id: t.id,
@@ -40,8 +94,8 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
         translations: t.translations as ToolCardType["translations"],
         description: t.description,
         category: t.category,
-        images: t.images,
-        thumbnailUrl: t.thumbnailUrl,
+        images: [photo, ...t.images.filter((img) => !img.includes("cloudinary") && !img.endsWith(".svg"))],
+        thumbnailUrl: photo,
         pricePerDay: t.pricePerDay,
         deposit: t.deposit,
         availableCount,
@@ -56,6 +110,16 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
         requiresCertifiedOperator: t.requiresCertifiedOperator,
         operatorFeePerDay: t.operatorFeePerDay,
         taluk: owner?.taluk || "Badiadka",
+        canSelfOperate: !t.requiresCertifiedOperator,
+        ownerName: owner?.name || "Verified Owner",
+        ownerVerified: true,
+        owner: owner
+          ? {
+              id: owner.id,
+              name: owner.name || "Verified Owner",
+              isVerified: true,
+            }
+          : null,
         createdAt: t.createdAt.toISOString(),
       }
     })

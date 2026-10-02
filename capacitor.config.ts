@@ -23,7 +23,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 const isProduction = process.env.APP_ENV === 'production'
 
 const prodServerUrl = process.env.CAPACITOR_SERVER_URL ?? 'https://obele-vercel.vercel.app'
-const devServerUrl = process.env.CAPACITOR_DEV_SERVER_URL ?? 'http://10.0.2.2:3000'
+const devServerUrl = process.env.CAPACITOR_DEV_SERVER_URL ?? 'http://localhost:3000'
 
 const config: CapacitorConfig = {
   appId: 'in.obele.app',

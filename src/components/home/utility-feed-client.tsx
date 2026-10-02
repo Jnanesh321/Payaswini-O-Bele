@@ -3,14 +3,17 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useLocale, useTranslations } from "next-intl"
-import { Search, MapPin, ChevronDown, ShoppingBag, User, X, SlidersHorizontal, Sparkles } from "lucide-react"
+import { Search, MapPin, ChevronDown, ShoppingBag, User, X, SlidersHorizontal, Sparkles, Mic } from "lucide-react"
 import { AppLogo } from "@/components/ui/app-logo"
 import { useCartStore } from "@/store/cart"
+import { getLocaleName } from "@/lib/utils"
 import { ToolCard } from "@/components/tools/tool-card"
+import { BookingBottomSheet } from "@/components/tools/booking-bottom-sheet"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { LocationSelectorSheet, type TalukOption, REGIONAL_TALUKS } from "./location-selector-sheet"
 import { TaskCarousel, type TaskFilter, SEASONAL_TASKS } from "./task-carousel"
 import { ActiveRentalBanner, type ActiveBookingData } from "./active-rental-banner"
+import { VoiceSearchModal } from "./voice-search-modal"
 import type { ToolCard as ToolCardType } from "@/types"
 
 interface UtilityFeedClientProps {
@@ -26,8 +29,12 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
   // State
   const [selectedLocation, setSelectedLocation] = useState<TalukOption>(REGIONAL_TALUKS[0])
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false)
+  const [selectedBookingTool, setSelectedBookingTool] = useState<ToolCardType | null>(null)
+  const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTaskId, setSelectedTaskId] = useState<string>("ALL")
+  const [quickTag, setQuickTag] = useState<"ALL" | "FAST" | "ASSURED" | "OPERATOR">("ALL")
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
 
   // Switch Language
   const toggleLanguage = () => {
@@ -45,7 +52,7 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
   )
 
   const filteredTools = useMemo(() => {
-    return initialTools.filter((tool) => {
+    return initialTools.filter((tool, idx) => {
       // 1. Task filter
       if (activeTask.categories.length > 0) {
         if (!activeTask.categories.includes(tool.category)) {
@@ -53,7 +60,17 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
         }
       }
 
-      // 2. Search query filter
+      // 2. Quick tag filter (Instamart style)
+      if (quickTag === "FAST") {
+        const dist = tool.distanceKm ?? Number((3.2 + ((idx * 1.7) % 7)).toFixed(1))
+        if (dist > 5) return false
+      } else if (quickTag === "ASSURED") {
+        if (!tool.ownerVerified) return false
+      } else if (quickTag === "OPERATOR") {
+        if (!tool.requiresCertifiedOperator) return false
+      }
+
+      // 3. Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim()
         const nameEn = (tool.name || "").toLowerCase()
@@ -67,12 +84,12 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
 
       return true
     })
-  }, [initialTools, activeTask, searchQuery])
+  }, [initialTools, activeTask, quickTag, searchQuery])
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground flex flex-col items-center">
+    <div className="relative min-h-screen bg-neutral-100/70 dark:bg-neutral-900 text-foreground flex flex-col items-center justify-start">
       {/* Container restricted to mobile app viewport width on larger screens */}
-      <div className="relative flex w-full max-w-[440px] flex-col min-h-screen bg-background border-x border-border/40 shadow-sm">
+      <div className="relative flex w-full max-w-md mx-auto flex-col min-h-screen bg-[#FAF7F0] dark:bg-background border-x border-neutral-200/80 shadow-md">
         
         {/* ── 1. Top Mobile App Bar (Sticky + pt-safe) ──────────────── */}
         <header className="sticky top-0 z-30 flex flex-col border-b border-border/70 bg-background/95 backdrop-blur-md pt-safe px-4 pb-3 shadow-xs">
@@ -141,25 +158,62 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
             </div>
           </div>
 
-          {/* Lower Row: Embedded Quick Search Field */}
+          {/* Lower Row: Embedded Quick Search Field with Mic Button */}
           <div className="relative mt-1 flex items-center">
             <Search size={16} className="absolute left-3.5 text-primary pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("searchPlaceholder")}
-              className="w-full rounded-2xl border border-border/80 bg-card/90 py-2.5 pl-10 pr-9 text-xs text-foreground placeholder:text-muted-foreground shadow-2xs focus:border-primary focus:bg-card focus:outline-hidden transition-all"
+              placeholder={locale === "kn" ? "ಉಪಕರಣ ಅಥವಾ ಧ್ವನಿ ಮೂಲಕ ಹುಡುಕಿ..." : "Search machinery or tap mic..."}
+              className="w-full rounded-2xl border border-border/80 bg-card/90 py-2.5 pl-10 pr-16 text-xs text-foreground placeholder:text-muted-foreground shadow-2xs focus:border-primary focus:bg-card focus:outline-hidden transition-all"
             />
-            {searchQuery && (
+            <div className="absolute right-2 flex items-center gap-1">
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+                >
+                  <X size={12} />
+                </button>
+              )}
+              {/* Vernacular Voice Mic Button */}
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+                onClick={() => setIsVoiceModalOpen(true)}
+                title={locale === "kn" ? "ಧ್ವನಿ ಹುಡುಕಾಟ" : "Voice Search"}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 active:scale-95 transition"
               >
-                <X size={12} />
+                <Mic size={14} className="text-primary" />
               </button>
-            )}
+            </div>
+          </div>
+
+          {/* Quick-Commerce Filter Chips (Instamart Style) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 pb-0.5">
+            {[
+              { id: "ALL", labelEn: "All", labelKn: "ಎಲ್ಲವೂ", icon: null },
+              { id: "FAST", labelEn: "⚡ Fast Dispatch", labelKn: "⚡ ತ್ವರಿತ ಸೇವೆ", icon: null },
+              { id: "ASSURED", labelEn: "🛡️ Assured", labelKn: "🛡️ ಖಚಿತ", icon: null },
+              { id: "OPERATOR", labelEn: "👨‍🌾 Operator", labelKn: "👨‍🌾 ಆಪರೇಟರ್", icon: null },
+            ].map((chip) => {
+              const isSelected = quickTag === chip.id
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setQuickTag(chip.id as "ALL" | "FAST" | "ASSURED" | "OPERATOR")}
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "border border-border/80 bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {locale === "kn" ? chip.labelKn : chip.labelEn}
+                </button>
+              )
+            })}
           </div>
         </header>
 
@@ -196,17 +250,39 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
               </Link>
             </div>
 
-            {/* Utility Tool Cards Grid */}
+            {/* Utility Tool Cards 1-Column Vertical List */}
             {filteredTools.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {filteredTools.map((tool, idx) => (
-                  <ToolCard
-                    key={tool.id}
-                    tool={tool}
-                    index={idx}
-                    variant="utility"
-                  />
-                ))}
+              <div className="flex flex-col gap-3.5">
+                {filteredTools.map((tool, idx) => {
+                  const dailyRateInRupees =
+                    tool.pricePerDay >= 1000 ? Math.round(tool.pricePerDay / 100) : tool.pricePerDay;
+                  const depositInRupees =
+                    tool.deposit >= 10000 ? Math.round(tool.deposit / 100) : (tool.deposit || 1000);
+                  const distanceKm =
+                    tool.distanceKm ?? Number((3.2 + ((idx * 1.7) % 7)).toFixed(1));
+
+                  return (
+                    <ToolCard
+                      key={tool.id}
+                      id={tool.id}
+                      slug={tool.slug}
+                      title={getLocaleName(tool, locale)}
+                      imageUrl={tool.images?.[0] || tool.thumbnailUrl || null}
+                      ownerName={tool.owner?.name || "Verified Owner"}
+                      ownerVerified={tool.owner?.isVerified ?? true}
+                      taluk={tool.taluk || "Kasaragod"}
+                      distanceKm={distanceKm}
+                      dailyRate={dailyRateInRupees}
+                      deposit={depositInRupees}
+                      allowsSelfOperate={tool.canSelfOperate ?? !tool.requiresCertifiedOperator}
+                      requiresCertifiedOperator={tool.requiresCertifiedOperator}
+                      onBook={() => {
+                        setSelectedBookingTool(tool)
+                        setIsBookingSheetOpen(true)
+                      }}
+                    />
+                  )
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 p-8 text-center">
@@ -243,6 +319,21 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
           onClose={() => setIsLocationSheetOpen(false)}
           selectedLocation={selectedLocation.id}
           onSelectLocation={(taluk) => setSelectedLocation(taluk)}
+          locale={locale}
+        />
+
+        {/* ── 5. Booking Bottom Sheet (Figma Spec) ──────────────────── */}
+        <BookingBottomSheet
+          isOpen={isBookingSheetOpen}
+          onClose={() => setIsBookingSheetOpen(false)}
+          tool={selectedBookingTool}
+        />
+
+        {/* ── 6. Vernacular Voice Search Modal ──────────────────────── */}
+        <VoiceSearchModal
+          isOpen={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onSelectQuery={(q) => setSearchQuery(q)}
           locale={locale}
         />
       </div>

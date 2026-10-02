@@ -6,6 +6,7 @@ import { useParams } from "next/navigation"
 import { ChevronLeft, Package, Phone } from "lucide-react"
 import { Badge, Button, Card, Skeleton } from "@/components/ui"
 import { bookingStatusLabel, bookingStatusTone } from "@/lib/booking-status"
+import { LiveTrackingConsole } from "@/components/orders/live-tracking-console"
 
 interface StateLog {
   id: string
@@ -103,7 +104,7 @@ export default function OrderDetailPage() {
 
   const fp = (n: number) => `₹${(n / 100).toLocaleString("en-IN")}`
 
-  const canCancel = order?.permittedTargets.includes("CANCELLED_BY_FARMER") ?? false
+  const canCancel = order?.permittedTargets?.includes("CANCELLED_BY_FARMER") ?? false
 
   const handleCancel = async () => {
     if (!id) return
@@ -166,6 +167,13 @@ export default function OrderDetailPage() {
             </div>
             <p className="mt-1 text-muted-foreground">{order.bookingRef}</p>
           </div>
+
+          {/* Zomato-Style Live Tracking Console */}
+          <LiveTrackingConsole
+            order={order}
+            onRefresh={refresh}
+            isRefreshing={acting}
+          />
 
           <Card className="rounded-2xl p-6">
             <h2 className="mb-5 font-heading font-semibold">Tracking</h2>
