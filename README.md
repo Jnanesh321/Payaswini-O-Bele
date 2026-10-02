@@ -9,10 +9,10 @@ A **production-grade, mobile-first marketplace** for renting agricultural equipm
 ## ✨ Core Architecture
 
 - **Multi-Role Capability Engine**: Role-based access control for Farmers, Tool Owners, Certified Operators, and Admins.
-- **Server-Authoritative State Machine**: Strict 17-state lifecycle enforcing handovers, inspections, cancellations, and actor permissions.
+- **Server-Authoritative State Machine**: Strict 24-state lifecycle (17 operational states + 7 terminal/cancellation states) enforcing handovers, inspections, cancellations, and actor permissions.
 - **Financial & Deposit Integrity**: Authoritative pricing engine, refundable deposit resolution with atomic idempotency claims, and timing-safe Razorpay verification.
 - **Hardened Authentication**: 6-digit cryptographic OTP generation, attempt-based rate limiting & lockout, single-use signed verification proofs.
-- **Multilingual Ready**: Localization support (`en`, `kn`, `ml`).
+- **Multilingual Ready**: Localization support (English `en`, Kannada `kn`).
 
 ---
 

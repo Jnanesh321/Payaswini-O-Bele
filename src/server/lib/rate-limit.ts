@@ -39,12 +39,23 @@ export async function checkRateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for")
-  if (forwarded) {
-    const ip = forwarded.split(",")[0].trim()
+  // 1. x-real-ip is set and overwritten by trusted reverse proxies (e.g. Nginx, Vercel edge)
+  const realIp = request.headers.get("x-real-ip")
+  if (realIp?.trim()) return realIp.trim()
+
+  // 2. Platform-specific trusted proxy headers
+  const vercelForwarded = request.headers.get("x-vercel-forwarded-for")
+  if (vercelForwarded) {
+    const ip = vercelForwarded.split(",")[0].trim()
     if (ip) return ip
   }
-  const realIp = request.headers.get("x-real-ip")
-  if (realIp) return realIp.trim()
+
+  // 3. Fallback to x-forwarded-for
+  const forwarded = request.headers.get("x-forwarded-for")
+  if (forwarded) {
+    const parts = forwarded.split(",").map((p) => p.trim()).filter(Boolean)
+    if (parts.length > 0) return parts[0]
+  }
+
   return "127.0.0.1"
 }

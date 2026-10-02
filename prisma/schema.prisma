@@ -143,8 +143,8 @@ model User {
   capabilities           UserCapability[]
   ownedToolInstances     ToolInstance[]    @relation("ToolInstanceOwner")
   custodiedToolInstances ToolInstance[]    @relation("ToolInstanceCustodian")
-  grantedSelfOperate     SelfOperatePermission[] @relation("SelfOperateGrantee")
-  receivedSelfOperate    SelfOperatePermission[] @relation("SelfOperateGrantor")
+  grantedSelfOperate     SelfOperatePermission[] @relation("SelfOperateOwner")
+  receivedSelfOperate    SelfOperatePermission[] @relation("SelfOperateFarmer")
 
   accounts Account[]
   sessions Session[]
@@ -261,8 +261,8 @@ model SelfOperatePermission {
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
 
-  farmer   User @relation("SelfOperateGrantor", fields: [farmerId], references: [id], onDelete: Cascade)
-  toolOwner User @relation("SelfOperateGrantee", fields: [toolOwnerId], references: [id])
+  farmer   User @relation("SelfOperateFarmer", fields: [farmerId], references: [id], onDelete: Cascade)
+  toolOwner User @relation("SelfOperateOwner", fields: [toolOwnerId], references: [id])
 
   @@unique([farmerId, toolOwnerId])
   @@index([toolOwnerId])

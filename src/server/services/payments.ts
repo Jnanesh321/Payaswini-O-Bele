@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import { BookingEventActor, BookingServiceType, VerificationStatus } from "@prisma/client"
 import Razorpay from "razorpay"
 import { prisma } from "@/server/db/prisma"
@@ -176,7 +177,9 @@ export async function createRazorpayOrder(params: {
         )
       }
     }
-    if (!tool.requiresCertifiedOperator && serviceType === "OPERATOR_ONLY") {
+    const isOperatorOnly = serviceType === "OPERATOR_ONLY" || serviceType === "WITH_OPERATOR"
+
+    if (!tool.requiresCertifiedOperator && isOperatorOnly) {
       throw new PaymentServiceError(
         `"${tool.name}" does not require a certified operator — request it as self-service`,
         400,
@@ -188,7 +191,7 @@ export async function createRazorpayOrder(params: {
       toolName: tool.name,
       toolOwnerId,
       toolInstanceId: availableInstance.id,
-      serviceType: serviceType === "OPERATOR_ONLY"
+      serviceType: isOperatorOnly
         ? BookingServiceType.OPERATOR_ONLY
         : BookingServiceType.SELF_SERVICE_RENTAL,
       startDate,
@@ -200,7 +203,7 @@ export async function createRazorpayOrder(params: {
 
   const orderRecord = await prisma.order.create({
     data: {
-      orderRef: `ORD${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      orderRef: `ORD${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
       userId,
       totalAmount: orderTotal,
       paymentStatus: "PENDING",
@@ -233,7 +236,7 @@ export async function createRazorpayOrder(params: {
         pricePerDay: p.pricing.toolFeePerDay,
         totalAmount: p.pricing.totalAmount,
         status: "REQUESTED",
-        bookingRef: `BK${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+        bookingRef: `BK${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
       },
     })
     bookings.push(booking)
@@ -399,6 +402,7 @@ export async function createPaymentRecord(data: {
   bookingId: string
   amount: number
   razorpayOrderId: string
+  orderId?: string
 }) {
   return prisma.payment.create({
     data: {
@@ -417,9 +421,9 @@ export async function handleRazorpayWebhook(params: {
   const { rawBody, signature } = params
   const crypto = await import("crypto")
 
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET
   if (!secret) {
-    throw new PaymentServiceError("Razorpay webhook secret not configured on server", 500)
+    throw new PaymentServiceError("RAZORPAY_WEBHOOK_SECRET is not configured on server", 500)
   }
 
   const expectedSignature = crypto

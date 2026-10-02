@@ -1,7 +1,9 @@
+import crypto from "crypto"
 import {
   BookingEventActor,
   BookingServiceType,
   BookingStatus,
+  DeliveryStatus,
   HandoverType,
   Prisma,
   ToolInstanceStatus,
@@ -149,74 +151,111 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
     throw error
   }
 
-  // ── Create order container ───────────────────────────────────────────────
-  const orderRecord = await prisma.order.create({
-    data: {
-      orderRef: `ORD${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-      userId,
-      totalAmount: pricing.totalAmount,
-      paymentStatus: "PENDING",
-    },
-  })
+  // ── Atomic persistence of order, booking, and pending payment (Audit C4/C5 fix) ──
+  const booking = await prisma.$transaction(async (tx) => {
+    const orderRecord = await tx.order.create({
+      data: {
+        orderRef: `ORD${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
+        userId,
+        totalAmount: pricing.totalAmount,
+        paymentStatus: "PENDING",
+      },
+    })
 
-  // ── Persist booking with ONLY server-computed fields ─────────────────────
-  const booking = await prisma.booking.create({
-    data: {
-      orderId: orderRecord.id,
-      farmerId: userId,
-      toolId,
-      toolInstanceId: resolvedInstanceId,
-      toolOwnerId,
-      servicePerformerId: userId,
-      serviceType: mappedServiceType,
-      startDate,
-      endDate,
-      totalDays: pricing.days,
-      toolFeePerDay: pricing.toolFeePerDay,
-      operatorFeePerDay: pricing.operatorFeePerDay,
-      totalToolFee: pricing.totalToolFee,
-      totalOperatorFee: pricing.totalOperatorFee,
-      deposit: pricing.deposit,
-      deliveryFee: pricing.deliveryFee,
-      platformFee: pricing.platformFee,
-      subtotal: pricing.subtotal,
-      pricePerDay: pricing.toolFeePerDay,
-      totalAmount: pricing.totalAmount,
-      status: BookingStatus.REQUESTED,
-      bookingRef: `BK${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-      notes: typeof notes === "string" ? notes : undefined,
-    },
-    include: { tool: true, payment: true, toolInstance: true },
+    const newBooking = await tx.booking.create({
+      data: {
+        orderId: orderRecord.id,
+        farmerId: userId,
+        toolId,
+        toolInstanceId: resolvedInstanceId,
+        toolOwnerId,
+        servicePerformerId: userId,
+        serviceType: mappedServiceType,
+        startDate,
+        endDate,
+        totalDays: pricing.days,
+        toolFeePerDay: pricing.toolFeePerDay,
+        operatorFeePerDay: pricing.operatorFeePerDay,
+        totalToolFee: pricing.totalToolFee,
+        totalOperatorFee: pricing.totalOperatorFee,
+        deposit: pricing.deposit,
+        deliveryFee: pricing.deliveryFee,
+        platformFee: pricing.platformFee,
+        subtotal: pricing.subtotal,
+        pricePerDay: pricing.toolFeePerDay,
+        totalAmount: pricing.totalAmount,
+        status: BookingStatus.REQUESTED,
+        bookingRef: `BK${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
+        notes: typeof notes === "string" ? notes : undefined,
+      },
+    })
+
+    await tx.payment.create({
+      data: {
+        orderId: orderRecord.id,
+        bookingId: newBooking.id,
+        amount: pricing.totalAmount,
+        status: "PENDING",
+        depositFrozen: pricing.deposit > 0,
+      },
+    })
+
+    return tx.booking.findUniqueOrThrow({
+      where: { id: newBooking.id },
+      include: { tool: true, payment: true, toolInstance: true },
+    })
   })
 
   return booking
 }
+
+// ─── Shared booking full include ───────────────────────────────────────────
+
+export const BOOKING_FULL_INCLUDE = {
+  tool: true,
+  toolInstance: true,
+  payment: true,
+  farmer: { select: { id: true, name: true, phone: true } },
+  toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
+  servicePerformer: { select: { id: true, name: true, phone: true } },
+  stateLogs: { orderBy: { createdAt: "asc" } },
+  handoverLogs: {
+    include: { actorUser: { select: { id: true, name: true, phone: true } } },
+    orderBy: { createdAt: "asc" },
+  },
+} as const satisfies Prisma.BookingInclude
 
 // ─── Get booking by ID ──────────────────────────────────────────────────────
 
 export async function getBookingById(id: string) {
   return prisma.booking.findUnique({
     where: { id },
-    include: {
-      tool: true,
-      toolInstance: true,
-      payment: true,
-      farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
-      servicePerformer: { select: { id: true, name: true, phone: true } },
-      stateLogs: { orderBy: { createdAt: "asc" } },
-      handoverLogs: {
-        include: { actorUser: { select: { id: true, name: true, phone: true } } },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: BOOKING_FULL_INCLUDE,
   })
 }
 
 // ─── Update booking ─────────────────────────────────────────────────────────
 
-export async function updateBooking(id: string, data: Prisma.BookingUncheckedUpdateInput) {
-  return prisma.booking.update({ where: { id }, data })
+export interface BookingUpdateInput {
+  deliveryAddress?: string | null
+  deliveryDistrict?: string | null
+  deliveryTaluk?: string | null
+  deliveryPincode?: string | null
+  deliveryStatus?: DeliveryStatus
+  notes?: string | null
+}
+
+export async function updateBooking(id: string, input: BookingUpdateInput) {
+  const allowedData: Prisma.BookingUpdateInput = {}
+
+  if (input.deliveryAddress !== undefined) allowedData.deliveryAddress = input.deliveryAddress
+  if (input.deliveryDistrict !== undefined) allowedData.deliveryDistrict = input.deliveryDistrict
+  if (input.deliveryTaluk !== undefined) allowedData.deliveryTaluk = input.deliveryTaluk
+  if (input.deliveryPincode !== undefined) allowedData.deliveryPincode = input.deliveryPincode
+  if (input.deliveryStatus !== undefined) allowedData.deliveryStatus = input.deliveryStatus
+  if (input.notes !== undefined) allowedData.notes = input.notes
+
+  return prisma.booking.update({ where: { id }, data: allowedData })
 }
 
 // ─── Get booking with permitted transitions ──────────────────────────────────
@@ -224,19 +263,7 @@ export async function updateBooking(id: string, data: Prisma.BookingUncheckedUpd
 export async function getBookingWithTransitions(id: string) {
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: {
-      tool: true,
-      toolInstance: true,
-      payment: true,
-      farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
-      servicePerformer: { select: { id: true, name: true, phone: true } },
-      stateLogs: { orderBy: { createdAt: "asc" } },
-      handoverLogs: {
-        include: { actorUser: { select: { id: true, name: true, phone: true } } },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: BOOKING_FULL_INCLUDE,
   })
   if (!booking) return null
   return {
@@ -250,19 +277,7 @@ export async function getBookingWithTransitions(id: string) {
 export async function getBookingWithActorTransitions(id: string) {
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: {
-      tool: true,
-      toolInstance: true,
-      payment: true,
-      farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
-      servicePerformer: { select: { id: true, name: true, phone: true } },
-      stateLogs: { orderBy: { createdAt: "asc" } },
-      handoverLogs: {
-        include: { actorUser: { select: { id: true, name: true, phone: true } } },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: BOOKING_FULL_INCLUDE,
   })
   if (!booking) return null
   return {
@@ -318,19 +333,7 @@ export async function transitionBooking(params: {
 
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: {
-      tool: { select: { requiresCertifiedOperator: true } },
-      toolInstance: true,
-      farmer: { select: { id: true, name: true, phone: true } },
-      toolOwner: { select: { id: true, name: true, phone: true, village: true, taluk: true, district: true, pincode: true } },
-      servicePerformer: { select: { id: true, name: true, phone: true } },
-      payment: true,
-      stateLogs: { orderBy: { createdAt: "asc" } },
-      handoverLogs: {
-        include: { actorUser: { select: { id: true, name: true, phone: true } } },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: BOOKING_FULL_INCLUDE,
   })
   if (!booking) throw new TransitionError("Booking not found", 404)
 
@@ -473,7 +476,8 @@ export async function transitionBooking(params: {
               operatorFeePerDay: 0,
               totalOperatorFee: 0,
               subtotal: booking.totalToolFee,
-              totalAmount: booking.totalToolFee + booking.deliveryFee + booking.platformFee,
+              totalAmount:
+                booking.totalToolFee + (booking.deposit ?? 0) + booking.deliveryFee + booking.platformFee,
             }
           : {}),
       },
@@ -482,7 +486,10 @@ export async function transitionBooking(params: {
     if (selfServiceAccepted && booking.payment) {
       await tx.payment.update({
         where: { id: booking.payment.id },
-        data: { amount: booking.totalToolFee + booking.deliveryFee + booking.platformFee },
+        data: {
+          amount:
+            booking.totalToolFee + (booking.deposit ?? 0) + booking.deliveryFee + booking.platformFee,
+        },
       })
     }
 

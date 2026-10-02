@@ -2,7 +2,7 @@ import { BookingStatus, ToolInstanceStatus, VerificationStatus } from "@prisma/c
 import { prisma } from "@/server/db/prisma"
 import { deriveModeFromServiceType } from "@/server/lib/booking-state-machine"
 import { expireOverdueOwnerRequests, OWNER_RESPONSE_SLA_MS } from "@/server/lib/owner-sla"
-import { normalizePhone } from "@/server/services/auth"
+import { normalizePhone } from "@/server/lib/phone"
 
 // ─── List owner requests ─────────────────────────────────────────────────────
 

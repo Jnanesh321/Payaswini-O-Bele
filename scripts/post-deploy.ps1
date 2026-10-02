@@ -1,7 +1,7 @@
 # ============================================================
 # post-deploy.ps1 — Google OAuth callback registration guide
 # ============================================================
-# Run AFTER deploy-setup.ps1 succeeds and you have your live URL.
+# Run AFTER scripts/deploy-setup.ps1 succeeds and you have your live URL.
 # This script just prints instructions — you do the Google Console
 # step in your browser.
 # ============================================================

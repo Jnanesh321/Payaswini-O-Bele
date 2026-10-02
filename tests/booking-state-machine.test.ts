@@ -150,4 +150,27 @@ describe("Booking State Machine — Transitions & Rules", () => {
     assert.equal(isTerminalCancellation(BookingStatus.OWNER_ACCEPTED), false)
     assert.equal(isTerminalCancellation(BookingStatus.COMPLETED), false)
   })
+
+  it("preserves deposit in totalAmount when converting to self-service (C1 fix)", () => {
+    const booking = {
+      totalToolFee: 120000,
+      totalOperatorFee: 40000,
+      deposit: 150000,
+      deliveryFee: 5000,
+      platformFee: 19900,
+    }
+    const initialTotalAmount =
+      booking.totalToolFee +
+      booking.totalOperatorFee +
+      booking.deposit +
+      booking.deliveryFee +
+      booking.platformFee
+    assert.equal(initialTotalAmount, 334900)
+
+    // When owner accepts as self-service, operator fee is removed, but deposit must remain in totalAmount
+    const convertedTotalAmount =
+      booking.totalToolFee + (booking.deposit ?? 0) + booking.deliveryFee + booking.platformFee
+    assert.equal(convertedTotalAmount, 294900)
+    assert.equal(convertedTotalAmount, initialTotalAmount - booking.totalOperatorFee)
+  })
 })

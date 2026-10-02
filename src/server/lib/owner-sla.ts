@@ -1,6 +1,7 @@
 import { BookingEventActor, BookingStatus } from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
 import { sendSmsNotification } from "@/server/lib/sms"
+import { computeCancellationPolicy } from "@/server/lib/booking-state-machine"
 
 // Owner Response SLA (confirmed 2026-08-11): an OWNER_PENDING request that is
 // left unanswered auto-cancels after 4 hours (CANCELLED_BY_PLATFORM) and the
@@ -17,10 +18,19 @@ export async function expireOverdueOwnerRequests(now = new Date()): Promise<numb
       status: BookingStatus.OWNER_PENDING,
       createdAt: { lt: deadline },
     },
-    include: { farmer: { select: { id: true, phone: true, name: true } } },
+    include: {
+      farmer: { select: { id: true, phone: true, name: true } },
+      payment: true,
+    },
   })
 
   for (const booking of overdue) {
+    const policy = computeCancellationPolicy(
+      BookingStatus.OWNER_PENDING,
+      BookingStatus.CANCELLED_BY_PLATFORM,
+      booking.totalAmount,
+    )
+
     await prisma.$transaction(async (tx) => {
       await tx.booking.update({
         where: { id: booking.id },
@@ -31,15 +41,31 @@ export async function expireOverdueOwnerRequests(now = new Date()): Promise<numb
           bookingId: booking.id,
           fromState: BookingStatus.OWNER_PENDING,
           toState: BookingStatus.CANCELLED_BY_PLATFORM,
-          actor: BookingEventActor.ADMIN,
-          note: "Auto-cancelled: tool owner did not respond within the 4-hour SLA.",
+          actor: BookingEventActor.SYSTEM,
+          note: `Auto-cancelled: tool owner did not respond within the 4-hour SLA. Full refund of ₹${(
+            policy.refundAmount / 100
+          ).toFixed(2)} recorded.`,
         },
       })
+
+      if (booking.payment) {
+        await tx.payment.update({
+          where: { id: booking.payment.id },
+          data: {
+            refundAmount: policy.refundAmount,
+            cancellationFee: policy.operatorFee,
+            ...(policy.refundAmount > 0 ? { status: "REFUNDED" as const } : {}),
+          },
+        })
+      }
     })
+
     if (booking.farmer.phone) {
       await sendSmsNotification(
         booking.farmer.phone,
-        `O~Bele: The tool owner did not respond to your booking ${booking.bookingRef} within 4 hours, so it was cancelled. No payment was taken. Please re-book or try another owner.`,
+        `O~Bele: The tool owner did not respond to your booking ${booking.bookingRef} within 4 hours, so it was cancelled. A full refund of ₹${(
+          policy.refundAmount / 100
+        ).toFixed(2)} has been recorded for your payment.`,
       )
     }
   }

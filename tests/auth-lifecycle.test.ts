@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert/strict"
-import { normalizePhone, isValidIndianPhone } from "../src/server/services/auth"
+import { normalizePhone, isValidIndianPhone, hashOtp, verifyOtpHash } from "../src/server/services/auth"
 import { getClientIp } from "../src/server/lib/rate-limit"
 
 describe("Authentication & Phone Validation", () => {
@@ -37,5 +37,43 @@ describe("Authentication & Phone Validation", () => {
 
     const mockReqFallback = new Request("http://localhost:3000")
     assert.equal(getClientIp(mockReqFallback), "127.0.0.1")
+
+    // S5 Fix: x-real-ip cannot be spoofed by x-forwarded-for
+    const mockReqSpoofed = new Request("http://localhost:3000", {
+      headers: {
+        "x-forwarded-for": "1.2.3.4, 5.6.7.8",
+        "x-real-ip": "198.51.100.1",
+      },
+    })
+    assert.equal(getClientIp(mockReqSpoofed), "198.51.100.1")
+  })
+
+  it("hashes OTP securely and verifies timing-safe matching (S3 fix)", () => {
+    const phone = "919845012345"
+    const otp = "481920"
+    const hash = hashOtp(phone, otp)
+
+    // Hash should be 64-character SHA-256 hex string
+    assert.equal(hash.length, 64)
+    assert.notEqual(hash, otp)
+
+    // Same input produces deterministic hash
+    assert.equal(hashOtp(phone, otp), hash)
+
+    // Different OTP produces different hash
+    assert.notEqual(hashOtp(phone, "481921"), hash)
+
+    // Different phone produces different hash
+    assert.notEqual(hashOtp("919845099999", otp), hash)
+
+    // verifyOtpHash succeeds with correct OTP
+    assert.equal(verifyOtpHash(phone, otp, hash), true)
+
+    // verifyOtpHash fails with incorrect OTP
+    assert.equal(verifyOtpHash(phone, "111111", hash), false)
+
+    // verifyOtpHash backwards compatibility for legacy plaintext records
+    assert.equal(verifyOtpHash(phone, "654321", "654321"), true)
+    assert.equal(verifyOtpHash(phone, "123456", "654321"), false)
   })
 })

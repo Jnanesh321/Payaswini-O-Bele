@@ -23,12 +23,25 @@
  *   they are deliberately NOT used (documented in changelog).
  */
 
-export type RequestedServiceType = "SELF_SERVICE_RENTAL" | "OPERATOR_ONLY"
+export type RequestedServiceType =
+  | "SELF_SERVICE_RENTAL"
+  | "OPERATOR_ONLY"
+  | "WITH_OPERATOR"
+  | "SELF_OPERATE"
 
 export const REQUESTED_SERVICE_TYPES: readonly RequestedServiceType[] = [
   "SELF_SERVICE_RENTAL",
   "OPERATOR_ONLY",
+  "WITH_OPERATOR",
+  "SELF_OPERATE",
 ]
+
+export function normalizeServiceType(type: unknown): "SELF_SERVICE_RENTAL" | "OPERATOR_ONLY" {
+  if (type === "WITH_OPERATOR" || type === "OPERATOR_ONLY") {
+    return "OPERATOR_ONLY"
+  }
+  return "SELF_SERVICE_RENTAL"
+}
 
 /** Flat delivery fee (₹50) in paise — see header comment. */
 export const DELIVERY_FEE_PAISE = 50 * 100
@@ -127,14 +140,15 @@ export function computeBookingPricing(input: BookingPricingInput): ComputedBooki
     )
   }
 
+  const normalizedType = normalizeServiceType(serviceType)
   const toolFeePerDay = tool.pricePerDay
-  const operatorFeePerDay = serviceType === "OPERATOR_ONLY" ? tool.operatorFeePerDay : 0
+  const operatorFeePerDay = normalizedType === "OPERATOR_ONLY" ? tool.operatorFeePerDay : 0
   const totalToolFee = toolFeePerDay * days
   const totalOperatorFee = operatorFeePerDay * days
-  const deposit = 0
+  const deposit = tool.deposit ?? 0
   const platformFee = PLATFORM_FEE_PAISE
   const subtotal = totalToolFee + totalOperatorFee
-  const totalAmount = subtotal + deliveryFee + platformFee
+  const totalAmount = subtotal + deposit + deliveryFee + platformFee
 
   return {
     days,

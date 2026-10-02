@@ -1,5 +1,265 @@
 # Changelog
 
+## 2026-10-02 — Audit Fix C4 & C5: Atomic Payment creation for offline and direct rental bookings
+
+**What:**
+- **Audit C4 & C5 (Medium):** Direct booking creation via `POST /api/rentals` (`createBooking` in `src/server/services/bookings.ts`) persisted `Order` and `Booking` records but omitted the `Payment` record, causing financial ledger mismatches, breaking deposit resolution, and leading to missing payment references.
+- Confirmed business decision to retain `POST /api/rentals` alongside Razorpay checkout (`POST /api/razorpay/create-order`).
+- Wrapped order, booking, and payment creation inside an atomic `prisma.$transaction`, persisting a pending `Payment` row with `depositFrozen: pricing.deposit > 0`, guaranteeing every booking has an associated payment record.
+
+- **Files changed:**
+  - `src/server/services/bookings.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S6 & X1: Standardize seamless OTP verification registration with default capability
+
+**What:**
+- **Audit S6 & X1 (High):** Reconciled registration policy between historical changelog documentation and production OTP flow. Confirmed business requirement for frictionless, mobile-first OTP registration.
+- Standardized new user creation in `src/server/services/auth.ts` (`registerUser` and `verifyOtp` auto-provisioning) to assign default verified `FARMER` capability, ensuring consistent capabilities in JWT tokens on first login.
+
+- **Files changed:**
+  - `src/server/services/auth.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix C6: Correct inverted SelfOperatePermission relation names
+
+**What:**
+- **Audit C6 (Low):** In `prisma/schema.prisma`, `SelfOperatePermission.farmer` was labeled with `@relation("SelfOperateGrantor")` and `SelfOperatePermission.toolOwner` was labeled with `@relation("SelfOperateGrantee")`. Semantically, the tool owner is the grantor of permissions and the farmer is the grantee/recipient.
+- Renamed relation labels across `SelfOperatePermission` and `User` models to unambiguous `SelfOperateFarmer` and `SelfOperateOwner` names.
+- Regenerated Prisma client via `npx prisma generate`.
+
+- **Files changed:**
+  - `prisma/schema.prisma`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors), `npx prisma generate` (clean).
+
+## 2026-10-02 — Audit Fix S10: Consolidate deployment and walkthrough scripts into scripts/ directory
+
+**What:**
+- **Audit S10 (Low):** `deploy-setup.ps1` and `post-deploy.ps1` were located in the repository root alongside the dev walkthrough script in `scripts/record-walkthrough.mjs`.
+- Moved deployment automation scripts into `scripts/` (`scripts/deploy-setup.ps1`, `scripts/post-deploy.ps1`) and updated invocation instructions, establishing clear script boundaries and keeping the root workspace clean.
+
+- **Files changed:**
+  - `scripts/deploy-setup.ps1`
+  - `scripts/post-deploy.ps1`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix A4: Consolidate duplicate Prisma include blocks in bookings service
+
+**What:**
+- **Audit A4 (Low):** `src/server/services/bookings.ts` contained 4 separate, identical Prisma relation `include` blocks across `getBookingById`, `getBookingWithTransitions`, `getBookingWithActorTransitions`, and `handleBookingTransition`.
+- Extracted a unified, type-safe `BOOKING_FULL_INCLUDE` constant (`satisfies Prisma.BookingInclude`), eliminating over 40 lines of boilerplate duplication and guaranteeing consistent relation loading across all booking query and transition workflows.
+
+- **Files changed:**
+  - `src/server/services/bookings.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix A1: Extract pure phone utilities to dedicated library
+
+**What:**
+- **Audit A1 (Low):** `normalizePhone` and `isValidIndianPhone` were implemented and exported from `src/server/services/auth.ts`, creating cross-service dependencies when imported by `owners.ts` and `users.ts`.
+- Extracted phone normalization and validation logic into dedicated library module `src/server/lib/phone.ts`.
+- Re-exported from `auth.ts` for backward compatibility, and updated direct imports in `owners.ts` and `users.ts`.
+
+- **Files changed:**
+  - `src/server/lib/phone.ts`
+  - `src/server/services/auth.ts`
+  - `src/server/services/owners.ts`
+  - `src/server/services/users.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix X2 & X3: Align README with supported languages and lifecycle states
+
+**What:**
+- **Audit X2 & X3 (Medium / Low):** README claimed localization support for Malayalam (`ml`) which lacked message files, and cited a "17-state lifecycle" despite the Prisma schema specifying 24 statuses (17 operational states + 7 terminal/cancellation states).
+- Updated `README.md` to reflect currently active locales (English `en`, Kannada `kn`) and clarify the comprehensive 24-state lifecycle model.
+
+- **Files changed:**
+  - `README.md`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** verified documentation alignment.
+
+## 2026-10-02 — Audit Fix A3: Enforce strict field whitelisting on booking updates
+
+**What:**
+- **Audit A3 (Medium):** `updateBooking()` in `src/server/services/bookings.ts` accepted unvalidated `Prisma.BookingUncheckedUpdateInput`, and the admin PUT route in `src/app/api/rentals/[id]/route.ts` passed arbitrary request body fields directly into the update call. This opened a vulnerability where callers could directly mutate `status`, financial columns (`totalAmount`, `deposit`), or references (`bookingRef`, `farmerId`), bypassing the state machine and audit logs.
+- Introduced `BookingUpdateInput` restricting allowable direct updates strictly to operational delivery details and notes (`deliveryAddress`, `deliveryDistrict`, `deliveryTaluk`, `deliveryPincode`, `deliveryStatus`, `notes`).
+- Enforced the whitelist in both `updateBooking()` and `PUT /api/rentals/[id]`.
+
+- **Files changed:**
+  - `src/server/services/bookings.ts`
+  - `src/app/api/rentals/[id]/route.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix C3: Cryptographically secure orderRef and bookingRef generation
+
+**What:**
+- **Audit C3 (Medium):** Order references (`ORD...`) and booking references (`BK...`) were generated using `Date.now() + Math.random().toString(36).slice(2, 6)`. The 4-character pseudo-random suffix provided only ~1.67 million variations, exposing concurrent requests within the same millisecond to unique constraint collision crashes.
+- Upgraded reference generation in `src/server/services/payments.ts` and `src/server/services/bookings.ts` to use `crypto.randomBytes(4).toString("hex").toUpperCase()`, expanding entropy to 4.29 billion possibilities per millisecond.
+
+- **Files changed:**
+  - `src/server/services/payments.ts`
+  - `src/server/services/bookings.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S8: Require dedicated RAZORPAY_WEBHOOK_SECRET for webhook verification
+
+**What:**
+- **Audit S8 (Medium):** In `handleRazorpayWebhook()` (`src/server/services/payments.ts`), if `RAZORPAY_WEBHOOK_SECRET` was unset, the code fell back to `RAZORPAY_KEY_SECRET`. Razorpay signs webhook payloads exclusively with the endpoint's configured webhook secret (never the API key secret), causing all incoming webhooks in staging/production without the webhook secret to silently fail HMAC validation with 400.
+- Removed fallback to `RAZORPAY_KEY_SECRET`; explicitly required `RAZORPAY_WEBHOOK_SECRET` and threw a descriptive 500 configuration error if unset.
+
+- **Files changed:**
+  - `src/server/services/payments.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S7: Remove dummy Google OAuth fallback
+
+**What:**
+- **Audit S7 (Medium):** When Google OAuth credentials were not configured in the environment, `GoogleProvider` was still registered with placeholder dummy credentials (`dummy-google-client-id`), exposing a broken Google login option.
+- Configured NextAuth providers array in `src/server/lib/auth.ts` to conditionally register `GoogleProvider` only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` environment variables are actively defined.
+
+- **Files changed:**
+  - `src/server/lib/auth.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix A2: Prevent database queries on every JWT token evaluation
+
+**What:**
+- **Audit A2 (High):** NextAuth's `jwt` callback queried `prisma.user.findUnique({ include: { capabilities: true } })` unconditionally on every single token verification (i.e. every API route call and server-rendered page load), creating a severe database bottleneck.
+- Optimized `jwt()` callback in `src/server/lib/auth.ts` to cache user identity and capabilities in the token payload.
+- Database query is now strictly executed only upon initial user sign-in (`user` object present), explicit session update triggers (`trigger === "update"`), or when the token lacks cached capabilities.
+
+- **Files changed:**
+  - `src/server/lib/auth.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix C2: Process payment refunds on Owner-SLA auto-cancellations
+
+**What:**
+- **Audit C2 (High):** When an `OWNER_PENDING` booking exceeded the 4-hour owner response SLA in `src/server/lib/owner-sla.ts`, the booking was transitioned to `CANCELLED_BY_PLATFORM` without updating the `Payment` row with refund accounting. The SMS also stated "No payment was taken", even though payment was captured upon order checkout.
+- Integrated `computeCancellationPolicy(OWNER_PENDING, CANCELLED_BY_PLATFORM, totalAmount)` to record full refund amount (`refundAmount`) and status `REFUNDED` on the `Payment` record inside the cancellation transaction.
+- Corrected the customer notification SMS to accurately state that a full refund has been recorded for return.
+
+- **Files changed:**
+  - `src/server/lib/owner-sla.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S5: Prevent IP rate limiting bypass via spoofed X-Forwarded-For
+
+**What:**
+- **Audit S5 (High):** `getClientIp()` in `src/server/lib/rate-limit.ts` blindly trusted the first entry of the client-supplied `X-Forwarded-For` header ahead of `X-Real-IP`. Any client could bypass IP rate limits on OTP generation/verification by cycling arbitrary `X-Forwarded-For` values.
+- Re-ordered header resolution to prioritize `X-Real-IP` (overwritten securely by trusted reverse proxies / edge servers) and platform headers before falling back to `X-Forwarded-For`.
+- Added test coverage in `tests/auth-lifecycle.test.ts` verifying that spoofed `X-Forwarded-For` cannot override `X-Real-IP`.
+
+- **Files changed:**
+  - `src/server/lib/rate-limit.ts`
+  - `tests/auth-lifecycle.test.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S4: Enforce authentication and ownership validation on `/api/razorpay/verify`
+
+**What:**
+- **Audit S4 (High):** `POST /api/razorpay/verify` did not require user authentication and accepted arbitrary `bookingIds` from the caller. A user could associate their verified payment with another farmer's bookings (IDOR) or trigger payment failure updates against foreign bookings.
+- Added `requireAuth()` session validation to the route.
+- Verified that the caller owns all referenced bookings as `farmerId` (or is an admin).
+- Verified that `razorpayOrderId` matches the booking's order or payment record.
+- Added regression test in `tests/payments-security.test.ts`.
+
+- **Files changed:**
+  - `src/app/api/razorpay/verify/route.ts`
+  - `tests/payments-security.test.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (29 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix C1: Preserve deposit in totalAmount during self-service conversion
+
+**What:**
+- **Audit C1 (Critical):** In `transitionBooking()`, when an owner accepted a booking with `operatorMode === "self_service"`, the recalculated `totalAmount` in the booking and payment records dropped `booking.deposit`:
+  `totalAmount: booking.totalToolFee + booking.deliveryFee + booking.platformFee`
+  This caused a financial ledger mismatch against the captured Razorpay transaction which already included the deposit.
+- Added `+ (booking.deposit ?? 0)` to both the `Booking` update and `Payment` amount update in `src/server/services/bookings.ts`.
+- Added regression test in `tests/booking-state-machine.test.ts`.
+
+- **Files changed:**
+  - `src/server/services/bookings.ts`
+  - `tests/booking-state-machine.test.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (28 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S3: Cryptographic hashing for stored OTPs
+
+**What:**
+- **Audit S3 (Critical):** OTPs were stored as raw plaintext in the `otp_requests` database table, creating an account takeover risk in case of a database breach.
+- Implemented `hashOtp()` using HMAC-SHA-256 keyed with `NEXTAUTH_SECRET` (falling back to a secure default salt) scoped to the user's normalized phone number.
+- Implemented timing-safe comparison in `verifyOtpHash()` via `crypto.timingSafeEqual` with backward compatibility for legacy plaintext records.
+- Added comprehensive unit test coverage in `tests/auth-lifecycle.test.ts`.
+
+- **Files changed:**
+  - `src/server/services/auth.ts`
+  - `tests/auth-lifecycle.test.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (27 passing), `npx tsc --noEmit` (0 errors).
+
+## 2026-10-02 — Audit Fix S2: Sanitize NEXTAUTH_SECRET in `.env.example`
+
+**What:**
+- **Audit S2 (Critical):** `.env.example` contained an active-looking base64 secret (`76kK664X0oXLbKSKNOB8APFWkJVufiJB3bSBkHgd+fY=`), posing a severe JWT forgery risk if copied directly to production.
+- Replaced the secret with a safe, descriptive placeholder `CHANGE_ME_generate_with_openssl_rand_base64_32`.
+
+- **Files changed:**
+  - `.env.example`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** verified placeholder text and executed `npm run test` & `npx tsc --noEmit`.
+
+## 2026-10-02 — Audit Fix S1: Enforce authentication and authorization on `/api/payments`
+
+**What:**
+- **Audit S1 (Critical):** `POST /api/payments` was completely unauthenticated and allowed callers to inject arbitrary payment records with arbitrary amounts and booking references.
+- Secured endpoint with `requireAuth()` and `requireBookingAccess()`.
+- Added validation requiring caller to be the booking's farmer (or admin), verifying payment amount strictly matches `booking.totalAmount`, linking `booking.orderId`, and rejecting duplicate payments for existing bookings with 409 Conflict.
+- Enhanced `requireAuth()` in `src/server/lib/auth-guard.ts` to gracefully handle unresolvable session contexts by returning 401 Unauthorized.
+- Added regression test suite `tests/payments-security.test.ts`.
+
+- **Files changed:**
+  - `src/app/api/payments/route.ts`
+  - `src/server/services/payments.ts`
+  - `src/server/lib/auth-guard.ts`
+  - `tests/payments-security.test.ts`
+  - `docs/audit-findings.md`
+  - `docs/changelog.md`
+- **Verification:** `npm run test` (26 passing), `npx tsc --noEmit` (0 errors).
+
+
 ## 2026-08-30 — Dynamic Indian phone validation, dev-fallback OTP, CLI tooling, Razorpay webhook & ToolInstance custody chain
 
 **What:**

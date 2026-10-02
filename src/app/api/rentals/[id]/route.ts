@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuth, requireBookingAccess, AuthGuardError } from "@/server/lib/auth-guard"
-import { updateBooking } from "@/server/services/bookings"
+import { updateBooking, type BookingUpdateInput } from "@/server/services/bookings"
 
 export async function GET(
   _request: NextRequest,
@@ -31,9 +31,14 @@ export async function PUT(
     const body = await request.json()
 
     // Non-admins can only update non-authoritative notes or delivery details before acceptance
-    let allowedData: Record<string, unknown> = {}
+    const allowedData: BookingUpdateInput = {}
     if (user.isAdmin) {
-      allowedData = { ...body }
+      if (body.deliveryAddress !== undefined) allowedData.deliveryAddress = body.deliveryAddress
+      if (body.deliveryDistrict !== undefined) allowedData.deliveryDistrict = body.deliveryDistrict
+      if (body.deliveryTaluk !== undefined) allowedData.deliveryTaluk = body.deliveryTaluk
+      if (body.deliveryPincode !== undefined) allowedData.deliveryPincode = body.deliveryPincode
+      if (body.deliveryStatus !== undefined) allowedData.deliveryStatus = body.deliveryStatus
+      if (body.notes !== undefined) allowedData.notes = body.notes
     } else {
       // Only permit modifying notes or address if still in early requested states
       if (["REQUESTED", "OWNER_PENDING"].includes(booking.status)) {

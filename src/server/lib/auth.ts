@@ -68,10 +68,14 @@ export const authOptions: NextAuthOptions = {
         return { id: user.id, name: user.name, email: user.email, image: user.image, isAdmin: user.isAdmin }
       },
     }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "dummy-google-client-id",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy-google-client-secret",
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
   ],
   callbacks: {
     async session({ token, session }) {
@@ -85,9 +89,10 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
-      const targetId = user?.id || token.sub
-      if (targetId) {
+    async jwt({ token, user, trigger }) {
+      const shouldRefreshFromDb = Boolean(user) || trigger === "update" || !token.capabilities
+      const targetId = user?.id || (token.id as string) || token.sub
+      if (shouldRefreshFromDb && targetId) {
         const dbUser = await prisma.user.findUnique({
           where: { id: targetId },
           include: { capabilities: true },

@@ -1,6 +1,6 @@
 import { CapabilityType, Prisma, VerificationStatus } from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
-import { normalizePhone } from "@/server/services/auth"
+import { normalizePhone } from "@/server/lib/phone"
 
 // ─── Get user profile ────────────────────────────────────────────────────────
 

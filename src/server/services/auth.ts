@@ -1,26 +1,11 @@
 import crypto from "crypto"
+import { CapabilityType, VerificationStatus } from "@prisma/client"
 import { prisma } from "@/server/db/prisma"
 import { checkRateLimit, getClientIp } from "@/server/lib/rate-limit"
 import { sendOtpSms } from "@/server/lib/sms"
 
-// ─── Phone normalization & validation ─────────────────────────────────────────
-// Standard Indian phone format: 10 digits starting with 6-9 (optionally with +91 or 91 prefix).
-// Canonical format: 12-digit with "91" country code (e.g. "919845100001").
-
-export function normalizePhone(rawPhone?: string): string | null {
-  if (!rawPhone) return null
-  const digits = rawPhone.replace(/\D/g, "")
-  if (digits.length === 10) return `91${digits}`
-  if (digits.length === 12 && digits.startsWith("91")) return digits
-  if (digits.length === 11 && digits.startsWith("0")) return `91${digits.slice(1)}`
-  return null
-}
-
-export function isValidIndianPhone(phone?: string): boolean {
-  if (!phone) return false
-  const normalized = normalizePhone(phone)
-  return normalized ? /^91[6-9]\d{9}$/.test(normalized) : false
-}
+export { normalizePhone, isValidIndianPhone } from "@/server/lib/phone"
+import { normalizePhone, isValidIndianPhone } from "@/server/lib/phone"
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
@@ -44,10 +29,39 @@ export async function registerUser(data: { name?: string; phone?: string; addres
       name: name.trim(),
       phone: normalized,
       phoneVerified: false,
+      capabilities: {
+        create: {
+          type: CapabilityType.FARMER,
+          status: VerificationStatus.VERIFIED,
+          verifiedAt: new Date(),
+        },
+      },
     },
   })
 
   return { message: "Account created. Verify OTP to login." }
+}
+
+// ─── OTP Hashing & Verification (Security S3) ─────────────────────────────────
+
+export function hashOtp(phone: string, otp: string): string {
+  const secret = process.env.NEXTAUTH_SECRET || "obele_otp_secure_salt"
+  return crypto.createHmac("sha256", secret).update(`${phone}:${otp}`).digest("hex")
+}
+
+export function verifyOtpHash(phone: string, inputOtp: string, storedOtp: string): boolean {
+  if (storedOtp === inputOtp) {
+    return true
+  }
+  const expectedHash = hashOtp(phone, inputOtp)
+  if (storedOtp.length === expectedHash.length) {
+    try {
+      return crypto.timingSafeEqual(Buffer.from(storedOtp, "hex"), Buffer.from(expectedHash, "hex"))
+    } catch {
+      return false
+    }
+  }
+  return false
 }
 
 // ─── Send OTP ────────────────────────────────────────────────────────────────
@@ -76,9 +90,10 @@ export async function sendOtp(request: Request, phone?: string) {
   // 5 minutes in all environments (15 min in dev only if explicitly configured)
   const otpTtlMs = process.env.NODE_ENV === "production" ? 5 * 60 * 1000 : 15 * 60 * 1000
   const expiresAt = new Date(Date.now() + otpTtlMs)
+  const hashedOtp = hashOtp(normalized, otp)
 
   await prisma.otpRequest.create({
-    data: { phone: normalized, otp, expiresAt, ip },
+    data: { phone: normalized, otp: hashedOtp, expiresAt, ip },
   })
 
   const sms = await sendOtpSms(normalized, otp)
@@ -141,7 +156,7 @@ export async function verifyOtp(request: Request, data: { phone?: string; otp?: 
       throw new AuthServiceError("Too many failed attempts. Please request a new OTP.", 429)
     }
 
-    if (!isDevMasterOtp && record.otp !== cleanedOtp) {
+    if (!isDevMasterOtp && !verifyOtpHash(normalized, cleanedOtp, record.otp)) {
       await prisma.otpRequest.update({
         where: { id: record.id },
         data: { attempts: { increment: 1 } },
@@ -163,6 +178,13 @@ export async function verifyOtp(request: Request, data: { phone?: string; otp?: 
         name: "Farmer",
         phoneVerified: true,
         preferredLang: "en",
+        capabilities: {
+          create: {
+            type: CapabilityType.FARMER,
+            status: VerificationStatus.VERIFIED,
+            verifiedAt: new Date(),
+          },
+        },
       },
     })
   } else if (!user.phoneVerified) {

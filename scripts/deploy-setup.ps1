@@ -3,7 +3,7 @@
 # ============================================================
 # USAGE:
 #   1. Login to Vercel first:  npx vercel login
-#   2. Run this script:        powershell -ExecutionPolicy Bypass -File .\deploy-setup.ps1
+#   2. Run this script:        powershell -ExecutionPolicy Bypass -File .\scripts\deploy-setup.ps1
 #
 # You will be prompted for secrets interactively — nothing is
 # stored in this file or in chat history.

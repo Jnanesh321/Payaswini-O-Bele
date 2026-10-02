@@ -90,8 +90,8 @@ describe("createBooking — Mass-Assignment Prevention", () => {
       deliveryFee: 0,
     })
 
-    // 2 days × ₹500/day = ₹1000 = 100000 paise (NOT the attacker's ₹0.01)
-    assert.equal(pricing.totalAmount, 100000, "totalAmount must be server-computed, not attacker-supplied 1")
+    // 2 days × ₹500/day + ₹1,000 deposit = ₹2,000 = 200000 paise (NOT the attacker's ₹0.01)
+    assert.equal(pricing.totalAmount, 200000, "totalAmount must be server-computed, not attacker-supplied 1")
     assert.notEqual(pricing.totalAmount, attackerBody.totalAmount, "server pricing must differ from attacker value")
 
     // Step 4: Status is always REQUESTED (the state machine's initial state)
@@ -144,7 +144,7 @@ describe("createBooking — Mass-Assignment Prevention", () => {
     assert.equal(pricing.totalOperatorFee, 120000)  // 3 × 40000
     assert.equal(pricing.deliveryFee, DELIVERY_FEE_PAISE) // server constant
     assert.equal(pricing.subtotal, 270000) // toolFee + operatorFee
-    assert.equal(pricing.totalAmount, 275000) // subtotal + deliveryFee
+    assert.equal(pricing.totalAmount, 375000) // subtotal + deliveryFee + deposit
   })
 
   it("the allow-list passes only the seven permitted fields", () => {

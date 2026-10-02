@@ -24,7 +24,12 @@ export interface AuthenticatedUser {
  * Ensures the request is authenticated with a valid session.
  */
 export async function requireAuth(): Promise<AuthenticatedUser> {
-  const session = await getServerSession()
+  let session
+  try {
+    session = await getServerSession()
+  } catch {
+    throw new AuthGuardError("Unauthorized — please sign in", 401)
+  }
   if (!session?.user?.id) {
     throw new AuthGuardError("Unauthorized — please sign in", 401)
   }
