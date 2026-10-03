@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       items: body?.items,
       deliveryType: body?.deliveryType,
+      deliveryAddress: body?.deliveryAddress,
     })
     return NextResponse.json({ success: true, data: result })
   } catch (error) {

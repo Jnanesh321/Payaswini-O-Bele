@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { MapPin, Check, X, Search } from "lucide-react"
+import { MapPin, Check, X, Search, Navigation, Loader2, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useUserLocation, calculateDistanceKm } from "@/hooks/use-user-location"
 
 export interface TalukOption {
   id: string
@@ -10,26 +11,28 @@ export interface TalukOption {
   nameKn: string
   district: "Kasaragod" | "Dakshina Kannada"
   distanceApprox?: string
+  lat: number
+  lng: number
 }
 
 export const REGIONAL_TALUKS: TalukOption[] = [
-  { id: "kasaragod_puttur", name: "Kasaragod / Puttur (All Hubs)", nameKn: "ಕಾಸರಗೋಡು / ಪುತ್ತೂರು (ಎಲ್ಲಾ ಕೇಂದ್ರಗಳು)", district: "Kasaragod", distanceApprox: "Co-op Hub" },
-  { id: "badiadka", name: "Badiadka", nameKn: "ಬದಿಯಡ್ಕ", district: "Kasaragod", distanceApprox: "3-5 km" },
-  { id: "kasaragod_town", name: "Kasaragod Town", nameKn: "ಕಾಸರಗೋಡು ನಗರ", district: "Kasaragod", distanceApprox: "5-10 km" },
-  { id: "kumble", name: "Kumble", nameKn: "ಕುಂಬಳೆ", district: "Kasaragod", distanceApprox: "12-15 km" },
-  { id: "manjeshwar", name: "Manjeshwar", nameKn: "ಮಂಜೇಶ್ವರ", district: "Kasaragod", distanceApprox: "18-22 km" },
-  { id: "puttur", name: "Puttur", nameKn: "ಪುತ್ತೂರು", district: "Dakshina Kannada", distanceApprox: "8-12 km" },
-  { id: "sullia", name: "Sullia", nameKn: "ಸುಳ್ಯ", district: "Dakshina Kannada", distanceApprox: "15-20 km" },
-  { id: "bantwal", name: "Bantwal", nameKn: "ಬಂಟ್ವಾಳ", district: "Dakshina Kannada", distanceApprox: "20-25 km" },
-  { id: "belthangady", name: "Belthangady", nameKn: "ಬೆಳ್ತಂಗಡಿ", district: "Dakshina Kannada", distanceApprox: "25-30 km" },
-  { id: "mangaluru", name: "Mangaluru Rural", nameKn: "ಮಂಗಳೂರು ಗ್ರಾಮಾಂತರ", district: "Dakshina Kannada", distanceApprox: "30-35 km" },
+  { id: "kasaragod_puttur", name: "Kasaragod / Puttur (All Hubs)", nameKn: "ಕಾಸರಗೋಡು / ಪುತ್ತೂರು (ಎಲ್ಲಾ ಕೇಂದ್ರಗಳು)", district: "Kasaragod", distanceApprox: "Co-op Hub", lat: 12.6341, lng: 75.0970 },
+  { id: "badiadka", name: "Badiadka", nameKn: "ಬದಿಯಡ್ಕ", district: "Kasaragod", distanceApprox: "3-5 km", lat: 12.5843, lng: 75.0536 },
+  { id: "kasaragod_town", name: "Kasaragod Town", nameKn: "ಕಾಸರಗೋಡು ನಗರ", district: "Kasaragod", distanceApprox: "5-10 km", lat: 12.4996, lng: 74.9869 },
+  { id: "kumble", name: "Kumble", nameKn: "ಕುಂಬಳೆ", district: "Kasaragod", distanceApprox: "12-15 km", lat: 12.5937, lng: 74.9458 },
+  { id: "manjeshwar", name: "Manjeshwar", nameKn: "ಮಂಜೇಶ್ವರ", district: "Kasaragod", distanceApprox: "18-22 km", lat: 12.7153, lng: 74.8872 },
+  { id: "puttur", name: "Puttur", nameKn: "ಪುತ್ತೂರು", district: "Dakshina Kannada", distanceApprox: "8-12 km", lat: 12.7687, lng: 75.2071 },
+  { id: "sullia", name: "Sullia", nameKn: "ಸುಳ್ಯ", district: "Dakshina Kannada", distanceApprox: "15-20 km", lat: 12.5606, lng: 75.3908 },
+  { id: "bantwal", name: "Bantwal", nameKn: "ಬಂಟ್ವಾಳ", district: "Dakshina Kannada", distanceApprox: "20-25 km", lat: 12.8943, lng: 75.0345 },
+  { id: "belthangady", name: "Belthangady", nameKn: "ಬೆಳ್ತಂಗಡಿ", district: "Dakshina Kannada", distanceApprox: "25-30 km", lat: 12.9991, lng: 75.2635 },
+  { id: "mangaluru", name: "Mangaluru Rural", nameKn: "ಮಂಗಳೂರು ಗ್ರಾಮಾಂತರ", district: "Dakshina Kannada", distanceApprox: "30-35 km", lat: 12.9141, lng: 74.8560 },
 ]
 
 interface LocationSelectorSheetProps {
   isOpen: boolean
   onClose: () => void
   selectedLocation: string
-  onSelectLocation: (taluk: TalukOption) => void
+  onSelectLocation: (taluk: TalukOption, coords?: { latitude: number; longitude: number }) => void
   locale?: string
 }
 
@@ -42,6 +45,17 @@ export function LocationSelectorSheet({
 }: LocationSelectorSheetProps) {
   const [filterQuery, setFilterQuery] = useState("")
   const [activeDistrict, setActiveDistrict] = useState<"ALL" | "Kasaragod" | "Dakshina Kannada">("ALL")
+  const { coords, isLocating, errorMessage, detectLocation } = useUserLocation()
+
+  const handleGpsDetect = async () => {
+    try {
+      const res = await detectLocation()
+      onSelectLocation(res.nearestHub, res.coords)
+      onClose()
+    } catch {
+      // Error handled in hook state
+    }
+  }
 
   const filteredTaluks = REGIONAL_TALUKS.filter((t) => {
     const matchesDistrict = activeDistrict === "ALL" || t.district === activeDistrict
@@ -101,6 +115,59 @@ export function LocationSelectorSheet({
               </button>
             </div>
 
+            {/* ── GPS Auto-Detect Button Card ──────────────── */}
+            <div className="px-5 py-3 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/70">
+              <button
+                type="button"
+                onClick={handleGpsDetect}
+                disabled={isLocating}
+                className="w-full flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-card border-2 border-primary/40 shadow-xs hover:border-primary hover:shadow-md transition-all active:scale-[0.98] group text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-xs group-hover:scale-105 transition-transform">
+                    {isLocating ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Navigation size={18} className="fill-white" />
+                    )}
+                    {!isLocating && (
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-display text-xs font-bold text-foreground">
+                        {locale === "kn" ? "ನನ್ನ ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಪತ್ತೆಹಚ್ಚಿ (GPS)" : "Use Current Location (GPS)"}
+                      </p>
+                      <span className="rounded bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 text-[9px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                        Auto
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {isLocating
+                        ? (locale === "kn" ? "GPS ಉಪಗ್ರಹಗಳ ಮೂಲಕ ಹುಡುಕಲಾಗುತ್ತಿದೆ..." : "Detecting nearest farm hub via GPS...")
+                        : coords
+                        ? `${locale === "kn" ? "ಪತ್ತೆಯಾಗಿದೆ" : "Detected"}: (${coords.latitude.toFixed(3)}° N, ${coords.longitude.toFixed(3)}° E)`
+                        : (locale === "kn" ? "ಬ್ರೌಸರ್ ಅನುಮತಿ ಪಡೆದು ಹತ್ತಿರದ ಕೇಂದ್ರ ಆಯ್ಕೆಮಾಡಿ" : "Tap to find nearest hub & dispatch time")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center text-primary font-bold text-xs pl-2">
+                  <Sparkles size={16} />
+                </div>
+              </button>
+
+              {errorMessage && (
+                <p className="mt-2 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200 dark:border-amber-900/50">
+                  ⚠️ {errorMessage}
+                </p>
+              )}
+            </div>
+
             {/* District Quick Toggle */}
             <div className="flex items-center gap-1.5 border-b border-border/50 px-5 py-2.5 overflow-x-auto no-scrollbar">
               {(["ALL", "Kasaragod", "Dakshina Kannada"] as const).map((dist) => (
@@ -137,13 +204,14 @@ export function LocationSelectorSheet({
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1.5 max-h-[340px]">
               {filteredTaluks.map((taluk) => {
                 const isSelected = selectedLocation === taluk.id || selectedLocation === taluk.name
+                const liveDistance = coords ? calculateDistanceKm(coords.latitude, coords.longitude, taluk.lat, taluk.lng) : null
 
                 return (
                   <button
                     key={taluk.id}
                     type="button"
                     onClick={() => {
-                      onSelectLocation(taluk)
+                      onSelectLocation(taluk, coords ? { latitude: coords.latitude, longitude: coords.longitude } : undefined)
                       onClose()
                     }}
                     className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition-all ${
@@ -166,12 +234,19 @@ export function LocationSelectorSheet({
                         </p>
                         <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
                           <span>{taluk.district}</span>
-                          {taluk.distanceApprox && (
+                          {liveDistance !== null ? (
+                            <>
+                              <span>•</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                📍 {liveDistance} km away
+                              </span>
+                            </>
+                          ) : taluk.distanceApprox ? (
                             <>
                               <span>•</span>
                               <span className="font-medium text-accent-foreground">{taluk.distanceApprox}</span>
                             </>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     </div>

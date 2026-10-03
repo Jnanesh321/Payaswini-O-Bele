@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useLocale, useTranslations } from "next-intl"
@@ -33,13 +33,20 @@ interface UtilityFeedClientProps {
   activeBooking: ActiveBookingData | null
 }
 
+import { useUserLocation } from "@/hooks/use-user-location"
+
 export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedClientProps) {
   const locale = useLocale()
   const t = useTranslations("homeUtility")
   const itemCount = useCartStore((s) => s.getItemCount())
+  const { coords: liveGpsCoords, nearestHub: gpsNearestHub } = useUserLocation()
 
   // State
-  const [selectedLocation, setSelectedLocation] = useState<TalukOption>(REGIONAL_TALUKS[0])
+  const [manualLocation, setManualLocation] = useState<TalukOption | null>(null)
+  const [manualGps, setManualGps] = useState<{ latitude: number; longitude: number } | null>(null)
+  const selectedLocation = manualLocation || gpsNearestHub || REGIONAL_TALUKS[0]
+  const gpsCoords = manualGps || (liveGpsCoords ? { latitude: liveGpsCoords.latitude, longitude: liveGpsCoords.longitude } : null)
+
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false)
   const [selectedBookingTool, setSelectedBookingTool] = useState<ToolCardType | null>(null)
   const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
@@ -120,11 +127,26 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
               onClick={() => setIsLocationSheetOpen(true)}
               className="flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-2.5 py-1 text-left shadow-2xs hover:border-primary/50 transition active:scale-98"
             >
-              <span className="text-sm leading-none">📍</span>
+              <div className="relative flex items-center justify-center">
+                <span className="text-sm leading-none">📍</span>
+                {gpsCoords && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                )}
+              </div>
               <div className="flex flex-col">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none">
-                  {locale === "kn" ? "ಸೇವಾ ಕೇಂದ್ರ" : "Operating Hub"}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none">
+                    {locale === "kn" ? "ಸೇವಾ ಕೇಂದ್ರ" : "Operating Hub"}
+                  </span>
+                  {gpsCoords && (
+                    <span className="text-[8px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 font-extrabold px-1 rounded leading-none">
+                      GPS
+                    </span>
+                  )}
+                </div>
                 <span className="font-display text-xs font-bold text-foreground leading-tight flex items-center gap-0.5">
                   <span className="max-w-[130px] truncate">
                     {locale === "kn" ? selectedLocation.nameKn : selectedLocation.name}
@@ -336,7 +358,10 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
             isOpen={isLocationSheetOpen}
             onClose={() => setIsLocationSheetOpen(false)}
             selectedLocation={selectedLocation.id}
-            onSelectLocation={(taluk) => setSelectedLocation(taluk)}
+            onSelectLocation={(taluk, coords) => {
+              setManualLocation(taluk)
+              if (coords) setManualGps(coords)
+            }}
             locale={locale}
           />
         )}

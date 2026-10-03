@@ -60,8 +60,9 @@ export async function createRazorpayOrder(params: {
   userId: string
   items: unknown
   deliveryType: unknown
+  deliveryAddress?: unknown
 }) {
-  const { userId, items: rawItems, deliveryType } = params
+  const { userId, items: rawItems, deliveryType, deliveryAddress } = params
 
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     throw new PaymentServiceError("`items` must be a non-empty array", 400)
@@ -262,6 +263,7 @@ export async function createRazorpayOrder(params: {
         pricePerDay: p.pricing.toolFeePerDay,
         totalAmount: p.pricing.totalAmount,
         status: "REQUESTED",
+        deliveryAddress: typeof deliveryAddress === "string" ? deliveryAddress : undefined,
         bookingRef: `BK${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
       },
     })

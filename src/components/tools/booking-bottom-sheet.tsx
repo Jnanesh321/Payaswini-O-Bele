@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useLocale, useTranslations } from "next-intl"
@@ -17,10 +17,12 @@ import {
   Info,
   Loader2,
   Check,
+  Navigation,
 } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import type { ToolCard as ToolCardType } from "@/types"
 import { ShiftSelector, type ShiftType, FARM_SHIFTS } from "./shift-selector"
+import { useUserLocation } from "@/hooks/use-user-location"
 
 declare global {
   interface Window {
@@ -93,6 +95,24 @@ export function BookingBottomSheet({
   const [loading, setLoading] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Farm GPS location tracking
+  const { coords: cachedGps, isLocating: isLocatingGps, detectLocation: detectGpsLocation } = useUserLocation()
+  const [pinnedGps, setPinnedGps] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null)
+  const farmCoords = pinnedGps || cachedGps
+
+  const handlePinFarmGps = async () => {
+    try {
+      const res = await detectGpsLocation()
+      setPinnedGps({
+        latitude: res.coords.latitude,
+        longitude: res.coords.longitude,
+        accuracy: res.coords.accuracy,
+      })
+    } catch {
+      // Ignored
+    }
+  }
+
   // Date pill options
   const dateOptions = useMemo(() => {
     const now = new Date()
@@ -158,7 +178,10 @@ export function BookingBottomSheet({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          deliveryType: "pickup",
+          deliveryType: "delivery",
+          deliveryAddress: farmCoords
+            ? `Farm GPS: ${farmCoords.latitude.toFixed(5)}, ${farmCoords.longitude.toFixed(5)} (${tool.taluk || "Local Hub"})`
+            : `${tool.taluk || "Kasaragod / Puttur"} Hub Dispatch`,
           items: [
             {
               toolId: tool.id,
@@ -497,6 +520,71 @@ export function BookingBottomSheet({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* ── Section 2.5: Farm GPS Location Pin ── */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B4513]">
+                  2. FARM GATE LOCATION (GPS)
+                </span>
+                <div className="rounded-2xl border border-[#E5E7EB] bg-white p-3.5 space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2D5016]/10 text-[#2D5016]">
+                        <Navigation size={18} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-display text-xs font-bold text-[#1C1C16]">
+                            {farmCoords ? "Farm Location Pinned" : "Pin Farm Gate Coordinates"}
+                          </p>
+                          {farmCoords && (
+                            <span className="rounded bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.2">
+                              GPS Active
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#6B7280] leading-tight mt-0.5">
+                          {farmCoords
+                            ? `Lat: ${farmCoords.latitude.toFixed(4)}°, Lng: ${farmCoords.longitude.toFixed(4)}° • Precision ${farmCoords.accuracy ?? 15}m`
+                            : "Share GPS coordinates so operator reaches your exact farm gate"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handlePinFarmGps}
+                      disabled={isLocatingGps}
+                      className="shrink-0 px-3 py-1.5 rounded-xl border border-[#2D5016]/40 bg-[#2D5016]/10 text-[#2D5016] text-xs font-bold hover:bg-[#2D5016] hover:text-white transition flex items-center gap-1 active:scale-95 disabled:opacity-50"
+                    >
+                      {isLocatingGps ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : farmCoords ? (
+                        <>
+                          <Check size={13} strokeWidth={2.5} />
+                          <span>Pinned</span>
+                        </>
+                      ) : (
+                        <>
+                          <Navigation size={13} />
+                          <span>Use GPS</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {farmCoords && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${farmCoords.latitude},${farmCoords.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#2D5016] hover:underline"
+                    >
+                      <span>📍 View Pinned Location in Google Maps ↗</span>
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* ── Section 3: Pricing Breakdown & Pre-Auth Guarantee ── */}
