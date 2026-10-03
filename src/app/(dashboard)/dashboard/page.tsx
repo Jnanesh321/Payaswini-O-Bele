@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useLocale } from "next-intl"
+import { useSession, signOut } from "next-auth/react"
 import { formatPrice, formatDate } from "@/lib/utils"
 import { FarmerShell } from "@/components/layout/farmer-shell"
 import { CapabilityVerificationModal } from "@/components/verification/capability-verification-modal"
@@ -18,6 +19,8 @@ import {
   Wrench,
   CheckCircle2,
   AlertCircle,
+  User,
+  LogOut,
 } from "lucide-react"
 
 interface RentalItem {
@@ -41,12 +44,23 @@ interface CapabilityItem {
 }
 
 export default function DashboardPage() {
+  const { data: session } = useSession()
   const locale = useLocale()
   const fp = (n: number) => formatPrice(n, locale)
   const [rentals, setRentals] = useState<RentalItem[]>([])
   const [capabilities, setCapabilities] = useState<CapabilityItem[]>([])
   const [loading, setLoading] = useState(true)
   const [kycModalOpen, setKycModalOpen] = useState(false)
+
+  // Scroll to #account if navigated from bottom-nav Profile tab
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#account") {
+      const timer = setTimeout(() => {
+        document.getElementById("account")?.scrollIntoView({ behavior: "smooth" })
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
@@ -268,6 +282,89 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* ── Farmer Account & Profile Section (#account) ───────── */}
+        <section id="account" className="mt-8 scroll-mt-24 border-t border-border pt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display text-sm font-bold text-foreground">
+              Account & Profile
+            </h2>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+              Farmer
+            </span>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm space-y-4">
+            {/* User Profile Card */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-display text-base font-bold text-primary">
+                {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User size={20} />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-sm font-bold text-foreground">
+                  {session?.user?.name || "O~Bele Farmer"}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {session?.user?.email || ((session?.user as Record<string, unknown>)?.phone as string) || "Verified Member"}
+                </p>
+              </div>
+            </div>
+
+            {/* KYC Status Banner */}
+            <div className="flex items-center justify-between rounded-xl bg-muted/60 p-3 text-xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className={isKycVerified ? "text-primary" : "text-amber-600"} />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {isKycVerified ? "KYC Verified Farmer" : isKycPending ? "KYC Verification Pending" : "KYC Unverified"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {isKycVerified ? "Eligible for priority doorstep machinery delivery" : "Verify Aadhaar to unlock zero-deposit rentals"}
+                  </p>
+                </div>
+              </div>
+              {!isKycVerified && (
+                <button
+                  type="button"
+                  onClick={() => setKycModalOpen(true)}
+                  className="rounded-lg bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary/90 transition shrink-0"
+                >
+                  Verify
+                </button>
+              )}
+            </div>
+
+            {/* Account Quick Links */}
+            <div className="divide-y divide-border/60 text-xs">
+              <Link
+                href="/onboarding"
+                className="flex items-center justify-between py-2.5 text-muted-foreground hover:text-foreground"
+              >
+                <span>Switch or Add Roles (Tool Owner / Operator)</span>
+                <ChevronRight size={14} />
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="flex items-center justify-between py-2.5 text-muted-foreground hover:text-foreground"
+              >
+                <span>Rental Policies & How O~Bele Works</span>
+                <ChevronRight size={14} />
+              </Link>
+            </div>
+
+            {/* Sign Out Button */}
+            <div className="border-t border-border/80 pt-3">
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground transition"
+              >
+                <LogOut size={15} />
+                Sign Out from O~Bele
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* Verification Modal */}

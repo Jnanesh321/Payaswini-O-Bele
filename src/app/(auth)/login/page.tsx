@@ -42,6 +42,9 @@ export default function LoginPage() {
       }
       setSent(true)
       const params = new URLSearchParams({ phone: cleanPhone, callbackUrl })
+      if (data.devOtp) {
+        params.set("devOtp", data.devOtp)
+      }
       router.push(`/verify-otp?${params}`)
     } catch {
       setError("Network error. Please try again.")

@@ -20,8 +20,16 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
   }
 
   if (
+    cat.includes("SPRAY") ||
+    n.includes("spray") ||
+    n.includes("knapsack") ||
+    n.includes("battery")
+  ) {
+    return "/images/tools/battery-sprayer.png"
+  }
+
+  if (
     cat.includes("TILLER") ||
-    cat.includes("TRACTOR") ||
     n.includes("tiller") ||
     n.includes("cultivator") ||
     n.includes("shakti")

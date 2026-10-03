@@ -17,6 +17,7 @@ interface AdminShellProps {
 
 const tabs = [
   { id: "dashboard", href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { id: "inventory", href: "/admin/inventory", label: "Equipment", icon: Package },
   { id: "verifications", href: "/admin/verifications", label: "KYC Review", icon: ShieldCheck },
   { id: "assignments", href: "/admin/assignments", label: "Dispatch", icon: Truck },
 ]
@@ -32,6 +33,7 @@ export function AdminShell({
 
   const activeTab =
     pathname === "/admin" ? "dashboard"
+    : pathname.startsWith("/admin/inventory") ? "inventory"
     : pathname.startsWith("/admin/verifications") ? "verifications"
     : pathname.startsWith("/admin/assignments") ? "assignments"
     : "dashboard"

@@ -5,6 +5,23 @@ export type SafeUser = Omit<User, "createdAt" | "updatedAt"> & {
   updatedAt: string
 }
 
+export interface OwnerOffer {
+  instanceId: string
+  assetCode: string
+  ownerId: string
+  ownerName: string
+  ownerLocation: string
+  taluk?: string
+  pricePerDay: number
+  deposit: number
+  images: string[]
+  conditionGrade: string
+  rating: number
+  reviewCount: number
+  notes?: string | null
+  canSelfOperate?: boolean
+}
+
 export interface ToolCard {
   id: string
   slug?: string
@@ -15,6 +32,8 @@ export interface ToolCard {
   images: string[]
   thumbnailUrl?: string | null
   pricePerDay: number
+  minPrice?: number
+  maxPrice?: number
   deposit: number
   availableCount: number
   totalCount: number
@@ -37,6 +56,7 @@ export interface ToolCard {
     name?: string | null
     isVerified?: boolean
   } | null
+  ownerOffers?: OwnerOffer[]
   createdAt: string
 }
 

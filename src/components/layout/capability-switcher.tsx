@@ -271,9 +271,20 @@ export function CapabilitySwitcher({
               transition={{ duration: 0.15 }}
               className="absolute right-0 top-full z-50 mt-1.5 w-64 rounded-2xl border border-[#D5D9C9] bg-white p-2 shadow-xl ring-1 ring-black/5"
             >
-              <div className="px-3 py-2 border-b border-border/50">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Switch Portal
+              {/* User summary in shell dropdown */}
+              <div className="border-b border-border/50 px-3 py-2">
+                <div className="flex items-center justify-between gap-1.5">
+                  <p className="truncate text-xs font-bold text-[#143626]">
+                    {session.user.name || "O~Bele Member"}
+                  </p>
+                  {session.user.isAdmin && (
+                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[8px] font-bold text-primary">
+                      ADMIN
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Active role: <span className="font-semibold text-foreground">{currentRoleMeta.shortLabel}</span>
                 </p>
               </div>
 
@@ -315,7 +326,16 @@ export function CapabilitySwitcher({
                 })}
               </div>
 
-              <div className="mt-1 border-t border-border/50 pt-1">
+              <div className="mt-1 border-t border-border/50 pt-1 space-y-0.5">
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 transition"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Admin Staff Console
+                  </Link>
+                )}
                 <Link
                   href="/"
                   className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -324,12 +344,27 @@ export function CapabilitySwitcher({
                   Main Marketplace
                 </Link>
                 <Link
+                  href="/dashboard#account"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  My Profile & Account
+                </Link>
+                <Link
                   href="/onboarding"
                   className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" />
                   Manage Capabilities
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10 transition"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign Out
+                </button>
               </div>
             </motion.div>
           )}

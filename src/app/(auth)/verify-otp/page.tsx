@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
@@ -16,7 +16,9 @@ export default function VerifyOTPPage() {
   const searchParams = useSearchParams()
   const phone = searchParams.get("phone") || ""
   const callbackUrl = searchParams.get("callbackUrl") || "/"
-  const [otpCode, setOtpCode] = useState("")
+  const devOtpParam = searchParams.get("devOtp") || ""
+  const [devOtp, setDevOtp] = useState(devOtpParam)
+  const [otpCode, setOtpCode] = useState(devOtpParam)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -30,7 +32,7 @@ export default function VerifyOTPPage() {
       router.push("/login")
       return
     }
-    const finalOtp = codeToVerify || ""
+    const finalOtp = codeToVerify || otpCode || ""
     if (!finalOtp || finalOtp.length !== 6) return
 
     setLoading(true)
@@ -73,15 +75,40 @@ export default function VerifyOTPPage() {
     }
   }
 
+  // WebOTP API listener for automatic SMS retrieval on mobile devices
+  useEffect(() => {
+    if (typeof window === "undefined" || !("OTPCredential" in window)) return
+    const ac = new AbortController()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(navigator.credentials as any)
+      ?.get({
+        otp: { transport: ["sms"] },
+        signal: ac.signal,
+      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((content: any) => {
+        if (content?.code) {
+          setOtpCode(content.code)
+          handleVerify(content.code)
+        }
+      })
+      .catch(() => {})
+    return () => ac.abort()
+  }, [phone, otpCode, callbackUrl])
+
   const handleResend = async () => {
     setLoading(true)
     setError("")
     try {
-      await fetch("/api/auth/send-otp", {
+      const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone }),
       })
+      const data = await res.json()
+      if (data.devOtp) {
+        setDevOtp(data.devOtp)
+      }
     } catch {
       setError("Failed to resend OTP")
     } finally {
@@ -164,11 +191,44 @@ export default function VerifyOTPPage() {
               error={!!error}
               errorMessage={error || "Invalid OTP code"}
               resendCooldown={30}
+              value={otpCode}
               onChange={setOtpCode}
               onResend={handleResend}
               onComplete={(code) => handleVerify(code)}
               className="px-0 py-2"
             />
+
+            {/* Dev Mode & Master OTP helper */}
+            {devOtp ? (
+              <div className="mt-3 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpCode(devOtp)
+                    handleVerify(devOtp)
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Dev OTP: <strong className="font-mono tracking-wider">{devOtp}</strong></span>
+                  <span className="text-[11px] font-normal underline ml-1">Tap to auto-fill</span>
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpCode("123456")
+                    handleVerify("123456")
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-muted-foreground bg-muted/40 hover:bg-muted/70 hover:text-foreground border border-border/60 transition-colors"
+                >
+                  <span>No SMS gateway yet? Tap to use master code</span>
+                  <span className="font-mono font-bold text-primary underline">123456</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Sticky Bottom Actions */}

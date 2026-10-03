@@ -21,15 +21,14 @@ const categoryOptions = [
 
 export default function AddToolPage() {
   const router = useRouter()
-  const [name, setName] = useState("Shriram Power Tiller 12HP")
-  const [category, setCategory] = useState<string>(ToolCategory.TILLERS)
-  const [pricePerDay, setPricePerDay] = useState("1200")
-  const [deposit, setDeposit] = useState("5000")
-  const [requiresOperator, setRequiresOperator] = useState(true)
-  const [operatorFee, setOperatorFee] = useState("600")
-  const [description, setDescription] = useState(
-    "Excellent condition 12HP power tiller. Suitable for wet paddy fields as well as dry soil. Regularly serviced and reliable. Fuel consumption is approx 1.2 L/hr."
-  )
+  const [name, setName] = useState("")
+  const [category, setCategory] = useState<string>(ToolCategory.CLIMBING_POLES)
+  const [pricePerDay, setPricePerDay] = useState("")
+  const [deposit, setDeposit] = useState("")
+  const [conditionGrade, setConditionGrade] = useState("EXCELLENT")
+  const [requiresOperator, setRequiresOperator] = useState(false)
+  const [operatorFee, setOperatorFee] = useState("")
+  const [description, setDescription] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [imageUrl, setImageUrl] = useState("")
 
@@ -53,13 +52,14 @@ export default function AddToolPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
+          name: name.trim(),
           category,
-          pricePerDay,
-          deposit,
+          pricePerDay: pricePerDay.trim(),
+          deposit: deposit.trim() || "0",
+          conditionGrade,
           requiresCertifiedOperator: requiresOperator,
-          operatorFeePerDay: requiresOperator ? operatorFee : "0",
-          description,
+          operatorFeePerDay: requiresOperator ? (operatorFee.trim() || "0") : "0",
+          description: description.trim(),
           quantity,
           imageUrl: imageUrl.trim() || undefined,
         }),
@@ -161,6 +161,7 @@ export default function AddToolPage() {
             <input
               type="text"
               required
+              placeholder="e.g. 12m Carbon Fiber Pole, Power Tiller 12HP"
               className="w-full text-[13px] font-semibold bg-white border border-[#D5D9C9] rounded-xl px-4 py-3 outline-none focus:border-[#2D5016] focus:ring-1 focus:ring-[#2D5016] transition-all text-[#1E2A12]"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -170,7 +171,7 @@ export default function AddToolPage() {
           {/* Category */}
           <div className="space-y-2">
             <label className="text-[12px] font-bold text-[#5C4A37] block">
-              Category
+              Category *
             </label>
             <div className="relative">
               <select
@@ -187,47 +188,88 @@ export default function AddToolPage() {
             </div>
           </div>
 
-          {/* Daily Rate & Security Deposit Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Daily Rental Rate */}
-            <div className="space-y-2">
-              <label className="text-[12px] font-bold text-[#5C4A37] block">
-                Daily Rental Rate *
+          {/* Condition Grade */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[12px] font-bold text-[#5C4A37]">
+                Equipment Condition *
               </label>
-              <div className="flex items-center bg-white border border-[#D5D9C9] rounded-xl px-3 py-3 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
-                <span className="text-[15px] font-bold text-[#2D5016] mr-1.5">₹</span>
-                <input
-                  type="number"
-                  required
-                  className="bg-transparent border-0 outline-none p-0 text-[13px] font-semibold text-[#1E2A12] w-full focus:ring-0 focus:outline-none"
-                  value={pricePerDay}
-                  onChange={(e) => setPricePerDay(e.target.value)}
-                />
-                <span className="text-[11px] font-bold text-[#5C4A37] ml-1">/day</span>
-              </div>
+              <span className="text-[10px] text-[#2D5016] font-bold">
+                Inspected by Admin
+              </span>
             </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { grade: "EXCELLENT", label: "Excellent", desc: "Like new, <1 yr" },
+                { grade: "GOOD", label: "Good", desc: "Well maintained" },
+                { grade: "FAIR", label: "Fair", desc: "Working, older" },
+              ].map((item) => (
+                <button
+                  type="button"
+                  key={item.grade}
+                  onClick={() => setConditionGrade(item.grade)}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    conditionGrade === item.grade
+                      ? "bg-[#E8F0D5] border-[#2D5016] text-[#2D5016]"
+                      : "bg-white border-[#D5D9C9] text-[#5C4A37] hover:border-[#8B4513]/40"
+                  }`}
+                >
+                  <p className="text-[12px] font-bold">{item.label}</p>
+                  <p className="text-[9px] opacity-75">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {/* Security Deposit */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-[12px] font-bold text-[#5C4A37]">
-                  Security Deposit *
+          {/* Daily Rate & Security Deposit Grid */}
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Daily Rental Rate */}
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-[#5C4A37] block">
+                  Your Daily Rate *
                 </label>
-                <span className="bg-[#E8F0D5] text-[#2D5016] text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded leading-none">
-                  Refundable
-                </span>
+                <div className="flex items-center bg-white border border-[#D5D9C9] rounded-xl px-3 py-3 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
+                  <span className="text-[15px] font-bold text-[#2D5016] mr-1.5">₹</span>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 500"
+                    min="100"
+                    max="15000"
+                    className="bg-transparent border-0 outline-none p-0 text-[13px] font-semibold text-[#1E2A12] w-full focus:ring-0 focus:outline-none"
+                    value={pricePerDay}
+                    onChange={(e) => setPricePerDay(e.target.value)}
+                  />
+                  <span className="text-[11px] font-bold text-[#5C4A37] ml-1">/day</span>
+                </div>
               </div>
-              <div className="flex items-center bg-white border border-[#D5D9C9] rounded-xl px-3 py-3 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
-                <span className="text-[15px] font-bold text-[#2D5016] mr-1.5">₹</span>
-                <input
-                  type="number"
-                  required
-                  className="bg-transparent border-0 outline-none p-0 text-[13px] font-semibold text-[#1E2A12] w-full focus:ring-0 focus:outline-none"
-                  value={deposit}
-                  onChange={(e) => setDeposit(e.target.value)}
-                />
+
+              {/* Security Deposit */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-bold text-[#5C4A37]">
+                    Security Deposit
+                  </label>
+                  <span className="bg-[#E8F0D5] text-[#2D5016] text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded leading-none">
+                    Refundable
+                  </span>
+                </div>
+                <div className="flex items-center bg-white border border-[#D5D9C9] rounded-xl px-3 py-3 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
+                  <span className="text-[15px] font-bold text-[#2D5016] mr-1.5">₹</span>
+                  <input
+                    type="number"
+                    placeholder="e.g. 1000"
+                    className="bg-transparent border-0 outline-none p-0 text-[13px] font-semibold text-[#1E2A12] w-full focus:ring-0 focus:outline-none"
+                    value={deposit}
+                    onChange={(e) => setDeposit(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
+            <p className="text-[10px] text-[#5C4A37]/80">
+              💡 Platform guardrails: ₹100 – ₹15,000/day. You decide your rate; admin reviews quality before activating.
+            </p>
           </div>
 
           {/* Operator Settings Block */}
@@ -238,7 +280,7 @@ export default function AddToolPage() {
                   Requires Certified Operator?
                 </h4>
                 <p className="text-[10px] text-[#5C4A37] mt-0.5">
-                  Highly recommended for heavy machinery
+                  Platform dispatches verified operators automatically to farmers
                 </p>
               </div>
               
@@ -272,6 +314,7 @@ export default function AddToolPage() {
                   <input
                     type="number"
                     required={requiresOperator}
+                    placeholder="e.g. 500"
                     className="bg-transparent border-0 outline-none p-0 text-[13px] font-semibold text-[#1E2A12] w-full focus:ring-0 focus:outline-none"
                     value={operatorFee}
                     onChange={(e) => setOperatorFee(e.target.value)}
@@ -290,6 +333,7 @@ export default function AddToolPage() {
             <textarea
               required
               rows={4}
+              placeholder="Describe tool model, age, working condition, attachments included..."
               className="w-full text-[13px] font-semibold bg-white border border-[#D5D9C9] rounded-xl px-4 py-3 outline-none focus:border-[#2D5016] focus:ring-1 focus:ring-[#2D5016] transition-all text-[#1E2A12] resize-none"
               value={description}
               onChange={(e) => setDescription(e.target.value)}

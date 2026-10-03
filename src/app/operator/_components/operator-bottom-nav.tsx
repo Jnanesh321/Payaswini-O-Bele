@@ -9,11 +9,13 @@ export default function OperatorBottomNav() {
   const isHome = pathname === "/operator"
   const isJobHistory = pathname.startsWith("/operator/history")
   const isEarnings = pathname.startsWith("/operator/earnings")
+  const isProfile = pathname.startsWith("/operator/profile")
 
   const tabs = [
     { href: "/operator", label: "Jobs", icon: "📋", active: isHome },
     { href: "/operator/history", label: "History", icon: "🕒", active: isJobHistory },
     { href: "/operator/earnings", label: "Earnings", icon: "₹", active: isEarnings },
+    { href: "/operator/profile", label: "Profile", icon: "👤", active: isProfile },
   ]
 
   return (

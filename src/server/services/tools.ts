@@ -41,7 +41,20 @@ export async function listTools(params: {
       take: limit,
       include: {
         instances: {
-          select: { status: true },
+          where: { verificationStatus: "VERIFIED" },
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                village: true,
+                taluk: true,
+                district: true,
+                phone: true,
+              },
+            },
+          },
         },
       },
     }),
@@ -50,12 +63,41 @@ export async function listTools(params: {
 
   const mappedTools = tools.map((t) => {
     const { instances, ...rest } = t
-    const totalCount = instances.length
-    const availableCount = instances.filter((i) => i.status === "AVAILABLE").length
+    const availableInstances = instances.filter((i) => i.status === "AVAILABLE")
+    const ownerOffers = availableInstances.map((inst) => {
+      const pricePerDay = inst.pricePerDay ?? t.pricePerDay
+      const deposit = inst.deposit ?? t.deposit
+      const location =
+        [inst.owner.village, inst.owner.taluk].filter(Boolean).join(", ") ||
+        inst.owner.district ||
+        "Coastal Karnataka"
+      return {
+        instanceId: inst.id,
+        assetCode: inst.assetCode,
+        ownerId: inst.owner.id,
+        ownerName: inst.owner.name ?? "Verified Tool Owner",
+        ownerLocation: location,
+        taluk: inst.owner.taluk || "Puttur",
+        pricePerDay,
+        deposit,
+        images: inst.images?.length ? inst.images : t.images,
+        conditionGrade: inst.conditionGrade || "GOOD",
+        rating: inst.rating ?? 4.8,
+        reviewCount: inst.reviewCount ?? 0,
+        notes: inst.notes,
+      }
+    })
+    const prices = ownerOffers.map((o) => o.pricePerDay)
+    const minPrice = prices.length ? Math.min(...prices) : t.pricePerDay
+    const maxPrice = prices.length ? Math.max(...prices) : t.pricePerDay
+
     return {
       ...rest,
-      totalCount,
-      availableCount,
+      totalCount: instances.length,
+      availableCount: availableInstances.length,
+      minPrice,
+      maxPrice,
+      ownerOffers,
     }
   })
 
@@ -74,54 +116,97 @@ export async function createTool(data: Prisma.ToolCreateInput) {
 // ─── Get tool by slug or ID ──────────────────────────────────────────────────
 
 export async function getToolBySlug(slug: string) {
-  let tool
+  const include = {
+    reviews: { include: { user: { select: { id: true, name: true, image: true } } } },
+    instances: {
+      where: { verificationStatus: VerificationStatus.VERIFIED },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            village: true,
+            taluk: true,
+            district: true,
+            phone: true,
+          },
+        },
+      },
+      orderBy: { pricePerDay: "asc" as const },
+    },
+  }
 
+  let tool = null
   if (slug.match(/^[0-9a-fA-F]{25,}$/)) {
     tool = await prisma.tool.findUnique({
       where: { id: slug },
-      include: {
-        reviews: { include: { user: { select: { id: true, name: true, image: true } } } },
-        instances: { include: { owner: { select: { id: true, name: true } } } },
-      },
+      include,
     })
   } else {
     tool = await prisma.tool.findFirst({
       where: { OR: [{ id: slug }, { slug: slug }] },
-      include: {
-        reviews: { include: { user: { select: { id: true, name: true, image: true } } } },
-        instances: { include: { owner: { select: { id: true, name: true } } } },
-      },
+      include,
     })
   }
 
   if (!tool) return null
 
   const { instances, ...toolWithoutInstances } = tool
-  const owner = instances[0]?.owner ?? null
 
   const session = await getServerSession()
-  let canSelfOperate = false
-  if (session?.user?.id && owner) {
-    const permission = await prisma.selfOperatePermission.findUnique({
-      where: {
-        farmerId_toolOwnerId: {
-          farmerId: session.user.id,
-          toolOwnerId: owner.id,
-        },
-      },
-    })
-    canSelfOperate = permission?.status === VerificationStatus.VERIFIED
-  }
+  const userId = session?.user?.id
 
-  const totalCount = instances.length
-  const availableCount = instances.filter((i) => i.status === "AVAILABLE").length
+  // Fetch self-operate permissions if logged in
+  const userPermissions = userId
+    ? await prisma.selfOperatePermission.findMany({
+        where: { farmerId: userId, status: VerificationStatus.VERIFIED },
+        select: { toolOwnerId: true },
+      })
+    : []
+  const verifiedOwnerIds = new Set(userPermissions.map((p) => p.toolOwnerId))
+
+  const availableInstances = instances.filter((i) => i.status === "AVAILABLE")
+  const ownerOffers = availableInstances.map((inst) => {
+    const effectivePrice = inst.pricePerDay ?? tool.pricePerDay
+    const effectiveDeposit = inst.deposit ?? tool.deposit
+    const ownerLocation =
+      [inst.owner.village, inst.owner.taluk].filter(Boolean).join(", ") ||
+      inst.owner.district ||
+      "Coastal Karnataka"
+
+    return {
+      instanceId: inst.id,
+      assetCode: inst.assetCode,
+      ownerId: inst.owner.id,
+      ownerName: inst.owner.name ?? "Verified Tool Owner",
+      ownerLocation,
+      taluk: inst.owner.taluk || "Puttur",
+      pricePerDay: effectivePrice,
+      deposit: effectiveDeposit,
+      images: inst.images.length > 0 ? inst.images : tool.images,
+      conditionGrade: inst.conditionGrade || "GOOD",
+      rating: inst.rating ?? 4.8,
+      reviewCount: inst.reviewCount ?? 0,
+      notes: inst.notes,
+      canSelfOperate: verifiedOwnerIds.has(inst.owner.id),
+    }
+  })
+
+  const primaryOwner = instances[0]?.owner ?? null
+  const prices = ownerOffers.map((o) => o.pricePerDay)
+  const minPrice = prices.length ? Math.min(...prices) : tool.pricePerDay
+  const maxPrice = prices.length ? Math.max(...prices) : tool.pricePerDay
 
   return {
     ...toolWithoutInstances,
-    totalCount,
-    availableCount,
-    toolOwner: owner,
-    canSelfOperate,
+    totalCount: instances.length,
+    availableCount: availableInstances.length,
+    toolOwner: primaryOwner,
+    canSelfOperate: primaryOwner ? verifiedOwnerIds.has(primaryOwner.id) : false,
+    minPrice,
+    maxPrice,
+    ownerOffers,
   }
 }
 

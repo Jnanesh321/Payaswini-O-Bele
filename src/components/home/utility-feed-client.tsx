@@ -1,20 +1,32 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { useLocale, useTranslations } from "next-intl"
 import { Search, MapPin, ChevronDown, ShoppingBag, User, X, SlidersHorizontal, Sparkles, Mic } from "lucide-react"
 import { AppLogo } from "@/components/ui/app-logo"
 import { useCartStore } from "@/store/cart"
 import { getLocaleName } from "@/lib/utils"
 import { ToolCard } from "@/components/tools/tool-card"
-import { BookingBottomSheet } from "@/components/tools/booking-bottom-sheet"
 import { BottomNav } from "@/components/layout/bottom-nav"
-import { LocationSelectorSheet, type TalukOption, REGIONAL_TALUKS } from "./location-selector-sheet"
+import { type TalukOption, REGIONAL_TALUKS } from "./location-selector-sheet"
 import { TaskCarousel, type TaskFilter, SEASONAL_TASKS } from "./task-carousel"
 import { ActiveRentalBanner, type ActiveBookingData } from "./active-rental-banner"
-import { VoiceSearchModal } from "./voice-search-modal"
 import type { ToolCard as ToolCardType } from "@/types"
+
+const LocationSelectorSheet = dynamic(
+  () => import("./location-selector-sheet").then((mod) => mod.LocationSelectorSheet),
+  { ssr: false }
+)
+const BookingBottomSheet = dynamic(
+  () => import("@/components/tools/booking-bottom-sheet").then((mod) => mod.BookingBottomSheet),
+  { ssr: false }
+)
+const VoiceSearchModal = dynamic(
+  () => import("./voice-search-modal").then((mod) => mod.VoiceSearchModal),
+  { ssr: false }
+)
 
 interface UtilityFeedClientProps {
   initialTools: ToolCardType[]
@@ -35,6 +47,13 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
   const [selectedTaskId, setSelectedTaskId] = useState<string>("ALL")
   const [quickTag, setQuickTag] = useState<"ALL" | "FAST" | "ASSURED" | "OPERATOR">("ALL")
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
+
+  const handleOpenBooking = useCallback((toolObj?: ToolCardType) => {
+    if (toolObj) {
+      setSelectedBookingTool(toolObj)
+      setIsBookingSheetOpen(true)
+    }
+  }, [])
 
   // Switch Language
   const toggleLanguage = () => {
@@ -276,10 +295,8 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
                       deposit={depositInRupees}
                       allowsSelfOperate={tool.canSelfOperate ?? !tool.requiresCertifiedOperator}
                       requiresCertifiedOperator={tool.requiresCertifiedOperator}
-                      onBook={() => {
-                        setSelectedBookingTool(tool)
-                        setIsBookingSheetOpen(true)
-                      }}
+                      onBook={handleOpenBooking}
+                      tool={tool}
                     />
                   )
                 })}
@@ -314,28 +331,34 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
         <BottomNav />
 
         {/* ── 4. Location Selector Bottom Sheet ─────────────────────── */}
-        <LocationSelectorSheet
-          isOpen={isLocationSheetOpen}
-          onClose={() => setIsLocationSheetOpen(false)}
-          selectedLocation={selectedLocation.id}
-          onSelectLocation={(taluk) => setSelectedLocation(taluk)}
-          locale={locale}
-        />
+        {isLocationSheetOpen && (
+          <LocationSelectorSheet
+            isOpen={isLocationSheetOpen}
+            onClose={() => setIsLocationSheetOpen(false)}
+            selectedLocation={selectedLocation.id}
+            onSelectLocation={(taluk) => setSelectedLocation(taluk)}
+            locale={locale}
+          />
+        )}
 
         {/* ── 5. Booking Bottom Sheet (Figma Spec) ──────────────────── */}
-        <BookingBottomSheet
-          isOpen={isBookingSheetOpen}
-          onClose={() => setIsBookingSheetOpen(false)}
-          tool={selectedBookingTool}
-        />
+        {isBookingSheetOpen && selectedBookingTool && (
+          <BookingBottomSheet
+            isOpen={isBookingSheetOpen}
+            onClose={() => setIsBookingSheetOpen(false)}
+            tool={selectedBookingTool}
+          />
+        )}
 
         {/* ── 6. Vernacular Voice Search Modal ──────────────────────── */}
-        <VoiceSearchModal
-          isOpen={isVoiceModalOpen}
-          onClose={() => setIsVoiceModalOpen(false)}
-          onSelectQuery={(q) => setSearchQuery(q)}
-          locale={locale}
-        />
+        {isVoiceModalOpen && (
+          <VoiceSearchModal
+            isOpen={isVoiceModalOpen}
+            onClose={() => setIsVoiceModalOpen(false)}
+            onSelectQuery={(q) => setSearchQuery(q)}
+            locale={locale}
+          />
+        )}
       </div>
     </div>
   )

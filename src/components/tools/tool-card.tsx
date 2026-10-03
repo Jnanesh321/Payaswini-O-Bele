@@ -1,11 +1,10 @@
-"use client";
-
-import { useState } from "react";
+import { useState, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Award } from "lucide-react";
-import type { ToolCard as ToolCardType } from "@/types";
+import { MapPin, Award, Star, Plus, Minus, UserCheck, ChevronDown, ChevronUp, Sparkles, ShieldCheck } from "lucide-react";
+import type { ToolCard as ToolCardType, OwnerOffer } from "@/types";
 import { BookingBottomSheet } from "./booking-bottom-sheet";
+import { resolveToolImage } from "@/lib/tool-images";
 
 export interface ToolCardProps {
   id?: string;
@@ -26,13 +25,16 @@ export interface ToolCardProps {
   variant?: "default" | "utility";
   name?: string;
   pricePerDay?: number;
+  minPrice?: number;
+  maxPrice?: number;
   images?: string[];
   thumbnailUrl?: string | null;
   translations?: Record<string, { name?: string; description?: string }> | null;
   canSelfOperate?: boolean;
+  ownerOffers?: OwnerOffer[];
 }
 
-export function ToolCard({
+export const ToolCard = memo(function ToolCard({
   id = "",
   slug = "",
   title,
@@ -52,8 +54,12 @@ export function ToolCard({
   pricePerDay,
   images,
   thumbnailUrl,
+  ownerOffers,
 }: ToolCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isOwnersExpanded, setIsOwnersExpanded] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<OwnerOffer | null>(null);
+
   const finalId = id || tool?.id || "";
   const finalSlug = slug || tool?.slug || finalId;
   const finalTitle = title || name || tool?.name || "Agricultural Tool";
@@ -64,19 +70,27 @@ export function ToolCard({
     thumbnailUrl ||
     tool?.thumbnailUrl;
 
-  const finalImage =
-    rawImage && !rawImage.includes("cloudinary") && !rawImage.endsWith(".svg")
-      ? rawImage
-      : "/images/tools/power-tiller.png";
+  const finalImage = resolveToolImage(
+    rawImage,
+    tool?.category,
+    finalTitle
+  );
 
-  const finalOwnerName = ownerName || tool?.owner?.name || "Verified Owner";
+  const offers: OwnerOffer[] = ownerOffers || tool?.ownerOffers || [];
+  const hasMultipleOwners = offers.length > 0;
+
+  const finalOwnerName =
+    selectedOwner?.ownerName || ownerName || tool?.owner?.name || "Verified Owner";
   const finalOwnerVerified = ownerVerified ?? tool?.owner?.isVerified ?? true;
-  const finalTaluk = taluk || tool?.taluk || "Kasaragod";
+  const finalTaluk = selectedOwner?.taluk || taluk || tool?.taluk || "Kasaragod";
   const finalDistance =
     distanceKm ?? tool?.distanceKm ?? Number((3.2 + ((index * 1.7) % 7)).toFixed(1));
 
-  const finalDailyRate =
-    dailyRate !== undefined
+  // Determine pricing based on selected owner or tool rate
+  const rawRate =
+    selectedOwner?.pricePerDay !== undefined
+      ? selectedOwner.pricePerDay
+      : dailyRate !== undefined
       ? dailyRate
       : pricePerDay
         ? pricePerDay >= 1000
@@ -88,16 +102,15 @@ export function ToolCard({
             : tool.pricePerDay
           : 0;
 
-  const finalDeposit =
-    deposit !== undefined
-      ? deposit >= 10000
-        ? Math.round(deposit / 100)
-        : deposit
-      : tool?.deposit
-        ? tool.deposit >= 10000
-          ? Math.round(tool.deposit / 100)
-          : tool.deposit
-        : 1000;
+  const finalDailyRate = rawRate > 1000 ? Math.round(rawRate / 100) : rawRate;
+
+  const rawDep =
+    selectedOwner?.deposit !== undefined
+      ? selectedOwner.deposit
+      : deposit !== undefined
+      ? deposit
+      : tool?.deposit || 1000;
+  const finalDeposit = rawDep > 10000 ? Math.round(rawDep / 100) : rawDep;
 
   const finalRequiresCert = requiresCertifiedOperator ?? tool?.requiresCertifiedOperator ?? false;
 
@@ -114,11 +127,33 @@ export function ToolCard({
     requiresCertifiedOperator: finalRequiresCert,
     taluk: finalTaluk,
     distanceKm: finalDistance,
-    images: [finalImage],
-    canSelfOperate: allowsSelfOperate,
+    images: selectedOwner?.images && selectedOwner.images.length > 0 ? selectedOwner.images : [finalImage],
+    canSelfOperate: selectedOwner?.canSelfOperate ?? allowsSelfOperate,
+    toolInstanceId: selectedOwner?.instanceId,
+    toolOwner: selectedOwner ? { id: selectedOwner.ownerId, name: selectedOwner.ownerName } : undefined,
   };
 
   const halfDayRate = Math.round(finalDailyRate * 0.58);
+
+  const handleBookOwner = (e: React.MouseEvent, offer?: OwnerOffer) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (offer) {
+      setSelectedOwner(offer);
+    }
+    if (onBook) {
+      onBook({
+        ...(toolObj as unknown as ToolCardType),
+        pricePerDay: (offer ? (offer.pricePerDay > 1000 ? Math.round(offer.pricePerDay / 100) : offer.pricePerDay) : finalDailyRate) * 100,
+        deposit: (offer ? (offer.deposit > 10000 ? Math.round(offer.deposit / 100) : offer.deposit) : finalDeposit) * 100,
+        owner: offer
+          ? { id: offer.ownerId, name: offer.ownerName, isVerified: true }
+          : (tool?.owner || { id: "system", name: finalOwnerName, isVerified: finalOwnerVerified }),
+      });
+    } else {
+      setIsSheetOpen(true);
+    }
+  };
 
   return (
     <div className="group relative bg-card rounded-2xl p-3.5 border border-border/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col gap-3">
@@ -196,6 +231,100 @@ export function ToolCard({
         </div>
       </div>
 
+      {/* ── Owner Selection Accordion (Zomato Hotel Selection Model) ── */}
+      {hasMultipleOwners && (
+        <div className="rounded-xl border border-border/70 bg-muted/30 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIsOwnersExpanded(!isOwnersExpanded)}
+            className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold text-foreground hover:bg-muted/60 transition"
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-primary font-mono text-[10px]">
+                {isOwnersExpanded ? "-" : "+"}
+              </span>
+              <span>
+                {isOwnersExpanded
+                  ? "Hide Tool Owner Listings"
+                  : `Select Owner & Quality (${offers.length} verified listings)`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground text-[11px]">
+              <span>from ₹{Math.min(...offers.map(o => o.pricePerDay >= 1000 ? Math.round(o.pricePerDay / 100) : o.pricePerDay))}/d</span>
+              {isOwnersExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </div>
+          </button>
+
+          {isOwnersExpanded && (
+            <div className="border-t border-border/60 divide-y divide-border/60 p-2 space-y-2 bg-card">
+              <p className="text-[10px] text-muted-foreground px-1 pt-1">
+                Choose the tool owner offering the rate and equipment condition you prefer. Operators are dispatched automatically:
+              </p>
+
+              {offers.map((offer) => {
+                const offerRate = offer.pricePerDay >= 1000 ? Math.round(offer.pricePerDay / 100) : offer.pricePerDay;
+                const isCurrentSelected = selectedOwner?.instanceId === offer.instanceId;
+
+                return (
+                  <div
+                    key={offer.instanceId}
+                    className={`rounded-xl p-2.5 transition flex flex-col gap-2 ${
+                      isCurrentSelected
+                        ? "bg-primary/5 border border-primary/40 shadow-xs"
+                        : "bg-muted/40 hover:bg-muted/80 border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-foreground">{offer.ownerName}</span>
+                          <span className="rounded bg-accent/20 px-1 text-[9px] font-bold text-accent">✓ Verified</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                          <MapPin size={10} className="text-red-500" />
+                          <span>{offer.ownerLocation}</span>
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-heading font-extrabold text-sm text-foreground">₹{offerRate}</span>
+                        <span className="text-[10px] text-muted-foreground">/day</span>
+                      </div>
+                    </div>
+
+                    {/* Machine condition & rating details */}
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground bg-background/80 rounded-lg px-2 py-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-primary">Condition: {offer.conditionGrade}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 font-semibold">
+                          <Star size={10} className="fill-amber-500 text-amber-500" />
+                          {offer.rating.toFixed(1)} ({offer.reviewCount})
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleBookOwner(e, offer)}
+                        className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold px-2.5 py-1 transition"
+                      >
+                        Rent from {offer.ownerName.split(" ")[0]}
+                      </button>
+                    </div>
+
+                    {offer.notes && (
+                      <p className="text-[10px] text-muted-foreground italic px-1">
+                        &ldquo;{offer.notes}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Bottom Row: Shift Rates & 1-Tap Booking CTA ── */}
       <div className="flex items-center justify-between pt-2.5 border-t border-border/70 mt-0.5">
         <div>
@@ -216,15 +345,7 @@ export function ToolCard({
 
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (onBook) {
-              onBook(toolObj as unknown as ToolCardType);
-            } else {
-              setIsSheetOpen(true);
-            }
-          }}
+          onClick={(e) => handleBookOwner(e)}
           className="relative flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
         >
           <span>Book Now</span>
@@ -232,7 +353,7 @@ export function ToolCard({
         </button>
       </div>
 
-      {!onBook && (
+      {!onBook && isSheetOpen && (
         <BookingBottomSheet
           isOpen={isSheetOpen}
           onClose={() => setIsSheetOpen(false)}
@@ -241,4 +362,4 @@ export function ToolCard({
       )}
     </div>
   );
-}
+});

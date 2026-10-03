@@ -51,6 +51,7 @@ export function ToolImage({
         className={hasError || currentSrc.endsWith(".svg") ? fallbackClassName : className}
         onError={handleError}
         loading="lazy"
+        decoding="async"
       />
     </div>
   )

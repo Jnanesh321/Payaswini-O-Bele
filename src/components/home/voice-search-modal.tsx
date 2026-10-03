@@ -32,25 +32,41 @@ export function VoiceSearchModal({
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
   const recognitionRef = useRef<unknown>(null)
 
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        // @ts-expect-error stop method
+        recognitionRef.current.stop()
+      } catch {
+        // ignore
+      }
+    }
+    setIsListening(false)
+  }, [])
+
+  // Check speech recognition support without triggering cascading renders in effect
+  const isSpeechSupported =
+    typeof window !== "undefined" &&
+    Boolean(
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ||
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
+    )
+
+  const unsupportedNotice = !isSpeechSupported
+    ? (locale === "kn"
+        ? "ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಕೆಳಗಿನ ಪದಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ."
+        : "Voice recognition is not supported on this browser. Tap any suggestion below.")
+    : null
+
   // Initialize SpeechRecognition if supported
   useEffect(() => {
-    if (!isOpen) {
-      stopListening()
-      setTranscript("")
-      setErrorNotice(null)
-      return
-    }
+    if (!isOpen) return
 
     const SpeechRecognitionAPI =
       (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ||
       (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
 
     if (!SpeechRecognitionAPI) {
-      setErrorNotice(
-        locale === "kn"
-          ? "ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಕೆಳಗಿನ ಪದಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ."
-          : "Voice recognition is not supported on this browser. Tap any suggestion below."
-      )
       return
     }
 
@@ -98,30 +114,20 @@ export function VoiceSearchModal({
       recognitionRef.current = recognition
       recognition.start()
     } catch {
-      setErrorNotice(
-        locale === "kn"
-          ? "ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಅಗತ್ಯವಿದೆ."
-          : "Microphone access required. Please grant permission."
-      )
-      setIsListening(false)
+      setTimeout(() => {
+        setErrorNotice(
+          locale === "kn"
+            ? "ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಅಗತ್ಯವಿದೆ."
+            : "Microphone access required. Please grant permission."
+        )
+        setIsListening(false)
+      }, 0)
     }
 
     return () => {
       stopListening()
     }
-  }, [isOpen, lang, locale, onClose, onSelectQuery])
-
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      try {
-        // @ts-expect-error stop method
-        recognitionRef.current.stop()
-      } catch {
-        // ignore
-      }
-    }
-    setIsListening(false)
-  }, [])
+  }, [isOpen, lang, locale, onClose, onSelectQuery, stopListening])
 
   const toggleListening = () => {
     if (isListening) {
@@ -266,9 +272,9 @@ export function VoiceSearchModal({
                 </div>
               ) : null}
 
-              {errorNotice && (
+              {(errorNotice || unsupportedNotice) && (
                 <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
-                  {errorNotice}
+                  {errorNotice || unsupportedNotice}
                 </p>
               )}
             </div>

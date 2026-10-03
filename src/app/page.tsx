@@ -5,6 +5,8 @@ import type { ToolCard as ToolCardType } from "@/types"
 import type { ActiveBookingData } from "@/components/home/active-rental-banner"
 import type { BookingStatus } from "@prisma/client"
 
+import { resolveToolImage } from "@/lib/tool-images"
+
 export const dynamic = "force-dynamic"
 
 function mapMachineryPhoto(
@@ -13,51 +15,8 @@ function mapMachineryPhoto(
   existingImages?: string[],
   thumbnailUrl?: string | null
 ): string {
-  const n = (name || "").toLowerCase()
-  const c = (category || "").toUpperCase()
-
-  // 1. Power Tiller -> /images/tools/power-tiller.png
-  if (n.includes("tiller") || n.includes("cultivator") || n.includes("shakti") || c.includes("TILLER")) {
-    return "/images/tools/power-tiller.png"
-  }
-
-  // 2. Arecanut / Climbing Pole -> /images/tools/arecanut-pole.png
-  if (
-    n.includes("pole") ||
-    n.includes("areca") ||
-    n.includes("harvest") ||
-    n.includes("climb") ||
-    c.includes("CLIMB") ||
-    c.includes("HARVEST")
-  ) {
-    return "/images/tools/arecanut-pole.png"
-  }
-
-  // 3. Weed / Brush Cutter -> /images/tools/brush-cutter.png
-  if (
-    n.includes("cutter") ||
-    n.includes("brush") ||
-    n.includes("weed") ||
-    n.includes("pruner") ||
-    c.includes("PRUNER") ||
-    c.includes("CUTTER")
-  ) {
-    return "/images/tools/brush-cutter.png"
-  }
-
-  // 4. Tractor
-  if (n.includes("tractor") || c.includes("TRACTOR")) {
-    return "/images/tools/tractor.png"
-  }
-
-  // Check if existing valid non-svg, non-cloudinary image
   const first = existingImages?.[0] || thumbnailUrl
-  if (first && !first.includes("cloudinary") && !first.endsWith(".svg")) {
-    return first
-  }
-
-  // Fallback to first valid tool image (never an abstract SVG box)
-  return "/images/tools/power-tiller.png"
+  return resolveToolImage(first, category, name)
 }
 
 async function getToolsForFeed(): Promise<ToolCardType[]> {

@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Compass, CalendarDays, ShoppingBag, User, Tractor } from "lucide-react"
@@ -35,11 +35,22 @@ export function FarmerShell({
   const pathname = usePathname()
   const itemCount = useCartStore((s) => s.getItemCount())
   const mounted = useMounted()
+  const [isAccountHash, setIsAccountHash] = useState(false)
+
+  useEffect(() => {
+    const checkHash = () => {
+      setIsAccountHash(typeof window !== "undefined" && window.location.hash === "#account")
+    }
+    checkHash()
+    window.addEventListener("hashchange", checkHash)
+    return () => window.removeEventListener("hashchange", checkHash)
+  }, [pathname])
 
   const activeTab =
     pathname === "/" ? "explore"
     : pathname.startsWith("/tools") ? "tools"
     : pathname.startsWith("/cart") || pathname.startsWith("/checkout") ? "cart"
+    : pathname === "/dashboard" && isAccountHash ? "profile"
     : pathname === "/dashboard" ? "rentals"
     : "profile"
 

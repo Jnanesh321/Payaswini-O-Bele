@@ -22,6 +22,8 @@ interface OrderItemInput {
   startDate?: unknown
   endDate?: unknown
   serviceType?: unknown
+  toolInstanceId?: unknown
+  toolOwnerId?: unknown
 }
 
 interface PreparedBooking {
@@ -109,22 +111,6 @@ export async function createRazorpayOrder(params: {
       throw error
     }
 
-    let pricing: ComputedBookingPricing
-    try {
-      pricing = computeBookingPricing({
-        tool,
-        serviceType,
-        startDate,
-        endDate,
-        deliveryFee: index === 0 ? deliveryCharge : 0,
-      })
-    } catch (error) {
-      if (error instanceof BookingPricingError) {
-        throw new PaymentServiceError(error.message, 400)
-      }
-      throw error
-    }
-
     const instances = await prisma.toolInstance.findMany({
       where: {
         toolId: tool.id,
@@ -153,7 +139,24 @@ export async function createRazorpayOrder(params: {
       },
     })
 
-    const availableInstance = instances.find((inst) => inst.bookings.length === 0)
+    const requestedInstanceId = item.toolInstanceId ? String(item.toolInstanceId) : undefined
+    const requestedOwnerId = item.toolOwnerId ? String(item.toolOwnerId) : undefined
+
+    let availableInstance = null
+    if (requestedInstanceId) {
+      availableInstance = instances.find(
+        (inst) => inst.id === requestedInstanceId && inst.bookings.length === 0,
+      )
+    } else if (requestedOwnerId) {
+      availableInstance = instances.find(
+        (inst) => inst.ownerId === requestedOwnerId && inst.bookings.length === 0,
+      )
+    }
+
+    if (!availableInstance) {
+      availableInstance = instances.find((inst) => inst.bookings.length === 0)
+    }
+
     if (!availableInstance) {
       throw new PaymentServiceError(
         `No units of "${tool.name}" are available for the selected dates.`,
@@ -162,6 +165,29 @@ export async function createRazorpayOrder(params: {
     }
 
     const toolOwnerId = availableInstance.ownerId
+
+    // Authoritative pricing based on owner instance rate (fallback to catalog tool)
+    const effectiveTool = {
+      ...tool,
+      pricePerDay: availableInstance.pricePerDay ?? tool.pricePerDay,
+      deposit: availableInstance.deposit ?? tool.deposit,
+    }
+
+    let pricing: ComputedBookingPricing
+    try {
+      pricing = computeBookingPricing({
+        tool: effectiveTool,
+        serviceType,
+        startDate,
+        endDate,
+        deliveryFee: index === 0 ? deliveryCharge : 0,
+      })
+    } catch (error) {
+      if (error instanceof BookingPricingError) {
+        throw new PaymentServiceError(error.message, 400)
+      }
+      throw error
+    }
 
     // Scenario validity
     if (tool.requiresCertifiedOperator && serviceType === "SELF_SERVICE_RENTAL") {

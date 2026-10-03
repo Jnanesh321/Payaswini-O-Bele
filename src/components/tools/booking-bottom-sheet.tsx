@@ -60,6 +60,7 @@ export interface BookingBottomSheetProps {
     distanceKm?: number
     canSelfOperate?: boolean
     toolOwner?: { name?: string; id?: string } | null
+    toolInstanceId?: string
   } | null
   initialServiceType?: "OPERATOR_ONLY" | "SELF_SERVICE_RENTAL"
   onSuccess?: () => void
@@ -161,6 +162,8 @@ export function BookingBottomSheet({
           items: [
             {
               toolId: tool.id,
+              toolInstanceId: (tool as Record<string, unknown>).toolInstanceId,
+              toolOwnerId: tool.toolOwner?.id,
               serviceType,
               startDate: startDate.toISOString(),
               endDate: endDate.toISOString(),
@@ -369,7 +372,7 @@ export function BookingBottomSheet({
                           </span>
                         </div>
                         <p className="mt-0.5 text-[11px] text-[#6B7280] leading-tight">
-                          Trained operator handles transport, tilling, and return.
+                          Trained field operator handles machinery, transport, and work. Automatically dispatched by O~Bele for your taluk upon booking.
                         </p>
                       </div>
                     </div>

@@ -23,35 +23,85 @@ function smsLiveDeliveryEnabled(): boolean {
   return process.env.SMS_ENABLED === "true"
 }
 
-export async function sendOtpSms(phone: string, otp: string): Promise<SendOtpResult> {
-  const authKey = process.env.MSG91_AUTH_KEY
-  const templateId = process.env.MSG91_OTP_TEMPLATE_ID
-
-  if (!smsLiveDeliveryEnabled() || !authKey || !templateId) {
-    return { sent: false, message: "SMS live delivery disabled or not configured (MSG91_AUTH_KEY / MSG91_OTP_TEMPLATE_ID)" }
+async function sendFast2SmsOtp(phone: string, otp: string): Promise<SendOtpResult> {
+  const apiKey = process.env.FAST2SMS_API_KEY
+  if (!apiKey || apiKey === "dummy-api-key" || apiKey === "dummy") {
+    return { sent: false, message: "Fast2SMS not configured" }
   }
 
-  const url = new URL(MSG91_ENDPOINT)
-  url.searchParams.set("authkey", authKey)
-  url.searchParams.set("template_id", templateId)
-  url.searchParams.set("mobile", toMsg91Mobile(phone))
-  url.searchParams.set("otp", otp)
-  url.searchParams.set("otp_expiry", "5")
-  url.searchParams.set("otp_length", otp.length.toString())
-
+  const rawPhone = phone.replace(/\D/g, "").slice(-10)
   try {
-    const res = await fetch(url.toString(), { method: "GET" })
+    const res = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+      method: "POST",
+      headers: {
+        authorization: apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        route: "otp",
+        variables_values: otp,
+        numbers: rawPhone,
+      }),
+    })
     const data = await res.json().catch(() => null)
-    const sent = res.ok && data?.type === "success"
+    const sent = res.ok && data?.return === true
     return {
       sent,
-      message: data?.message ?? `MSG91 responded with HTTP ${res.status}`,
+      message: data?.message?.[0] ?? (sent ? "Fast2SMS sent successfully" : `Fast2SMS error (HTTP ${res.status})`),
     }
   } catch (error) {
     return {
       sent: false,
-      message: error instanceof Error ? error.message : "MSG91 send failed",
+      message: error instanceof Error ? error.message : "Fast2SMS send failed",
     }
+  }
+}
+
+export async function sendOtpSms(phone: string, otp: string): Promise<SendOtpResult> {
+  const authKey = process.env.MSG91_AUTH_KEY
+  const templateId = process.env.MSG91_OTP_TEMPLATE_ID
+  const fast2SmsKey = process.env.FAST2SMS_API_KEY
+
+  if (!smsLiveDeliveryEnabled()) {
+    return { sent: false, message: "SMS live delivery disabled (SMS_ENABLED=false)" }
+  }
+
+  // 1. Try MSG91 if configured
+  if (authKey && templateId && authKey !== "dummy") {
+    const url = new URL(MSG91_ENDPOINT)
+    url.searchParams.set("authkey", authKey)
+    url.searchParams.set("template_id", templateId)
+    url.searchParams.set("mobile", toMsg91Mobile(phone))
+    url.searchParams.set("otp", otp)
+    url.searchParams.set("otp_expiry", "5")
+    url.searchParams.set("otp_length", otp.length.toString())
+
+    try {
+      const res = await fetch(url.toString(), { method: "GET" })
+      const data = await res.json().catch(() => null)
+      const sent = res.ok && data?.type === "success"
+      if (sent) {
+        return {
+          sent: true,
+          message: data?.message ?? "MSG91 OTP sent successfully",
+        }
+      }
+    } catch {
+      // Fall through to secondary provider
+    }
+  }
+
+  // 2. Try Fast2SMS if configured
+  if (fast2SmsKey && fast2SmsKey !== "dummy-api-key" && fast2SmsKey !== "dummy") {
+    const fast2SmsResult = await sendFast2SmsOtp(phone, otp)
+    if (fast2SmsResult.sent) {
+      return fast2SmsResult
+    }
+  }
+
+  return {
+    sent: false,
+    message: "SMS live delivery not configured (set MSG91 or FAST2SMS credentials in .env.local)",
   }
 }
 

@@ -296,6 +296,8 @@ model Tool {
   deliveryChargePerKm  Int?         @default(0)
   requiresCertifiedOperator Boolean @default(false)
   operatorFeePerDay     Int          @default(0)
+  minAllowedPricePerDay Int?         @default(30000)
+  maxAllowedPricePerDay Int?         @default(300000)
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -315,6 +317,14 @@ model ToolInstance {
   ownerId            String
   status             ToolInstanceStatus @default(AVAILABLE)
   currentCustodianId String?
+  pricePerDay        Int?
+  deposit            Int?
+  images             String[]           @default([])
+  conditionGrade     String             @default("GOOD")
+  verificationStatus VerificationStatus @default(VERIFIED)
+  adminReviewNotes   String?
+  rating             Float              @default(4.8)
+  reviewCount        Int                @default(0)
   notes              String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -328,6 +338,7 @@ model ToolInstance {
   @@index([toolId, status])
   @@index([ownerId])
   @@index([currentCustodianId])
+  @@index([toolId, verificationStatus, status])
   @@map("tool_instances")
 }
 

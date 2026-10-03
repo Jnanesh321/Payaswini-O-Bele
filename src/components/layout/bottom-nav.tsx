@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Compass, CalendarDays, User, ShoppingBag } from "lucide-react"
@@ -17,6 +18,16 @@ export function BottomNav({ className }: BottomNavProps) {
   const t = useTranslations("homeUtility")
   const itemCount = useCartStore((s) => s.getItemCount())
   const mounted = useMounted()
+  const [isAccountHash, setIsAccountHash] = useState(false)
+
+  useEffect(() => {
+    const checkHash = () => {
+      setIsAccountHash(typeof window !== "undefined" && window.location.hash === "#account")
+    }
+    checkHash()
+    window.addEventListener("hashchange", checkHash)
+    return () => window.removeEventListener("hashchange", checkHash)
+  }, [pathname])
 
   const navItems = [
     {
@@ -31,7 +42,7 @@ export function BottomNav({ className }: BottomNavProps) {
       href: "/dashboard",
       label: t("bookings"),
       icon: CalendarDays,
-      isActive: pathname === "/dashboard",
+      isActive: pathname === "/dashboard" && !isAccountHash,
     },
     {
       id: "cart",
@@ -46,7 +57,7 @@ export function BottomNav({ className }: BottomNavProps) {
       href: "/dashboard#account",
       label: t("profile"),
       icon: User,
-      isActive: pathname === "/dashboard#account" || pathname.startsWith("/onboarding"),
+      isActive: (pathname === "/dashboard" && isAccountHash) || pathname.startsWith("/onboarding") || pathname === "/profile",
     },
   ]
 

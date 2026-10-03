@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Lora, Nunito } from "next/font/google"
 import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
@@ -8,9 +8,21 @@ import { ThemeProvider } from "@/components/providers/theme-provider"
 import { SiteChrome } from "@/components/layout/site-chrome"
 import { cn } from "@/lib/utils"
 
-const nunito = Nunito({ subsets: ["latin"], variable: "--font-sans" })
+const nunito = Nunito({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
-const lora = Lora({ subsets: ["latin"], variable: "--font-heading" })
+const lora = Lora({ subsets: ["latin"], variable: "--font-heading", display: "swap" })
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF7F0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F150D" },
+  ],
+}
 
 export const metadata: Metadata = {
   title: {
