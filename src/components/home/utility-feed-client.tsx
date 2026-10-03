@@ -39,13 +39,19 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
   const locale = useLocale()
   const t = useTranslations("homeUtility")
   const itemCount = useCartStore((s) => s.getItemCount())
-  const { coords: liveGpsCoords, nearestHub: gpsNearestHub } = useUserLocation()
+  const { coords: liveGpsCoords, nearestHub: gpsNearestHub, distanceKm: gpsDistanceKm } = useUserLocation()
 
   // State
   const [manualLocation, setManualLocation] = useState<TalukOption | null>(null)
   const [manualGps, setManualGps] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [browseAnyway, setBrowseAnyway] = useState(false)
   const selectedLocation = manualLocation || gpsNearestHub || REGIONAL_TALUKS[0]
   const gpsCoords = manualGps || (liveGpsCoords ? { latitude: liveGpsCoords.latitude, longitude: liveGpsCoords.longitude } : null)
+
+  // Location-driven availability: if user GPS is > 60km away from any active hub and hasn't manually selected a hub
+  const isOutOfCoverage = Boolean(
+    !manualLocation && !browseAnyway && gpsCoords && gpsDistanceKm !== null && gpsDistanceKm > 60
+  )
 
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false)
   const [selectedBookingTool, setSelectedBookingTool] = useState<ToolCardType | null>(null)
@@ -292,7 +298,41 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
             </div>
 
             {/* Utility Tool Cards 1-Column Vertical List */}
-            {filteredTools.length > 0 ? (
+            {isOutOfCoverage ? (
+              <div className="rounded-3xl border border-amber-200 dark:border-amber-900/60 bg-gradient-to-b from-amber-50/90 via-card to-amber-50/30 dark:from-amber-950/20 dark:to-card p-6 text-center shadow-xs my-3 space-y-3">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xl shadow-2xs">
+                  🚜
+                </div>
+                <div>
+                  <h3 className="font-heading text-base font-bold text-foreground">
+                    {locale === "kn" ? "ನಾವು ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮ ಊರಿಗೆ ಬರುತ್ತಿದ್ದೇವೆ!" : "We're coming to your area soon!"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed max-w-xs mx-auto">
+                    {locale === "kn"
+                      ? `ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಜಿಪಿಎಸ್ ಸ್ಥಳದಲ್ಲಿ ಇನ್ನೂ ಓ~ಬೆಳೆ ಉಪಕರಣ ಕೇಂದ್ರಗಳು ಲಭ್ಯವಿಲ್ಲ (ಹತ್ತಿರದ ಕೇಂದ್ರ ಸುಮಾರು ${gpsDistanceKm} ಕಿ.ಮೀ ದೂರದಲ್ಲಿದೆ). ನಾವು ಸೇವೆಯನ್ನು ಇತರ ಜಿಲ್ಲೆಗಳಿಗೂ ವಿಸ್ತರಿಸುತ್ತಿದ್ದೇವೆ.`
+                      : `O~Bele doesn't have active equipment hubs or certified operators within direct dispatch radius of your current location (nearest hub is ~${gpsDistanceKm} km away). We are expanding soon!`}
+                  </p>
+                </div>
+
+                <div className="pt-2 flex flex-col gap-2 max-w-xs mx-auto">
+                  <button
+                    type="button"
+                    onClick={() => setBrowseAnyway(true)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition shadow-xs"
+                  >
+                    {locale === "kn" ? "ಉಪಕರಣಗಳನ್ನು ವೀಕ್ಷಿಸಿ (ಕ್ಯಾಟಲಾಗ್ ಮೋಡ್)" : "Explore Equipment Catalog Anyway"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsLocationSheetOpen(true)}
+                    className="w-full py-2 px-4 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition"
+                  >
+                    {locale === "kn" ? "ಬೇರೆ ಕೇಂದ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ" : "Select an Active Service Hub"}
+                  </button>
+                </div>
+              </div>
+            ) : filteredTools.length > 0 ? (
               <div className="flex flex-col gap-3.5">
                 {filteredTools.map((tool, idx) => {
                   const dailyRateInRupees =
