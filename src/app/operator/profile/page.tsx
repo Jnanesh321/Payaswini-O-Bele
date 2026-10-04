@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
+import { useSession, signOut } from "@/components/providers/session-provider"
 import OperatorShell from "../_components/operator-shell"
 import {
   User,
@@ -62,7 +62,7 @@ export default function OperatorProfilePage() {
 
   const userPhone =
     session?.user?.email ||
-    ((session?.user as Record<string, unknown>)?.phone as string) ||
+    session?.user?.phone ||
     "Verified Operator"
 
   return (

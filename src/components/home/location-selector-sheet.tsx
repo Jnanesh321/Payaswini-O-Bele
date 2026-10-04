@@ -3,32 +3,15 @@
 import { useState } from "react"
 import { MapPin, Check, X, Search, Navigation, Loader2, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useUserLocation, calculateDistanceKm } from "@/hooks/use-user-location"
+import { useUserLocation } from "@/hooks/use-user-location"
+import {
+  type TalukOption,
+  REGIONAL_TALUKS,
+  calculateDistanceKm,
+} from "@/lib/geo"
 
-export interface TalukOption {
-  id: string
-  name: string
-  nameKn: string
-  district: "Kasaragod" | "Dakshina Kannada"
-  distanceApprox?: string
-  lat: number
-  lng: number
-}
-
-export const REGIONAL_TALUKS: TalukOption[] = [
-  // Kasaragod District (Kerala)
-  { id: "kumble", name: "Kumble / Kalathur", nameKn: "ಕುಂಬಳೆ / ಕಾಳತ್ತೂರು", district: "Kasaragod", distanceApprox: "Primary Hub", lat: 12.5937, lng: 74.9458 },
-  { id: "manjeshwar", name: "Manjeshwar", nameKn: "ಮಂಜೇಶ್ವರ", district: "Kasaragod", distanceApprox: "8-12 km", lat: 12.7153, lng: 74.8872 },
-  { id: "kasaragod_town", name: "Kasaragod Town", nameKn: "ಕಾಸರಗೋಡು ನಗರ", district: "Kasaragod", distanceApprox: "10-14 km", lat: 12.4996, lng: 74.9869 },
-  { id: "badiadka", name: "Badiadka", nameKn: "ಬದಿಯಡ್ಕ", district: "Kasaragod", distanceApprox: "12-16 km", lat: 12.5843, lng: 75.0536 },
-  
-  // Dakshina Kannada District (Karnataka)
-  { id: "puttur", name: "Puttur", nameKn: "ಪುತ್ತೂರು", district: "Dakshina Kannada", distanceApprox: "45-50 km", lat: 12.7687, lng: 75.2071 },
-  { id: "sullia", name: "Sullia", nameKn: "ಸುಳ್ಯ", district: "Dakshina Kannada", distanceApprox: "55-60 km", lat: 12.5606, lng: 75.3908 },
-  { id: "bantwal", name: "Bantwal", nameKn: "ಬಂಟ್ವಾಳ", district: "Dakshina Kannada", distanceApprox: "40-45 km", lat: 12.8943, lng: 75.0345 },
-  { id: "belthangady", name: "Belthangady", nameKn: "ಬೆಳ್ತಂಗಡಿ", district: "Dakshina Kannada", distanceApprox: "60-65 km", lat: 12.9991, lng: 75.2635 },
-  { id: "mangaluru", name: "Mangaluru Rural", nameKn: "ಮಂಗಳೂರು ಗ್ರಾಮಾಂತರ", district: "Dakshina Kannada", distanceApprox: "35-40 km", lat: 12.9141, lng: 74.8560 },
-]
+export type { TalukOption }
+export { REGIONAL_TALUKS }
 
 interface LocationSelectorSheetProps {
   isOpen: boolean

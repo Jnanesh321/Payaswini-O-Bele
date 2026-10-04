@@ -24,30 +24,61 @@ function getLocale(request: NextRequest): string {
   return defaultLocale
 }
 
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth-session"
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const search = request.nextUrl.search || ""
   const fullPath = pathname + search
-  const token = await getToken({ req: request })
   const locale = getLocale(request)
 
-  const capabilities = (token?.capabilities as string[] | undefined) || []
+  let sessionUser: { id: string; isAdmin: boolean; capabilities: string[] } | null = null
+
+  // 1. Check primary O~Bele session cookie (from Firebase authentication)
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value
+  if (sessionCookie) {
+    const verified = await verifySessionToken(sessionCookie)
+    if (verified) {
+      sessionUser = {
+        id: verified.id,
+        isAdmin: verified.isAdmin,
+        capabilities: verified.capabilities,
+      }
+    }
+  }
+
+  // 2. Fallback to legacy NextAuth JWT token if available
+  if (!sessionUser) {
+    try {
+      const token = await getToken({ req: request })
+      if (token) {
+        sessionUser = {
+          id: (token.id as string) || (token.sub as string),
+          isAdmin: Boolean(token.isAdmin),
+          capabilities: (token.capabilities as string[] | undefined) || [],
+        }
+      }
+    } catch {}
+  }
+
+  const capabilities = sessionUser?.capabilities || []
+  const isAuthenticated = Boolean(sessionUser)
 
   // Admin routes
   if (pathname.startsWith("/admin")) {
-    if (!token || !token.isAdmin) {
+    if (!sessionUser || !sessionUser.isAdmin) {
       return NextResponse.redirect(new URL("/", request.url))
     }
   }
 
   // Tool Owner routes
   if (pathname.startsWith("/owner")) {
-    if (!token) {
+    if (!sessionUser) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("callbackUrl", fullPath)
       return NextResponse.redirect(loginUrl)
     }
-    const isOwner = token.isAdmin || capabilities.includes("TOOL_OWNER")
+    const isOwner = sessionUser.isAdmin || capabilities.includes("TOOL_OWNER")
     if (!isOwner) {
       const onboardUrl = new URL("/onboarding", request.url)
       onboardUrl.searchParams.set("callbackUrl", fullPath)
@@ -57,12 +88,12 @@ export async function proxy(request: NextRequest) {
 
   // Operator routes
   if (pathname.startsWith("/operator")) {
-    if (!token) {
+    if (!sessionUser) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("callbackUrl", fullPath)
       return NextResponse.redirect(loginUrl)
     }
-    const isOperator = token.isAdmin || capabilities.includes("OPERATOR")
+    const isOperator = sessionUser.isAdmin || capabilities.includes("OPERATOR")
     if (!isOperator) {
       const onboardUrl = new URL("/onboarding", request.url)
       onboardUrl.searchParams.set("callbackUrl", fullPath)
@@ -72,7 +103,7 @@ export async function proxy(request: NextRequest) {
 
   // Onboarding route (requires authentication)
   if (pathname.startsWith("/onboarding")) {
-    if (!token) {
+    if (!sessionUser) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("callbackUrl", fullPath)
       return NextResponse.redirect(loginUrl)
@@ -82,7 +113,7 @@ export async function proxy(request: NextRequest) {
   // General customer protected routes
   const protectedPaths = ["/dashboard", "/checkout", "/orders"]
   if (protectedPaths.some((p) => pathname.startsWith(p))) {
-    if (!token) {
+    if (!sessionUser) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("callbackUrl", fullPath)
       return NextResponse.redirect(loginUrl)

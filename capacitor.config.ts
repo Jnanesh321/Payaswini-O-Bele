@@ -22,7 +22,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 // deploy target changes.
 const isProduction = process.env.APP_ENV === 'production'
 
-const prodServerUrl = process.env.CAPACITOR_SERVER_URL ?? 'https://obele-vercel.vercel.app'
+const prodServerUrl = process.env.CAPACITOR_SERVER_URL ?? 'https://payaswini-o-bele.vercel.app'
 const devServerUrl = process.env.CAPACITOR_DEV_SERVER_URL ?? 'http://localhost:3000'
 
 const config: CapacitorConfig = {
@@ -36,6 +36,12 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: !isProduction,
+  },
+  plugins: {
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['phone'],
+    },
   },
 }
 

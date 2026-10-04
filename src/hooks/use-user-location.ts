@@ -1,66 +1,22 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { REGIONAL_TALUKS, type TalukOption } from "@/components/home/location-selector-sheet"
+import {
+  type TalukOption,
+  type UserCoordinates,
+  REGIONAL_TALUKS,
+  calculateDistanceKm,
+  findNearestRegionalHub,
+} from "@/lib/geo"
 
-export interface UserCoordinates {
-  latitude: number
-  longitude: number
-  accuracy?: number
-  timestamp?: number
-}
+export type { UserCoordinates }
+export { calculateDistanceKm, findNearestRegionalHub }
 
 export interface DetectedLocationResult {
   coords: UserCoordinates
   nearestHub: TalukOption
   distanceKm: number
   formattedAddress?: string
-}
-
-/**
- * Haversine distance formula in kilometers
- */
-export function calculateDistanceKm(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371 // Earth radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return Number((R * c).toFixed(1))
-}
-
-/**
- * Finds the nearest regional hub from coordinates
- */
-export function findNearestRegionalHub(
-  coords: UserCoordinates
-): { hub: TalukOption; distanceKm: number } {
-  let nearest = REGIONAL_TALUKS[0]
-  let minDistance = Infinity
-
-  for (const taluk of REGIONAL_TALUKS) {
-    if (!taluk.lat || !taluk.lng) continue
-    const dist = calculateDistanceKm(coords.latitude, coords.longitude, taluk.lat, taluk.lng)
-    if (dist < minDistance) {
-      minDistance = dist
-      nearest = taluk
-    }
-  }
-
-  return {
-    hub: nearest,
-    distanceKm: minDistance === Infinity ? 0 : minDistance,
-  }
 }
 
 const STORAGE_KEY = "obele_user_gps"

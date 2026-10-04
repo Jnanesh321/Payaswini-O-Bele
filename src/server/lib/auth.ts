@@ -113,7 +113,66 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth-session"
+
 export async function getServerSession() {
-  const { getServerSession } = await import("next-auth")
-  return getServerSession(authOptions)
+  try {
+    const { cookies, headers } = await import("next/headers")
+    const cookieStore = await cookies()
+    const headerStore = await headers()
+
+    // 1. Check primary O~Bele session cookie (from Firebase authentication)
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value
+    if (sessionCookie) {
+      const payload = await verifySessionToken(sessionCookie)
+      if (payload) {
+        return {
+          user: {
+            id: payload.id,
+            name: payload.name,
+            email: payload.email,
+            image: payload.image,
+            isAdmin: payload.isAdmin,
+            capabilities: payload.capabilities,
+            phone: payload.phone,
+          },
+        }
+      }
+    }
+
+    // 2. Check Authorization Bearer header (Firebase ID token for API/mobile clients)
+    const authHeader = headerStore.get("authorization")
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const idToken = authHeader.slice(7).trim()
+      try {
+        const { verifyFirebaseIdToken } = await import("@/lib/firebase/admin")
+        const { resolveOrCreateFirebaseUser } = await import("@/server/services/auth-firebase")
+        const verified = await verifyFirebaseIdToken(idToken)
+        const user = await resolveOrCreateFirebaseUser(verified)
+        return {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            isAdmin: user.isAdmin,
+            capabilities: user.capabilities,
+            phone: user.phone,
+          },
+        }
+      } catch {
+        return null
+      }
+    }
+
+    // 3. Fallback to legacy NextAuth session if available
+    try {
+      const { getServerSession: getNextAuthSession } = await import("next-auth")
+      return await getNextAuthSession(authOptions)
+    } catch {
+      return null
+    }
+  } catch {
+    return null
+  }
 }

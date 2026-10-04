@@ -1,5 +1,81 @@
 # Changelog
 
+## 2026-10-03 — Authentication Migration: Firebase Phone Auth + Firebase Admin ID Token Verification
+
+**What:**
+- **Architecture Migration from MSG91 + NextAuth:** Migrated O~Bele from legacy MSG91 SMS gateway and Auth.js/NextAuth credentials flow to Firebase Phone Authentication with server-authoritative Firebase ID token verification.
+- **Client Authentication:** Integrated Firebase Web Auth SDK in `src/app/(auth)/login/page.tsx` using invisible reCAPTCHA (`RecaptchaVerifier`) and `signInWithPhoneNumber`. Preserved mobile-first 6-digit `OtpBoxedInput` UI and WebOTP SMS auto-retrieval.
+- **Server-Authoritative ID Token Verification:** Implemented `verifyFirebaseIdToken` in `src/lib/firebase/admin.ts` using `firebase-admin/app` and `firebase-admin/auth`. Supports service account JSON, individual environment credentials, and prototype mock tokens for local testing.
+- **PostgreSQL & Prisma Source of Truth:**
+  - Added `firebaseUid String? @unique` to `model User` in `prisma/schema.prisma` without modifying any unrelated schema models or fields.
+  - Implemented `resolveOrCreateFirebaseUser` in `src/server/services/auth-firebase.ts`:
+    1. Looks up existing user by `firebaseUid`.
+    2. If not found, looks up user by canonical Indian mobile number (e.g. `919845100002` / `9845100002`), links `firebaseUid`, and preserves all existing booking history, profile information, and capabilities (e.g. Suresh Shetty).
+    3. If no user exists, auto-provisions a new user with default verified `FARMER` capability.
+- **Edge-Compatible Session Token:** Implemented `src/lib/auth-session.ts` using Web Crypto API (`crypto.subtle`) for HMAC-SHA256 session token generation and verification. Sets HTTP-only `obele_session` cookie via `POST /api/auth/session` route.
+- **Edge Middleware Auth Guards:** Updated `src/proxy.ts` (Next.js middleware) to verify the signed session cookie in Edge runtime without database latency, guarding `/admin`, `/owner`, `/operator`, `/onboarding`, `/dashboard`, `/checkout`, and `/orders`.
+- **Server Auth Helpers:** Updated `getServerSession()` in `src/server/lib/auth.ts` to inspect `obele_session` cookie first, `Authorization: Bearer <idToken>` second, and fall back to legacy sessions. Protected APIs and `src/server/lib/auth-guard.ts` seamlessly recognize authenticated users.
+- **Client Session Provider:** Replaced NextAuth's `SessionProvider` in `src/components/providers/session-provider.tsx` with a lightweight, reactive context provider delivering `{ data: session, status }` and `signOut()`.
+- **Zero Business Logic Regressions:** Verified that booking state machines, transitions, deposits, payment flows, Razorpay checkout, and geo-dispatch rules remain 100% untouched and functional.
+- **Testing:** Added `tests/auth-firebase.test.ts` covering 8 dedicated scenarios (new user resolution, legacy user linking, UID mapping, unauthenticated 401 rejection, invalid token rejection, tamper-proofing, capability guards, and session serialization). All 50 tests pass.
+
+**Files changed:**
+- `prisma/schema.prisma`
+- `src/lib/auth-session.ts` (created)
+- `src/lib/firebase/client.ts` (created)
+- `src/lib/firebase/admin.ts` (created)
+- `src/server/services/auth-firebase.ts` (created)
+- `src/app/api/auth/session/route.ts` (created)
+- `src/app/api/auth/me/route.ts` (created)
+- `src/server/lib/auth.ts`
+- `src/proxy.ts`
+- `src/components/providers/session-provider.tsx`
+- `src/app/(auth)/login/page.tsx`
+- `src/app/(auth)/verify-otp/page.tsx`
+- `src/app/(auth)/register/page.tsx`
+- `src/components/layout/header.tsx`
+- `src/components/layout/capability-switcher.tsx`
+- `src/components/tools/booking-bottom-sheet.tsx`
+- `src/app/operator/profile/page.tsx`
+- `src/app/owner/profile/page.tsx`
+- `src/app/onboarding/page.tsx`
+- `src/app/(dashboard)/dashboard/page.tsx`
+- `tests/auth-firebase.test.ts` (created)
+- `tests/dispatch-eligibility.test.ts`
+- `docs/todo.md`
+- `docs/changelog.md`
+
+**Verification:**
+- `npm test` (all 50 unit and integration tests pass across 8 test suites)
+- `npx tsc --noEmit` (0 type errors)
+- `npm run build` (Next.js production build succeeded with 61/61 routes compiled)
+
+## 2026-10-03 — Server-Side Dispatch Eligibility Enforcement (Location-Layer Architecture)
+
+**What:**
+- **Server-Authoritative Location Enforcement:** Resolved the audit gap where dispatch radius restrictions were only evaluated client-side. Implemented strict server-side validation for booking creation across both `createRazorpayOrder` (`src/server/services/payments.ts`) and `createBooking` (`src/server/services/bookings.ts`).
+- **Registered Dispatch Origin Resolution:** Defined `src/lib/geo.ts` as the single shared geospatial utility module. In the current pilot model, the Tool Owner's registered taluk (`ToolInstance.owner.taluk`) is resolved to its official regional service hub (`REGIONAL_TALUKS` coordinates across 9 pilot taluks in Kasaragod & Dakshina Kannada).
+- **Haversine Distance & Radius Check:** For `deliveryType === "delivery"`, parses farm-gate coordinates from `deliveryAddress`, verifies numerical and coordinate bounds (lat: [-90, +90], lng: [-180, +180]), computes the Haversine distance from origin hub to farm gate, and rejects requests with HTTP 400 (`DispatchEligibilityError` / `PaymentServiceError`) if distance exceeds authoritative `Tool.deliveryRadiusKm`.
+- **Pickup Exemption:** Requests with `deliveryType === "pickup"` safely bypass the delivery radius check as equipment is collected at the owner's hub.
+- **Client Decoupling:** Re-exported geospatial functions and types from `src/lib/geo.ts` in `src/hooks/use-user-location.ts` and `src/components/home/location-selector-sheet.tsx`, breaking circular dependencies and preventing code duplication.
+- **Zero Schema Migrations:** Reused existing `Booking.deliveryAddress` and `Tool.deliveryRadiusKm` database fields without altering the Prisma schema or database tables.
+- **Comprehensive Test Coverage:** Created `tests/dispatch-eligibility.test.ts` covering 13 test scenarios: destinations within/outside radius, user GPS vs. farm GPS separation, coordinate tampering, invalid/missing coordinates, per-tool radius variation, pickup bypass, unmapped taluk rejection, and real PostgreSQL database integration.
+
+**Files changed:**
+- `src/lib/geo.ts` (created)
+- `src/server/services/payments.ts`
+- `src/server/services/bookings.ts`
+- `src/hooks/use-user-location.ts`
+- `src/components/home/location-selector-sheet.tsx`
+- `tests/dispatch-eligibility.test.ts` (created)
+- `docs/changelog.md`
+
+**Verification:**
+- `npm test` (all 42 unit and DB-backed integration tests pass)
+- `npx tsc --noEmit` (0 type errors)
+- `npx eslint --quiet` (0 lint errors)
+- `npx next build` (production build compiled successfully with 59 static routes)
+
 ## 2026-10-02 — Audit Fix C4 & C5: Atomic Payment creation for offline and direct rental bookings
 
 **What:**

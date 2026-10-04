@@ -56,7 +56,12 @@ krishirent/
     │       └── kn.json          — Kannada translations
     │
     ├── lib/                     — Shared utilities (safe for server & client)
+    │   ├── auth-session.ts      — Edge-compatible HMAC-SHA256 session token signing/verifying (Web Crypto)
     │   ├── booking-status.ts    — Booking status labels & badge variants
+    │   ├── firebase/
+    │   │   ├── client.ts        — Client Firebase Auth SDK initialization
+    │   │   └── admin.ts         — Server Firebase Admin SDK & verifyFirebaseIdToken
+    │   ├── geo.ts               — Haversine distance, pilot taluk coordinates & farm-gate parsing
     │   ├── platform.ts          — Capacitor native platform detection
     │   ├── region.ts            — Regional currency & number formatting tokens
     │   ├── utils.ts             — cn(), formatPrice(), formatDate(), getLocaleName()
@@ -77,18 +82,20 @@ krishirent/
     │   │   └── prisma.ts        — Singleton Prisma client instance
     │   │
     │   ├── lib/                 — Backend utilities & domain engines
-    │   │   ├── auth.ts          — NextAuth config (credentials provider, JWT capability sync)
+    │   │   ├── auth.ts          — O~Bele session resolver (cookie, Bearer ID token, NextAuth fallback)
+    │   │   ├── auth-guard.ts    — requireAuth(), requireAdmin(), requireCapability(), requireBookingAccess()
     │   │   ├── booking-actor.ts — Maps session user to booking actor (FARMER/TOOL_OWNER/OPERATOR/ADMIN/SYSTEM)
     │   │   ├── booking-pricing.ts — Server-authoritative pricing engine
     │   │   ├── booking-state-machine.ts — 24-state lifecycle, transitions, cancellation & refund policies
     │   │   ├── deposit-resolution.ts — Live deposit resolution (FULL_REFUND / PARTIAL_DEDUCTION / HOLD)
     │   │   ├── owner-sla.ts     — 4-hour owner response SLA + auto-cancel
     │   │   ├── rate-limit.ts    — Sliding-window rate limiter (Prisma-backed)
-    │   │   └── sms.ts           — MSG91 OTP & transactional SMS
+    │   │   └── sms.ts           — Transactional booking SMS notifications
     │   │
     │   └── services/            — Business logic (one file per domain)
     │       ├── admin.ts         — Admin assignment dashboard
-    │       ├── auth.ts          — Register, send OTP, verify OTP
+    │       ├── auth-firebase.ts — Firebase identity to Prisma User resolution & safe auto-linking
+    │       ├── auth.ts          — Legacy OTP hashing, phone normalization, user registration
     │       ├── bookings.ts     — Booking lifecycle transitions, custody tracking, deposit resolution
     │       ├── operators.ts     — Operator jobs listing & earnings
     │       ├── owners.ts        — Owner requests, equipment, profile, earnings
@@ -104,7 +111,7 @@ krishirent/
     ├── components/
     │   ├── ui/                  — shadcn/ui primitives (badge, button, card, input, etc.)
     │   ├── providers/
-    │   │   └── session-provider.tsx — NextAuth SessionProvider wrapper
+    │   │   └── session-provider.tsx — Reactive O~Bele + Firebase SessionProvider delivering session & signOut
     │   ├── layout/
     │   │   ├── header.tsx       — Site header with cart badge & mobile drawer
     │   │   ├── footer.tsx       — Site footer

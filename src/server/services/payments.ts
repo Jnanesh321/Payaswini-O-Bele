@@ -9,6 +9,7 @@ import {
   resolveDeliveryCharge,
   type ComputedBookingPricing,
 } from "@/server/lib/booking-pricing"
+import { validateDispatchEligibility, DispatchEligibilityError } from "@/lib/geo"
 
 function getRazorpay() {
   return new Razorpay({
@@ -118,6 +119,7 @@ export async function createRazorpayOrder(params: {
         status: { in: ["AVAILABLE", "RETURNED", "INSPECTION"] },
       },
       include: {
+        owner: { select: { id: true, taluk: true, district: true, village: true } },
         bookings: {
           where: {
             status: {
@@ -166,6 +168,24 @@ export async function createRazorpayOrder(params: {
     }
 
     const toolOwnerId = availableInstance.ownerId
+
+    // Authoritative dispatch eligibility verification (Pilot Hub Model & Tool Radius)
+    const deliveryTypeStr = typeof deliveryType === "string" ? deliveryType : "delivery"
+    try {
+      validateDispatchEligibility({
+        toolId: tool.id,
+        toolName: tool.name,
+        deliveryRadiusKm: tool.deliveryRadiusKm,
+        deliveryType: deliveryTypeStr,
+        deliveryAddress,
+        ownerTaluk: availableInstance.owner?.taluk,
+      })
+    } catch (err) {
+      if (err instanceof DispatchEligibilityError) {
+        throw new PaymentServiceError(err.message, err.statusCode)
+      }
+      throw err
+    }
 
     // Authoritative pricing based on owner instance rate (fallback to catalog tool)
     const effectiveTool = {

@@ -28,6 +28,7 @@ import {
   isRequestedServiceType,
   resolveDeliveryCharge,
 } from "@/server/lib/booking-pricing"
+import { validateDispatchEligibility, DispatchEligibilityError } from "@/lib/geo"
 import { sendSmsNotification } from "@/server/lib/sms"
 import { isDepositResolutionRequired } from "@/server/lib/deposit-resolution"
 import { isBookingActor, resolveActorForUser } from "@/server/lib/booking-actor"
@@ -58,6 +59,7 @@ export interface CreateBookingInput {
   startDate: string | Date
   endDate: string | Date
   deliveryType?: string
+  deliveryAddress?: string
   notes?: string
 }
 
@@ -71,7 +73,7 @@ export class CreateBookingError extends Error {
 }
 
 export async function createBooking(userId: string, input: CreateBookingInput) {
-  const { toolId, toolInstanceId, serviceType, deliveryType, notes } = input
+  const { toolId, toolInstanceId, serviceType, deliveryType, notes, deliveryAddress } = input
 
   // ── Validate toolId ──────────────────────────────────────────────────────
   if (!toolId || typeof toolId !== "string") {
@@ -102,9 +104,13 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
   // ── Resolve tool instance & owner ────────────────────────────────────────
   let resolvedInstanceId: string | undefined = undefined
   let toolOwnerId: string
+  let toolOwnerTaluk: string | null | undefined = undefined
 
   if (toolInstanceId) {
-    const instance = await prisma.toolInstance.findUnique({ where: { id: toolInstanceId } })
+    const instance = await prisma.toolInstance.findUnique({
+      where: { id: toolInstanceId },
+      include: { owner: { select: { id: true, taluk: true, district: true, village: true } } },
+    })
     if (!instance || instance.toolId !== toolId) {
       throw new CreateBookingError("Tool instance not found or does not belong to the specified tool")
     }
@@ -113,6 +119,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
     }
     resolvedInstanceId = instance.id
     toolOwnerId = instance.ownerId
+    toolOwnerTaluk = instance.owner?.taluk
   } else {
     // Auto-select an available instance
     const availableInstance = await prisma.toolInstance.findFirst({
@@ -120,12 +127,32 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
         toolId,
         status: { in: [ToolInstanceStatus.AVAILABLE, ToolInstanceStatus.RETURNED, ToolInstanceStatus.INSPECTION] },
       },
+      include: { owner: { select: { id: true, taluk: true, district: true, village: true } } },
     })
     if (!availableInstance) {
       throw new CreateBookingError("No available tool instance for the selected dates")
     }
     resolvedInstanceId = availableInstance.id
     toolOwnerId = availableInstance.ownerId
+    toolOwnerTaluk = availableInstance.owner?.taluk
+  }
+
+  // ── Authoritative dispatch eligibility verification (Pilot Hub Model & Tool Radius) ──
+  const deliveryTypeStr = typeof deliveryType === "string" ? deliveryType : "delivery"
+  try {
+    validateDispatchEligibility({
+      toolId: tool.id,
+      toolName: tool.name,
+      deliveryRadiusKm: tool.deliveryRadiusKm,
+      deliveryType: deliveryTypeStr,
+      deliveryAddress,
+      ownerTaluk: toolOwnerTaluk,
+    })
+  } catch (err) {
+    if (err instanceof DispatchEligibilityError) {
+      throw new CreateBookingError(err.message, err.statusCode)
+    }
+    throw err
   }
 
   // ── Server-authoritative pricing ─────────────────────────────────────────
@@ -185,6 +212,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
         pricePerDay: pricing.toolFeePerDay,
         totalAmount: pricing.totalAmount,
         status: BookingStatus.REQUESTED,
+        deliveryAddress: typeof deliveryAddress === "string" ? deliveryAddress : undefined,
         bookingRef: `BK${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
         notes: typeof notes === "string" ? notes : undefined,
       },

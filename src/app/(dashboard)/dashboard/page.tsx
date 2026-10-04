@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useLocale } from "next-intl"
-import { useSession, signOut } from "next-auth/react"
+import { useSession, signOut } from "@/components/providers/session-provider"
 import { formatPrice, formatDate } from "@/lib/utils"
 import { FarmerShell } from "@/components/layout/farmer-shell"
 import { CapabilityVerificationModal } from "@/components/verification/capability-verification-modal"
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                   {session?.user?.name || "O~Bele Farmer"}
                 </p>
                 <p className="text-xs text-muted-foreground font-mono">
-                  {session?.user?.email || ((session?.user as Record<string, unknown>)?.phone as string) || "Verified Member"}
+                  {session?.user?.email || session?.user?.phone || "Verified Member"}
                 </p>
               </div>
             </div>

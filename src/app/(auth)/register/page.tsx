@@ -24,7 +24,7 @@ export default function RegisterPage() {
         body: JSON.stringify(form),
       })
       if (res.ok) {
-        router.push("/verify-otp")
+        router.push(`/login?phone=${encodeURIComponent(form.phone)}`)
       }
     } catch {}
     setLoading(false)

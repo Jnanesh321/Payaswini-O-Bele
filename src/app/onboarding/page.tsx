@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession } from "@/components/providers/session-provider"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { AppLogo } from "@/components/ui/app-logo"

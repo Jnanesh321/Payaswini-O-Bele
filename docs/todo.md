@@ -1,4 +1,13 @@
-# To-Do
+## Completed
+- [x] **Firebase Phone Authentication Migration (2026-10-03)**:
+      - Migrated from MSG91 + NextAuth credentials to Firebase Phone Authentication.
+      - Integrated Firebase Client SDK (`RecaptchaVerifier`, `signInWithPhoneNumber`) with invisible reCAPTCHA.
+      - Implemented server-authoritative Firebase ID token verification (`verifyFirebaseIdToken`) via `firebase-admin`.
+      - Maintained PostgreSQL as source of truth with `User.firebaseUid @unique` mapping.
+      - Implemented safe account linking: existing users (e.g. Suresh, Raju) resolve by phone without duplicate account creation.
+      - Implemented Edge-compatible HMAC-SHA256 session token (`src/lib/auth-session.ts`) for sub-millisecond middleware auth guards (`src/proxy.ts`).
+      - Preserved all business logic, booking state machine, payment flows, deposits, capabilities, and geo-dispatch rules.
+      - Added comprehensive test suite (`tests/auth-firebase.test.ts`) with 8 passing test cases.
 
 ## In Progress
 

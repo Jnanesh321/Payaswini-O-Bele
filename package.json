@@ -24,6 +24,7 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^8.5.2",
     "@capacitor/android": "^8.5.0",
     "@capacitor/camera": "^8.2.2",
     "@capacitor/cli": "^8.5.0",
@@ -55,6 +56,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.2.1",
+    "firebase": "^12.19.0",
+    "firebase-admin": "^14.5.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",

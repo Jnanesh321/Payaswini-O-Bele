@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
+import { useSession, signOut } from "@/components/providers/session-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ChevronDown,

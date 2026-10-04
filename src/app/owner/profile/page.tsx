@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { signOut } from "next-auth/react"
+import { signOut } from "@/components/providers/session-provider"
 import OwnerShell from "../_components/owner-shell"
 import { useLocale } from "next-intl"
 import { formatPrice, formatDate } from "@/lib/utils"
