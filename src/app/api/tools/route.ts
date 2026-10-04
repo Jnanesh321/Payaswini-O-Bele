@@ -21,16 +21,8 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch tools"
-    const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL
-    let dbHost = "UNSET"
-    try {
-      if (dbUrl) {
-        dbHost = new URL(dbUrl).host
-      }
-    } catch {}
-    const envKeys = Object.keys(process.env).filter(k => k.includes("DATABASE") || k.includes("POSTGRES") || k.includes("FIREBASE"))
     console.error("[Tools API Error]:", error)
-    return NextResponse.json({ success: false, error: message, dbHost, envKeys }, { status: 500 })
+    return NextResponse.json({ success: false, error: message }, { status: 500 })
   }
 }
 
