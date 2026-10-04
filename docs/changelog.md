@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Production Neon Database Sync & Android Integration Deployment
+
+**What:**
+- **Neon Production Schema Synchronization:** Verified connectivity to the Neon serverless PostgreSQL production database (`ep-little-sun-azouhusf-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb`). Synchronized Prisma schema columns (`Tool.minAllowedPricePerDay`, `Tool.maxAllowedPricePerDay`, dynamic `ToolInstance` properties, `User.firebaseUid`) with zero production data loss.
+- **Android Capacitor & Firebase Verification:** Hardwired canonical production domain (`https://payaswini-o-bele.vercel.app`) in `capacitor.config.ts`, installed client `google-services.json`, and configured Android native phone authentication bridge.
+
 ## 2026-10-03 — Authentication Migration: Firebase Phone Auth + Firebase Admin ID Token Verification
 
 **What:**
