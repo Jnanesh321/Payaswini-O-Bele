@@ -20,7 +20,15 @@ export async function GET(request: NextRequest) {
       meta: result.meta,
     })
   } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to fetch tools" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Failed to fetch tools"
+    let dbHost = "UNSET"
+    try {
+      if (process.env.DATABASE_URL) {
+        dbHost = new URL(process.env.DATABASE_URL).host
+      }
+    } catch {}
+    console.error("[Tools API Error]:", error)
+    return NextResponse.json({ success: false, error: message, dbHost }, { status: 500 })
   }
 }
 
