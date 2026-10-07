@@ -27,7 +27,22 @@ export default function LoginPage() {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
   const [nativeVerificationId, setNativeVerificationId] = useState<string | null>(null)
   const isDevMode = !isFirebaseConfigured()
+  const missingClientEnv: string[] = []
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingClientEnv.push("NEXT_PUBLIC_FIREBASE_API_KEY")
+  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingClientEnv.push("NEXT_PUBLIC_FIREBASE_PROJECT_ID")
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null)
+
+  // Log Firebase status for debugging
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production" || isDevMode) {
+      console.log("[O~Bele Auth] Client Firebase status:", {
+        isConfigured: !isDevMode,
+        hasApiKey: Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+        hasProjectId: Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+        missing: missingClientEnv,
+      })
+    }
+  }, [isDevMode, missingClientEnv])
 
   const cleanPhone = phone.replace(/\D/g, "")
   const isPhoneValid = cleanPhone.length === 10
@@ -336,7 +351,7 @@ export default function LoginPage() {
 
                     {isDevMode && (
                       <div className="mt-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400">
-                        Firebase credentials not detected in env. Running in prototype dev auth mode.
+                        Firebase credentials not detected in env{missingClientEnv.length > 0 ? ` (Missing: ${missingClientEnv.join(", ")})` : ""}. Running in prototype dev auth mode.
                       </div>
                     )}
 

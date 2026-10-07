@@ -35,8 +35,8 @@ production Android APK against it with Capacitor.
 > Neon connection strings work directly with Prisma. `sslmode=require` is
 > already handled by the driver; leave `?schema=public` in place if you append it.
 
-Give me that connection string and I will run the migration + seed against it
-(see §5).
+Give me that connection string and I will run the schema migration against it
+(see §5). **Never seed the production database with mock/demo records.**
 
 **You must also then set it as the `DATABASE_URL` in Vercel (§4).**
 
@@ -65,7 +65,7 @@ Give me that connection string and I will run the migration + seed against it
 4. **Deploy** → Vercel gives you an `https://…vercel.app` URL. Keep it; that
    origin is what the APK will hard-code.
 
-> First deploy may boot before migration has run. Run §5 migration & seed first,
+> First deploy may boot before migration has run. Run §5 database migration first,
 > then deploy/redeploy, or hit 500s on DB-backed pages until then.
 
 ---
@@ -96,22 +96,23 @@ API routes and server components.
 
 ---
 
-## 5. Database migration & seed
+## 5. Database migration (Production)
 
-The repo has **no migration history** (development used `prisma db push`). A
-baseline initial migration is checked in at `prisma/migrations/0_init/`.
+The repo has a baseline initial migration checked in at `prisma/migrations/0_init/`.
 Against your Neon string:
 
 ```powershell
 # 1. point Prisma at Neon for this command only (never edit .env for the DSN)
 $env:DATABASE_URL="postgresql://USER:PASSWORD@ep-XXXX.aws.neon.tech/obele?sslmode=require"
 
-# 2. apply the baseline migration
+# 2. apply migrations to production Neon database
 npx prisma migrate deploy
-
-# 3. seed the catalog (tools, users)
-npx prisma db seed
 ```
+
+> **IMPORTANT: NEVER run `npx prisma db seed` against production.**
+> Mock/seed tools, users, bookings, and demo records are strictly reserved for local development
+> (`localhost`). The seed script contains guards that will abort if executed against remote cloud DBs.
+> Production catalogs and accounts must be populated through real user onboarding and verified listings.
 
 `migrate deploy` applies committed migrations without a shadow DB (Neon-safe).
 Future schema changes: edit `schema.prisma`, then
@@ -210,7 +211,7 @@ is enough to start.
 
 ## 10. Post-deploy verification checklist
 
-- [ ] `npx prisma migrate deploy` succeeded against Neon; `db seed` applied.
+- [ ] `npx prisma migrate deploy` succeeded against Neon (no mock seed script executed).
 - [ ] Vercel Production env vars all set (§4); `NEXTAUTH_SECRET` matches §7.
 - [ ] Home page loads SSR featured tools (no 500 → verifies `DATABASE_URL`).
 - [ ] OTP send logs a MSG91 `success` (verifies §6 keys) — else login is dead.

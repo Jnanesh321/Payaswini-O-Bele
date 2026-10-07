@@ -42,15 +42,18 @@ cp .env.example .env.local
 
 Refer to `.env.example` for comprehensive documentation on all required keys.
 
-### 3. Database Migration & Seed
+### 3. Database Migration & Local Seeding
 
 ```bash
-# Push schema to database
+# Push schema to local database
 npm run db:push
 
-# Seed with initial catalog tools and categories
+# Seed with local mock catalog tools and demo users (LOCAL DEV ONLY)
 npm run db:seed
 ```
+> **Note:** `npm run db:seed` is strictly for local development environments (`localhost`).
+> Production deployments (Neon PostgreSQL) must only receive migrations (`npx prisma migrate deploy`)
+> and must never be seeded with mock data.
 
 ### 4. Running the App
 

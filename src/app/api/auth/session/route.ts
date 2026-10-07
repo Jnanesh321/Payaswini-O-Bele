@@ -2,9 +2,39 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyFirebaseIdToken, FirebaseTokenVerificationError } from "@/lib/firebase/admin"
 import { resolveOrCreateFirebaseUser, FirebaseUserLinkingError } from "@/server/services/auth-firebase"
 import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/auth-session"
+import { checkRateLimit, getClientIp } from "@/server/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
+    // 0. Enforce IP-based rate limiting (10 req/min per IP) to prevent hammering
+    const clientIp = getClientIp(request)
+    const rateLimit = await checkRateLimit(`session:ip:${clientIp}`, {
+      windowSeconds: 60,
+      maxRequests: 10,
+    })
+
+    if (!rateLimit.allowed) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000)
+      )
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Too many authentication requests from this IP. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": retryAfterSeconds.toString(),
+            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": Math.ceil(rateLimit.resetAt.getTime() / 1000).toString(),
+          },
+        }
+      )
+    }
+
     const body = await request.json()
     const idToken = body?.idToken
 

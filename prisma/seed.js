@@ -5,6 +5,31 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 
+// HARD PRODUCTION SAFEGUARD:
+// Mock/seed catalog data is strictly restricted to local development/testing.
+const dbUrl = process.env.DATABASE_URL || "";
+const isRemoteOrCloud =
+  dbUrl.includes("neon.tech") ||
+  dbUrl.includes("supabase.co") ||
+  dbUrl.includes("pooler") ||
+  dbUrl.includes("amazonaws.com");
+const isProductionEnv =
+  process.env.NODE_ENV === "production" ||
+  process.env.VERCEL === "1" ||
+  process.env.VERCEL_ENV === "production";
+
+if (isProductionEnv || isRemoteOrCloud) {
+  if (process.env.ALLOW_DEV_SEED_ON_CLOUD !== "true") {
+    console.error(
+      "\n⛔ [SEED BLOCKED] Production database protection triggered!\n" +
+      "Mock/seed catalog data is strictly prohibited in production and cloud environments.\n" +
+      `Target DB: ${dbUrl.replace(/:[^:@]+@/, ":***@")}\n` +
+      "If this was intended for an isolated remote testing sandbox, you must explicitly pass ALLOW_DEV_SEED_ON_CLOUD=true.\n"
+    );
+    process.exit(1);
+  }
+}
+
 const prisma = new PrismaClient();
 
 /** Convert ₹ to paise (Razorpay smallest currency unit) */

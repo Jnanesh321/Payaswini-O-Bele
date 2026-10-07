@@ -26,7 +26,7 @@ let adminApp: App | null = null
 export function isFirebaseAdminConfigured(): boolean {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) return true
   if (
-    process.env.FIREBASE_PROJECT_ID &&
+    (process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) &&
     process.env.FIREBASE_CLIENT_EMAIL &&
     process.env.FIREBASE_PRIVATE_KEY
   ) {
@@ -72,6 +72,13 @@ function getAdminApp(): App | null {
 
   if (projectId && clientEmail && privateKey) {
     try {
+      privateKey = privateKey.trim()
+      if (
+        (privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+        (privateKey.startsWith("'") && privateKey.endsWith("'"))
+      ) {
+        privateKey = privateKey.slice(1, -1)
+      }
       privateKey = privateKey.replace(/\\n/g, "\n")
       adminApp = initializeApp({
         credential: cert({
@@ -131,11 +138,10 @@ export async function verifyFirebaseIdToken(
 
   const trimmed = idToken.trim()
 
-  // Development / Test Mock Token Handler
+  // Development / Test Mock Token Handler (strictly disabled in production deployment)
   const isDevAuthEnabled =
-    process.env.ENABLE_DEV_FIREBASE_AUTH === "true" ||
-    process.env.NODE_ENV === "test" ||
-    process.env.NODE_ENV !== "production"
+    process.env.NODE_ENV !== "production" &&
+    (process.env.ENABLE_DEV_FIREBASE_AUTH === "true" || process.env.NODE_ENV === "test")
 
   if (isDevAuthEnabled && trimmed.startsWith("mock_firebase_")) {
     // Format: mock_firebase_{uid}_{phone}

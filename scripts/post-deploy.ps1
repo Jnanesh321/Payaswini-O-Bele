@@ -19,7 +19,7 @@ Write-Host "1. DATABASE MIGRATION" -ForegroundColor Yellow
 Write-Host "   Run against Neon:" -ForegroundColor White
 Write-Host '   $env:DATABASE_URL="your-neon-url"' -ForegroundColor Gray
 Write-Host "   npx prisma migrate deploy" -ForegroundColor Gray
-Write-Host "   npx prisma db seed" -ForegroundColor Gray
+Write-Host "   (Note: Do NOT run 'prisma db seed' in production. Mock data is for local dev only.)" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "2. GOOGLE OAUTH (when ready to enable)" -ForegroundColor Yellow
 Write-Host "   Go to: https://console.cloud.google.com/apis/credentials" -ForegroundColor White
