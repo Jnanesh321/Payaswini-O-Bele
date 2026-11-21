@@ -1,5 +1,5 @@
 import { getApps, initializeApp, cert, type App } from "firebase-admin/app"
-import { getAuth } from "firebase-admin/auth"
+import { createRemoteJWKSet, jwtVerify } from "jose"
 import fs from "node:fs"
 import path from "node:path"
 
@@ -22,6 +22,18 @@ export interface VerifiedFirebaseToken {
 }
 
 let adminApp: App | null = null
+
+const GOOGLE_JWKS_URL =
+  "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+
+let googleJWKS: ReturnType<typeof createRemoteJWKSet> | null = null
+
+function getGoogleJWKS() {
+  if (!googleJWKS) {
+    googleJWKS = createRemoteJWKSet(new URL(GOOGLE_JWKS_URL))
+  }
+  return googleJWKS
+}
 
 export function isFirebaseAdminConfigured(): boolean {
   if (
@@ -186,11 +198,90 @@ export async function verifyFirebaseIdToken(
     }
   }
 
-  // Production Verification using Firebase Admin SDK
-  const app = getAdminApp()
-  if (!app) {
+  // 1. Emulator verification path (local development with Firebase emulator)
+  const isEmulator =
+    process.env.NODE_ENV !== "production" &&
+    (Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST) ||
+      process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true")
+
+  if (isEmulator) {
+    const app = getAdminApp()
+    if (app) {
+      try {
+        const { getAuth } = await import("firebase-admin/auth")
+        const auth = getAuth(app)
+        const decoded = await auth.verifyIdToken(trimmed)
+        return {
+          uid: decoded.uid,
+          phoneNumber: decoded.phone_number,
+          phone_number: decoded.phone_number,
+          email: decoded.email,
+          name: decoded.name,
+          picture: decoded.picture,
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Emulator verification failed"
+        throw new FirebaseTokenVerificationError(`Firebase verification failed: ${message}`, 401)
+      }
+    }
+  }
+
+  // 2. Primary Production Verification: Pure ESM WebCrypto verification via jose & Google Remote JWKS
+  // Validates aud === FIREBASE_PROJECT_ID and iss === https://securetoken.google.com/<FIREBASE_PROJECT_ID>
+  // This completely eliminates ERR_REQUIRE_ESM (jwks-rsa CJS requiring jose ESM) on Vercel Serverless!
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    "o-bele"
+
+  try {
+    const JWKS = getGoogleJWKS()
+    const { payload } = await jwtVerify(trimmed, JWKS, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+      algorithms: ["RS256"],
+    })
+
+    if (!payload.sub || typeof payload.sub !== "string") {
+      throw new Error("Token payload missing subject ('sub') claim")
+    }
+
+    const authTime = payload.auth_time as number | undefined
+    if (authTime && authTime > Date.now() / 1000 + 300) {
+      throw new Error("Token auth_time is in the future")
+    }
+
+    return {
+      uid: payload.sub,
+      phoneNumber: (payload.phone_number as string) || undefined,
+      phone_number: (payload.phone_number as string) || undefined,
+      email: (payload.email as string) || undefined,
+      name: (payload.name as string) || undefined,
+      picture: (payload.picture as string) || undefined,
+    }
+  } catch (joseError: unknown) {
+    // 3. Fallback to firebase-admin if dynamic import succeeds (e.g. custom claims or service account validation)
+    const app = getAdminApp()
+    if (app) {
+      try {
+        const { getAuth } = await import("firebase-admin/auth")
+        const auth = getAuth(app)
+        const decoded = await auth.verifyIdToken(trimmed)
+        return {
+          uid: decoded.uid,
+          phoneNumber: decoded.phone_number,
+          phone_number: decoded.phone_number,
+          email: decoded.email,
+          name: decoded.name,
+          picture: decoded.picture,
+        }
+      } catch {
+        // Fall through to error
+      }
+    }
+
+    // Dev fallback if neither jose nor admin SDK passed, but dev mode allows token parsing
     if (isDevAuthEnabled) {
-      // In dev mode without configured Firebase service account, attempt JWT payload parse if well-formed
       const parts = trimmed.split(".")
       if (parts.length === 3) {
         try {
@@ -212,25 +303,7 @@ export async function verifyFirebaseIdToken(
       }
     }
 
-    throw new FirebaseTokenVerificationError(
-      "Firebase Admin SDK is not configured on the server. Please supply FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY.",
-      500
-    )
-  }
-
-  try {
-    const auth = getAuth(app)
-    const decoded = await auth.verifyIdToken(trimmed)
-    return {
-      uid: decoded.uid,
-      phoneNumber: decoded.phone_number,
-      phone_number: decoded.phone_number,
-      email: decoded.email,
-      name: decoded.name,
-      picture: decoded.picture,
-    }
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Invalid or expired Firebase ID token"
+    const message = joseError instanceof Error ? joseError.message : "Invalid or expired Firebase ID token"
     throw new FirebaseTokenVerificationError(`Firebase verification failed: ${message}`, 401)
   }
 }
