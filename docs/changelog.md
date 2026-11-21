@@ -1,5 +1,53 @@
 # Changelog
 
+## 2026-10-29 — Comprehensive Engineering Review, Security Hardening & Zero-Error Release Preparation
+
+**What:**
+- **Parallel Engineering Team Mission Completed:** Executed deep architectural, frontend, backend, database, security, QA, and documentation audits via specialist subagents across the entire repository. Produced authoritative deliverables in `docs/audit/`.
+- **Security Hardening (P0):**
+  - Redacted plaintext base64 secret in `docs/DEPLOYMENT.md:147` and replaced with dynamic generation runbooks.
+  - Hardened session signature engine (`src/lib/auth-session.ts`) to strictly enforce that `SESSION_SECRET` or `NEXTAUTH_SECRET` is set in production, preventing token forgery.
+  - Protected Asset QR lookup endpoint (`src/app/api/assets/[assetCode]/route.ts`) with `requireAuth` to eliminate PII/IDOR leaks.
+- **Frontend & Code Quality Correctness (P0):**
+  - Resolved fatal ESLint React hook error in `src/app/(store)/tools/[slug]/page.tsx` by eliminating conditional `useMemo` calls after early returns.
+  - Fixed Next.js 16 / React 19 `set-state-in-effect` warning in `src/components/tools/tools-content.tsx` by cleanly initializing state directly from URL search parameters (`useSearchParams`).
+  - Enabled browser Web Speech API / microphone access for voice search by updating `Permissions-Policy` to `microphone=(self)` in `next.config.ts`.
+  - Achieved **0 errors across both `npx tsc --noEmit` and `npm run lint`**.
+- **Core Domain & State Machine Invariants (P0/P1):**
+  - Resolved self-service state machine deadlock in `src/server/lib/booking-state-machine.ts`: permitted `BookingEventActor.FARMER` to transition bookings through `TOOL_COLLECTED`, `WORK_STARTED`, `WORK_COMPLETED`, and `RETURNING_TOOL` in `SELF_SERVICE_RENTAL` mode without requiring an operator.
+  - Fixed cart financial accounting in `src/store/cart.ts`: accurately aggregated item deposits in `getTotalDeposit()` and included deposits in `getGrandTotal()`, ensuring 1:1 alignment with server-calculated Razorpay charges.
+  - Hardened `POST /api/razorpay/verify` to flexibly accept both snake_case (`razorpay_order_id`, `razorpay_payment_id`, `razorpay_signature`) and camelCase fields, as well as single `bookingId` or `bookingIds` arrays.
+- **Testing & Developer Experience (P1/P2):**
+  - Added dedicated hermetic test suite runner: `npm run test:unit`, executing 31 unit tests across state machine, pricing, deposit resolution, allowlists, and payment security in < 600ms without requiring a live database.
+  - Added unit test in `tests/booking-state-machine.test.ts` verifying farmer actor transitions in selfOperate mode.
+  - Documented root cause of Vercel catalog data: confirmed presence of seeded Neon database records from early migrations rather than frontend fallbacks, and documented surgical non-destructive soft-archival plan.
+  - Modernized `README.md`, `DEPLOYMENT.md`, and `.env.example`.
+
+**Files affected:**
+- `docs/audit/architecture-and-engineering-review.md` (created)
+- `docs/audit/frontend-review.md` (created)
+- `docs/audit/backend-review.md` (created)
+- `docs/audit/database-and-data-environments-review.md` (created)
+- `docs/audit/security-review.md` (created)
+- `docs/audit/qa-and-release-review.md` (created)
+- `docs/audit/documentation-review.md` (created)
+- `docs/DEPLOYMENT.md`
+- `docs/changelog.md`
+- `docs/todo.md`
+- `README.md`
+- `.env.example`
+- `package.json`
+- `next.config.ts`
+- `src/lib/auth-session.ts`
+- `src/server/lib/booking-state-machine.ts`
+- `src/app/(store)/tools/[slug]/page.tsx`
+- `src/app/api/assets/[assetCode]/route.ts`
+- `src/app/api/razorpay/verify/route.ts`
+- `src/components/tools/tools-content.tsx`
+- `src/store/cart.ts`
+- `tests/booking-state-machine.test.ts`
+
+
 ## 2026-10-04 — Production Neon Database Sync & Android Integration Deployment
 
 **What:**

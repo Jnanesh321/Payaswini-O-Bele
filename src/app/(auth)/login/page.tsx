@@ -12,6 +12,7 @@ import { OtpBoxedInput } from "@/components/otp/otp-boxed-input"
 import { getClientAuth, isFirebaseConfigured } from "@/lib/firebase/client"
 import { isNativePlatform } from "@/lib/platform"
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from "firebase/auth"
+import { GoogleSignInButton, PhoneCompletionModal } from "@/components/auth"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const [otpCode, setOtpCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPhoneModal, setShowPhoneModal] = useState(false)
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
   const [nativeVerificationId, setNativeVerificationId] = useState<string | null>(null)
   const isDevMode = !isFirebaseConfigured()
@@ -52,6 +54,30 @@ export default function LoginPage() {
     ? `${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`
     : cleanPhone
 
+  // Check for Google redirect result (for Capacitor WebView or mobile browser redirect logins)
+  useEffect(() => {
+    if (isFirebaseConfigured()) {
+      const auth = getClientAuth()
+      if (auth) {
+        import("firebase/auth")
+          .then(({ getRedirectResult }) => {
+            getRedirectResult(auth)
+              .then(async (credential) => {
+                if (credential?.user) {
+                  setLoading(true)
+                  const idToken = await credential.user.getIdToken()
+                  await completeSession(idToken)
+                }
+              })
+              .catch((err) => {
+                console.error("[O~Bele Auth] Google redirect result error:", err)
+              })
+          })
+          .catch(() => {})
+      }
+    }
+  }, [])
+
   // Remove native listeners on unmount
   useEffect(() => {
     return () => {
@@ -76,7 +102,20 @@ export default function LoginPage() {
       throw new Error(data.error || "Authentication failed on server")
     }
 
-    // Check capabilities for onboarding routing
+    // If Google user or newly provisioned user needs phone number for handovers, prompt now
+    if (data.user?.needsPhone) {
+      setShowPhoneModal(true)
+      return
+    }
+
+    // If newly provisioned user, show them what they want to do (rent, lend, operate)
+    if (data.isNewUser) {
+      router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+      router.refresh()
+      return
+    }
+
+    // Check capabilities for onboarding routing (for users without assigned roles)
     try {
       const capRes = await fetch("/api/user/capabilities")
       const capData = await capRes.json()
@@ -311,13 +350,29 @@ export default function LoginPage() {
               >
                 <div>
                   <h2 className="text-[21px] font-bold text-foreground font-heading tracking-tight leading-snug">
-                    Verify your phone number
+                    Sign in to Payaswini O~Bele
                   </h2>
-                  <p className="text-[13px] text-muted-foreground font-sans mt-2 leading-relaxed font-medium">
-                    Enter your mobile number to receive a 6-digit verification code.
+                  <p className="text-[13px] text-muted-foreground font-sans mt-1.5 leading-relaxed font-medium">
+                    Fast, secure login for farmers and machinery owners.
                   </p>
 
-                  <form onSubmit={handleSendOtp} className="mt-6">
+                  {/* ── Primary Option: Zero-Cost Google Sign-In ── */}
+                  <div className="mt-5">
+                    <GoogleSignInButton
+                      onSuccess={completeSession}
+                      onError={(err) => setError(err)}
+                    />
+                  </div>
+
+                  <div className="my-5 flex items-center gap-3">
+                    <div className="h-[1px] flex-1 bg-border/80" />
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      or continue with mobile number
+                    </span>
+                    <div className="h-[1px] flex-1 bg-border/80" />
+                  </div>
+
+                  <form onSubmit={handleSendOtp} className="mt-2">
                     <div>
                       <label className="text-[11px] font-bold text-[#6B706E] tracking-wider uppercase block" htmlFor="phone">
                         Phone Number
@@ -484,6 +539,16 @@ export default function LoginPage() {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      {/* ── One-Time Phone Capture Modal for Google Sign-In ── */}
+      <PhoneCompletionModal
+        isOpen={showPhoneModal}
+        onSuccess={() => {
+          setShowPhoneModal(false)
+          router.push(callbackUrl)
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

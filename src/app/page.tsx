@@ -1,7 +1,7 @@
 import { prisma } from "@/server/db/prisma"
 import { getServerSession } from "@/server/lib/auth"
 import { UtilityFeedClient } from "@/components/home/utility-feed-client"
-import type { ToolCard as ToolCardType } from "@/types"
+import type { ToolCard as ToolCardType, OwnerOffer } from "@/types"
 import type { ActiveBookingData } from "@/components/home/active-rental-banner"
 import type { BookingStatus } from "@prisma/client"
 
@@ -33,6 +33,7 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
                 name: true,
                 taluk: true,
                 district: true,
+                village: true,
               },
             },
           },
@@ -43,8 +44,38 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
     return rows.map((t) => {
       const totalCount = t.instances.length
       const availableCount = t.instances.filter((i) => i.status === "AVAILABLE").length
-      const owner = t.instances[0]?.owner
+      const primaryInstance = t.instances[0]
+      const owner = primaryInstance?.owner
       const photo = mapMachineryPhoto(t.name, t.category, t.images, t.thumbnailUrl)
+
+      const ownerOffers: OwnerOffer[] = t.instances.map((inst) => {
+        const instLocation =
+          [inst.owner?.village, inst.owner?.taluk].filter(Boolean).join(", ") ||
+          inst.owner?.taluk ||
+          "Kalathur • Kasaragod"
+
+        return {
+          instanceId: inst.id,
+          assetCode: inst.assetCode,
+          ownerId: inst.ownerId,
+          ownerName: inst.owner?.name || "Verified Owner",
+          ownerLocation: instLocation,
+          taluk: inst.owner?.taluk || "Kasaragod",
+          pricePerDay: inst.pricePerDay ?? t.pricePerDay,
+          deposit: inst.deposit ?? t.deposit,
+          images: inst.images?.length > 0 ? inst.images : [photo],
+          conditionGrade: inst.conditionGrade || "GOOD",
+          rating: inst.rating ?? 4.8,
+          reviewCount: inst.reviewCount ?? 0,
+          notes: inst.notes,
+          canSelfOperate: !t.requiresCertifiedOperator,
+        }
+      })
+
+      const locationString =
+        [owner?.village, owner?.taluk].filter(Boolean).join(", ") ||
+        owner?.taluk ||
+        "Kalathur • Kasaragod"
 
       return {
         id: t.id,
@@ -68,7 +99,7 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
         freeDeliveryRadiusKm: t.freeDeliveryRadiusKm,
         requiresCertifiedOperator: t.requiresCertifiedOperator,
         operatorFeePerDay: t.operatorFeePerDay,
-        taluk: owner?.taluk || "Badiadka",
+        taluk: locationString,
         canSelfOperate: !t.requiresCertifiedOperator,
         ownerName: owner?.name || "Verified Owner",
         ownerVerified: true,
@@ -77,8 +108,11 @@ async function getToolsForFeed(): Promise<ToolCardType[]> {
               id: owner.id,
               name: owner.name || "Verified Owner",
               isVerified: true,
+              taluk: owner.taluk,
+              village: owner.village,
             }
           : null,
+        ownerOffers,
         createdAt: t.createdAt.toISOString(),
       }
     })

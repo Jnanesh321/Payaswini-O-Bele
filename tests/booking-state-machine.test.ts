@@ -47,6 +47,14 @@ describe("Booking State Machine — Transitions & Rules", () => {
     assert.doesNotThrow(() => assertTransition(BookingStatus.INSPECTION, BookingStatus.COMPLETED, opts))
   })
 
+  it("permits farmer actor transitions in selfOperate mode without operator dependency", () => {
+    const opts = { mode: BOOKING_MODES.selfOperate, actor: BookingEventActor.FARMER }
+    assert.doesNotThrow(() => assertTransition(BookingStatus.TOOL_COLLECTED, BookingStatus.WORK_STARTED, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.WORK_STARTED, BookingStatus.WORK_COMPLETED, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.WORK_COMPLETED, BookingStatus.RETURNING_TOOL, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.RETURNING_TOOL, BookingStatus.TOOL_RETURNED, opts))
+  })
+
   it("permits valid transitions in selfOperate mode", () => {
     const opts = { mode: BOOKING_MODES.selfOperate }
     assert.doesNotThrow(() => assertTransition(BookingStatus.REQUESTED, BookingStatus.OWNER_PENDING, opts))
@@ -60,6 +68,14 @@ describe("Booking State Machine — Transitions & Rules", () => {
     assert.doesNotThrow(() => assertTransition(BookingStatus.RETURNING_TOOL, BookingStatus.TOOL_RETURNED, opts))
     assert.doesNotThrow(() => assertTransition(BookingStatus.TOOL_RETURNED, BookingStatus.INSPECTION, opts))
     assert.doesNotThrow(() => assertTransition(BookingStatus.INSPECTION, BookingStatus.COMPLETED, opts))
+  })
+
+  it("permits farmer actor transitions in selfOperate mode without operator dependency", () => {
+    const opts = { mode: BOOKING_MODES.selfOperate, actor: BookingEventActor.FARMER }
+    assert.doesNotThrow(() => assertTransition(BookingStatus.TOOL_COLLECTED, BookingStatus.WORK_STARTED, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.WORK_STARTED, BookingStatus.WORK_COMPLETED, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.WORK_COMPLETED, BookingStatus.RETURNING_TOOL, opts))
+    assert.doesNotThrow(() => assertTransition(BookingStatus.RETURNING_TOOL, BookingStatus.TOOL_RETURNED, opts))
   })
 
   it("blocks invalid transitions and throws InvalidBookingTransitionError", () => {
@@ -172,5 +188,77 @@ describe("Booking State Machine — Transitions & Rules", () => {
       booking.totalToolFee + (booking.deposit ?? 0) + booking.deliveryFee + booking.platformFee
     assert.equal(convertedTotalAmount, 294900)
     assert.equal(convertedTotalAmount, initialTotalAmount - booking.totalOperatorFee)
+  })
+
+  it("permits milestone fast-forwarding across the 5 core field milestones", () => {
+    // Milestone jump 1: REQUESTED -> OWNER_ACCEPTED
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.REQUESTED, BookingStatus.OWNER_ACCEPTED, {
+        actor: BookingEventActor.TOOL_OWNER,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.REQUESTED, BookingStatus.OWNER_ACCEPTED, {
+        actor: BookingEventActor.ADMIN,
+      }),
+    )
+
+    // Milestone jump 2: OWNER_ACCEPTED -> WORK_STARTED (bypassing operator assign & transit in low signal)
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.OWNER_ACCEPTED, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.TOOL_OWNER,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.OWNER_ACCEPTED, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.OPERATOR,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.OWNER_ACCEPTED, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.ADMIN,
+      }),
+    )
+
+    // Milestone jump 3: Intermediate transit taps missed in plantation -> WORK_STARTED
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.FETCHING_TOOL, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.OPERATOR,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.TRAVELLING_TO_FARM, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.OPERATOR,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.ARRIVED, BookingStatus.WORK_STARTED, {
+        actor: BookingEventActor.OPERATOR,
+      }),
+    )
+
+    // Milestone jump 4: WORK_STARTED / WORK_COMPLETED -> TOOL_RETURNED
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.WORK_STARTED, BookingStatus.TOOL_RETURNED, {
+        actor: BookingEventActor.TOOL_OWNER,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.WORK_COMPLETED, BookingStatus.TOOL_RETURNED, {
+        actor: BookingEventActor.OPERATOR,
+      }),
+    )
+
+    // Milestone jump 5: TOOL_RETURNED -> COMPLETED (bypassing INSPECTION)
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.TOOL_RETURNED, BookingStatus.COMPLETED, {
+        actor: BookingEventActor.TOOL_OWNER,
+      }),
+    )
+    assert.doesNotThrow(() =>
+      assertTransition(BookingStatus.TOOL_RETURNED, BookingStatus.COMPLETED, {
+        actor: BookingEventActor.ADMIN,
+      }),
+    )
   })
 })

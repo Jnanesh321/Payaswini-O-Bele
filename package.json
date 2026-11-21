@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "emulator": "firebase-tools emulators:start --only auth --project o-bele",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test tests/*.test.ts",
+    "test:unit": "tsx --test tests/booking-state-machine.test.ts tests/booking-pricing.test.ts tests/deposit-resolution.test.ts tests/auth-lifecycle.test.ts tests/create-booking-allowlist.test.ts tests/payments-security.test.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

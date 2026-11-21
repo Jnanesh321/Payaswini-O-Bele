@@ -3,14 +3,14 @@ import { Fraunces, Figtree } from "next/font/google"
 
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["600", "700", "900"],
   variable: "--font-display",
+  display: "swap",
 })
 
 const figtree = Figtree({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   variable: "--font-owner-sans",
+  display: "swap",
 })
 
 export const metadata: Metadata = {

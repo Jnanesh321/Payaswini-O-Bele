@@ -30,6 +30,7 @@ const config: CapacitorConfig = {
   appName: 'O Bele~',
   webDir: 'public',
   server: {
+    errorPath: 'offline.html',
     ...(isProduction
       ? { url: prodServerUrl, cleartext: false, androidScheme: 'https' }
       : { url: devServerUrl, cleartext: true, androidScheme: 'https' }),

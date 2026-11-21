@@ -16,7 +16,7 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     cat.includes("HARVEST") ||
     n.includes("harvest")
   ) {
-    return "/images/tools/arecanut-pole.png"
+    return "/images/tools/arecanut-pole.webp"
   }
 
   if (
@@ -25,7 +25,7 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     n.includes("knapsack") ||
     n.includes("battery")
   ) {
-    return "/images/tools/battery-sprayer.png"
+    return "/images/tools/battery-sprayer.webp"
   }
 
   if (
@@ -34,7 +34,7 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     n.includes("cultivator") ||
     n.includes("shakti")
   ) {
-    return "/images/tools/power-tiller.png"
+    return "/images/tools/power-tiller.webp"
   }
 
   if (
@@ -46,14 +46,14 @@ export function getCategoryFallbackImage(category?: string, name?: string): stri
     n.includes("brush") ||
     n.includes("grass")
   ) {
-    return "/images/tools/brush-cutter.png"
+    return "/images/tools/brush-cutter.webp"
   }
 
   if (n.includes("tractor") || cat.includes("TRACTOR")) {
-    return "/images/tools/tractor.png"
+    return "/images/tools/tractor.webp"
   }
 
-  return "/images/tools/power-tiller.png"
+  return "/images/tools/power-tiller.webp"
 }
 
 /**
@@ -68,6 +68,11 @@ export function resolveToolImage(
 ): string {
   if (!src || src.trim() === "" || src.includes("res.cloudinary.com") || src.endsWith(".svg")) {
     return getCategoryFallbackImage(category, name)
+  }
+
+  // Automatically map legacy /images/tools/*.png paths to optimized .webp
+  if (src.includes("/images/tools/") && src.endsWith(".png")) {
+    return src.replace(/\.png$/, ".webp")
   }
 
   return src

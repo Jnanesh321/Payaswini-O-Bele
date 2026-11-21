@@ -7,11 +7,12 @@ import { useUserLocation } from "@/hooks/use-user-location"
 import {
   type TalukOption,
   REGIONAL_TALUKS,
+  ALL_AREAS_OPTION,
   calculateDistanceKm,
 } from "@/lib/geo"
 
 export type { TalukOption }
-export { REGIONAL_TALUKS }
+export { REGIONAL_TALUKS, ALL_AREAS_OPTION }
 
 interface LocationSelectorSheetProps {
   isOpen: boolean
@@ -187,6 +188,50 @@ export function LocationSelectorSheet({
 
             {/* Taluk List */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1.5 max-h-[340px]">
+              {/* All Areas Option */}
+              {activeDistrict === "ALL" && !filterQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectLocation(ALL_AREAS_OPTION)
+                    onClose()
+                  }}
+                  className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition-all ${
+                    selectedLocation === "all" || selectedLocation === ALL_AREAS_OPTION.name
+                      ? "border border-primary/40 bg-primary/8 text-primary shadow-xs"
+                      : "border border-transparent bg-card hover:bg-muted/40 text-foreground"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                        selectedLocation === "all" || selectedLocation === ALL_AREAS_OPTION.name
+                          ? "bg-primary text-white"
+                          : "bg-muted/80 text-muted-foreground group-hover:text-primary"
+                      }`}
+                    >
+                      <MapPin size={14} />
+                    </div>
+                    <div>
+                      <p className="font-display text-xs font-bold leading-tight">
+                        {locale === "kn" ? ALL_AREAS_OPTION.nameKn : ALL_AREAS_OPTION.name}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        {locale === "kn"
+                          ? "ಎಲ್ಲಾ ತಾಲೂಕುಗಳ ಯಂತ್ರೋಪಕರಣಗಳನ್ನು ತೋರಿಸಿ"
+                          : "Show machinery across all regional hubs & taluks"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {(selectedLocation === "all" || selectedLocation === ALL_AREAS_OPTION.name) && (
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+                      <Check size={14} strokeWidth={2.6} />
+                    </div>
+                  )}
+                </button>
+              )}
+
               {filteredTaluks.map((taluk) => {
                 const isSelected = selectedLocation === taluk.id || selectedLocation === taluk.name
                 const liveDistance = coords ? calculateDistanceKm(coords.latitude, coords.longitude, taluk.lat, taluk.lng) : null

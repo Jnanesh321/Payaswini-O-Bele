@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app"
-import { getAuth, type Auth } from "firebase/auth"
+import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth"
 
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
@@ -19,6 +19,7 @@ export function isFirebaseConfigured(): boolean {
 
 let app: FirebaseApp | null = null
 let auth: Auth | null = null
+let isEmulatorConnected = false
 
 export function getClientApp(): FirebaseApp | null {
   if (typeof window === "undefined") return null
@@ -40,5 +41,25 @@ export function getClientAuth(): Auth | null {
   if (!clientApp) return null
 
   auth = getAuth(clientApp)
+
+  // Strictly gate emulator connection to non-production environments with explicit flag
+  const useEmulator =
+    process.env.NODE_ENV !== "production" &&
+    (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" ||
+      Boolean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST))
+
+  if (useEmulator && !isEmulatorConnected) {
+    const emulatorUrl =
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST || "http://127.0.0.1:9099"
+    try {
+      connectAuthEmulator(auth, emulatorUrl, { disableWarnings: true })
+      isEmulatorConnected = true
+      console.log(`[O~Bele Auth] Client connected to Firebase Auth Emulator at ${emulatorUrl}`)
+    } catch (err) {
+      console.warn("[O~Bele Auth] Failed to connect to Firebase Auth Emulator:", err)
+    }
+  }
+
   return auth
 }
+

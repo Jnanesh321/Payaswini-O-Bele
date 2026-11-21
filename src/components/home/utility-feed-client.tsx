@@ -4,13 +4,14 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useLocale, useTranslations } from "next-intl"
-import { Search, MapPin, ChevronDown, ShoppingBag, User, X, SlidersHorizontal, Sparkles, Mic } from "lucide-react"
+import { Search, MapPin, ChevronDown, ShoppingBag, User, X, SlidersHorizontal, Sparkles, Mic, ArrowRight } from "lucide-react"
 import { AppLogo } from "@/components/ui/app-logo"
 import { useCartStore } from "@/store/cart"
 import { getLocaleName } from "@/lib/utils"
 import { ToolCard } from "@/components/tools/tool-card"
 import { BottomNav } from "@/components/layout/bottom-nav"
-import { type TalukOption, REGIONAL_TALUKS } from "./location-selector-sheet"
+import { type TalukOption, REGIONAL_TALUKS, ALL_AREAS_OPTION } from "./location-selector-sheet"
+import { resolveRegisteredDispatchHub, calculateDistanceKm } from "@/lib/geo"
 import { TaskCarousel, type TaskFilter, SEASONAL_TASKS } from "./task-carousel"
 import { ActiveRentalBanner, type ActiveBookingData } from "./active-rental-banner"
 import type { ToolCard as ToolCardType } from "@/types"
@@ -84,7 +85,7 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
   )
 
   const filteredTools = useMemo(() => {
-    return initialTools.filter((tool, idx) => {
+    return initialTools.filter((tool) => {
       // 1. Task filter
       if (activeTask.categories.length > 0) {
         if (!activeTask.categories.includes(tool.category)) {
@@ -92,17 +93,47 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
         }
       }
 
-      // 2. Quick tag filter (Instamart style)
+      // 2. Real Taluk / Operating Hub Filter
+      if (selectedLocation && selectedLocation.id !== "all" && selectedLocation.name !== "All Areas") {
+        const targetId = selectedLocation.id.toLowerCase()
+        const targetName = selectedLocation.name.toLowerCase()
+        const targetDistrict = (selectedLocation.district || "").toLowerCase()
+
+        const toolTaluk = (tool.taluk || "").toLowerCase()
+        const ownerTaluk = (tool.owner?.taluk || "").toLowerCase()
+        const ownerVillage = (tool.owner?.village || "").toLowerCase()
+        const offers = tool.ownerOffers || []
+
+        const matchesMain =
+          toolTaluk.includes(targetId) ||
+          targetName.includes(toolTaluk) ||
+          ownerTaluk.includes(targetId) ||
+          targetName.includes(ownerTaluk) ||
+          ownerVillage.includes(targetId) ||
+          targetName.includes(ownerVillage) ||
+          (targetDistrict && toolTaluk.includes(targetDistrict))
+
+        const matchesOffers = offers.some((offer) => {
+          const ot = (offer.taluk || offer.ownerLocation || "").toLowerCase()
+          return ot.includes(targetId) || targetName.includes(ot)
+        })
+
+        if (!matchesMain && !matchesOffers) {
+          return false
+        }
+      }
+
+      // 3. Quick tag filter (honest criteria)
       if (quickTag === "FAST") {
-        const dist = tool.distanceKm ?? Number((3.2 + ((idx * 1.7) % 7)).toFixed(1))
-        if (dist > 5) return false
+        // Fast dispatch: verified owner & immediate availability
+        if (tool.availableCount <= 0 || !tool.ownerVerified) return false
       } else if (quickTag === "ASSURED") {
         if (!tool.ownerVerified) return false
       } else if (quickTag === "OPERATOR") {
         if (!tool.requiresCertifiedOperator) return false
       }
 
-      // 3. Search query filter
+      // 4. Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim()
         const nameEn = (tool.name || "").toLowerCase()
@@ -116,7 +147,13 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
 
       return true
     })
-  }, [initialTools, activeTask, quickTag, searchQuery])
+  }, [initialTools, activeTask, quickTag, searchQuery, selectedLocation])
+
+  const HOME_SUMMARY_LIMIT = 3
+  const displayedTools = useMemo(() => {
+    return filteredTools.slice(0, HOME_SUMMARY_LIMIT)
+  }, [filteredTools])
+  const remainingCount = Math.max(0, filteredTools.length - HOME_SUMMARY_LIMIT)
 
   return (
     <div className="relative min-h-screen bg-neutral-100/70 dark:bg-neutral-900 text-foreground flex flex-col items-center justify-start">
@@ -277,23 +314,24 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
             locale={locale}
           />
 
-          {/* Section: Available Near You Today */}
+          {/* Section: Available Near You Today (Curated Summary of 2-3 Sponsored/Top Pick Tools) */}
           <div>
             <div className="mb-2.5 flex items-center justify-between px-0.5">
               <div className="flex items-center gap-1.5">
                 <h2 className="font-display text-sm font-bold text-foreground">
-                  {t("availableNearYou")}
+                  {locale === "kn" ? "ಪ್ರಾಯೋಜಿತ ಮತ್ತು ಜನಪ್ರಿಯ ಸಾಧನಗಳು" : "Sponsored & Featured Tools"}
                 </h2>
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">
-                  {filteredTools.length}
+                <span className="rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 px-2 py-0.5 text-[10px] font-extrabold border border-amber-500/20">
+                  {displayedTools.length} {locale === "kn" ? "ಆಯ್ಕೆಗಳು" : "Picks"}
                 </span>
               </div>
 
               <Link
-                href="/tools"
-                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5"
+                href={searchQuery.trim() ? `/tools?search=${encodeURIComponent(searchQuery.trim())}` : "/tools"}
+                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
               >
-                <span>{locale === "kn" ? "ಎಲ್ಲಾ ಉಪಕರಣಗಳು" : "Catalog"}</span>
+                <span>{locale === "kn" ? "ಕ್ಯಾಟಲಾಗ್ ವೀಕ್ಷಿಸಿ" : "View Catalog"}</span>
+                <span className="text-xs">→</span>
               </Link>
             </div>
 
@@ -332,15 +370,19 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
                   </button>
                 </div>
               </div>
-            ) : filteredTools.length > 0 ? (
+            ) : displayedTools.length > 0 ? (
               <div className="flex flex-col gap-3.5">
-                {filteredTools.map((tool, idx) => {
+                {displayedTools.map((tool) => {
                   const dailyRateInRupees =
                     tool.pricePerDay >= 1000 ? Math.round(tool.pricePerDay / 100) : tool.pricePerDay;
                   const depositInRupees =
                     tool.deposit >= 10000 ? Math.round(tool.deposit / 100) : (tool.deposit || 1000);
-                  const distanceKm =
-                    tool.distanceKm ?? Number((3.2 + ((idx * 1.7) % 7)).toFixed(1));
+
+                  // Honest real-coordinate distance calculation (or undefined if no GPS)
+                  const toolHub = resolveRegisteredDispatchHub(tool.taluk || tool.owner?.taluk);
+                  const realDistanceKm = (gpsCoords && toolHub)
+                    ? calculateDistanceKm(gpsCoords.latitude, gpsCoords.longitude, toolHub.lat, toolHub.lng)
+                    : (typeof tool.distanceKm === "number" ? tool.distanceKm : undefined);
 
                   return (
                     <ToolCard
@@ -352,16 +394,51 @@ export function UtilityFeedClient({ initialTools, activeBooking }: UtilityFeedCl
                       ownerName={tool.owner?.name || "Verified Owner"}
                       ownerVerified={tool.owner?.isVerified ?? true}
                       taluk={tool.taluk || "Kasaragod"}
-                      distanceKm={distanceKm}
+                      distanceKm={realDistanceKm}
                       dailyRate={dailyRateInRupees}
                       deposit={depositInRupees}
                       allowsSelfOperate={tool.canSelfOperate ?? !tool.requiresCertifiedOperator}
                       requiresCertifiedOperator={tool.requiresCertifiedOperator}
                       onBook={handleOpenBooking}
                       tool={tool}
+                      isSponsored={true}
                     />
                   )
                 })}
+
+                {/* ── See More / Full Machinery Catalog CTA ── */}
+                <div className="pt-1">
+                  <Link
+                    href={searchQuery.trim() ? `/tools?search=${encodeURIComponent(searchQuery.trim())}` : "/tools"}
+                    className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/10 via-card to-amber-500/10 p-4 shadow-2xs hover:border-primary/50 hover:shadow-sm transition-all duration-200 active:scale-[0.99]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary text-xl shadow-2xs group-hover:scale-105 transition-transform">
+                        🚜
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-display text-xs font-bold text-foreground">
+                            {locale === "kn" ? "ಸಂಪೂರ್ಣ ಯಂತ್ರೋಪಕರಣ ಕ್ಯಾಟಲಾಗ್" : "Full Machinery Catalog"}
+                          </h4>
+                          {remainingCount > 0 && (
+                            <span className="rounded-full bg-primary text-white font-extrabold text-[9px] px-2 py-0.5 shadow-2xs">
+                              +{remainingCount} {locale === "kn" ? "ಹೆಚ್ಚು ಲಭ್ಯ" : "more"}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {locale === "kn"
+                            ? "ಎಲ್ಲಾ ಕೃಷಿ ಯಂತ್ರಗಳು, ಆಪರೇಟರ್ ದರಗಳು ಮತ್ತು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ನೋಡಿ"
+                            : "Browse all equipment, specs, owner rates & certified operators"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-xs group-hover:translate-x-0.5 group-hover:bg-primary/90 transition-all">
+                      <ArrowRight size={15} />
+                    </div>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 p-8 text-center">

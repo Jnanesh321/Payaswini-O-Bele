@@ -66,7 +66,24 @@ export async function resolveOrCreateFirebaseUser(
   })
 
   if (user) {
-    return formatSessionUser(user)
+    // Keep avatar and name updated if missing in Prisma
+    if ((picture && !user.image) || (name && !user.name) || (email && !user.email)) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(picture && !user.image ? { image: picture } : {}),
+          ...(name && !user.name ? { name } : {}),
+          ...(email && !user.email ? { email } : {}),
+        },
+        include: {
+          capabilities: {
+            where: { status: VerificationStatus.VERIFIED },
+            select: { type: true },
+          },
+        },
+      })
+    }
+    return formatSessionUser(user, false)
   }
 
   // 2. Lookup by phone number to link existing accounts
@@ -106,21 +123,51 @@ export async function resolveOrCreateFirebaseUser(
         },
       })
 
-      return formatSessionUser(user)
+      return formatSessionUser(user, false)
     }
   }
 
-  // 3. Provision new user if not found by UID or phone
-  const canonicalPhone = parsedPhone ? parsedPhone.normalized : `91${uid.slice(0, 10).replace(/\D/g, "").padEnd(10, "0")}`
+  // 3. Lookup by email to link existing Google or registered accounts
+  if (email) {
+    const existingEmailUser = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        capabilities: {
+          where: { status: VerificationStatus.VERIFIED },
+          select: { type: true },
+        },
+      },
+    })
 
+    if (existingEmailUser) {
+      user = await prisma.user.update({
+        where: { id: existingEmailUser.id },
+        data: {
+          firebaseUid: uid,
+          ...(name && !existingEmailUser.name ? { name } : {}),
+          ...(picture && !existingEmailUser.image ? { image: picture } : {}),
+        },
+        include: {
+          capabilities: {
+            where: { status: VerificationStatus.VERIFIED },
+            select: { type: true },
+          },
+        },
+      })
+
+      return formatSessionUser(user, false)
+    }
+  }
+
+  // 4. Provision new user if not found by UID, phone, or email
   user = await prisma.user.create({
     data: {
-      phone: canonicalPhone,
+      phone: parsedPhone ? parsedPhone.normalized : null,
       firebaseUid: uid,
-      name: name || `Farmer ${canonicalPhone.slice(-4)}`,
+      name: name || (email ? email.split("@")[0] : `Farmer ${uid.slice(-4)}`),
       email: email || undefined,
       image: picture || undefined,
-      phoneVerified: true,
+      phoneVerified: Boolean(parsedPhone),
       capabilities: {
         create: [
           {
@@ -139,27 +186,39 @@ export async function resolveOrCreateFirebaseUser(
     },
   })
 
-  return formatSessionUser(user)
+  return formatSessionUser(user, true)
 }
 
-function formatSessionUser(user: {
-  id: string
-  firebaseUid?: string | null
-  phone: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-  isAdmin: boolean
-  capabilities: { type: string }[]
-}): SessionUser {
+function formatSessionUser(
+  user: {
+    id: string
+    firebaseUid?: string | null
+    phone?: string | null
+    name?: string | null
+    email?: string | null
+    image?: string | null
+    isAdmin: boolean
+    capabilities: { type: string }[]
+  },
+  isNewUser: boolean = false
+): SessionUser {
+  const hasValidPhone = Boolean(
+    user.phone &&
+    user.phone.startsWith("91") &&
+    user.phone.length === 12 &&
+    !user.phone.includes("000000")
+  )
+
   return {
     id: user.id,
     firebaseUid: user.firebaseUid || undefined,
-    phone: user.phone,
+    phone: user.phone || "",
     name: user.name,
     email: user.email,
     image: user.image,
     isAdmin: user.isAdmin,
     capabilities: user.capabilities.map((c) => c.type),
+    isNewUser,
+    needsPhone: !hasValidPhone,
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Skeleton } from "@/components/ui"
 import { ToolCard } from "./tool-card"
@@ -20,14 +21,18 @@ const quickCategories = [
 ]
 
 export function ToolsContent() {
+  const searchParams = useSearchParams()
+  const initialSearch = searchParams.get("search") || ""
+  const initialCategory = searchParams.get("category") || ""
+
   const [tools, setTools] = useState<ToolCardType[]>([])
   const [meta, setMeta] = useState<PaginationMeta>({ page: 1, limit: 12, total: 0, totalPages: 0 })
   const [loading, setLoading] = useState(true)
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch)
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<ToolFilters>({
-    category: "",
+    category: initialCategory,
     minPrice: "",
     maxPrice: "",
     available: "",

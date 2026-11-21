@@ -280,4 +280,54 @@ describe("Firebase Authentication & User Linking Integration", () => {
       )
     }
   })
+
+  it("12. Google user can authenticate with email/name/picture without phone and flags needsPhone", async () => {
+    const TEST_GOOGLE_UID = "google_fb_uid_test_123"
+    const verifiedToken = {
+      uid: TEST_GOOGLE_UID,
+      email: "google_farmer_test@gmail.com",
+      name: "Sathish Rai",
+      picture: "https://images.example.com/avatar.jpg",
+    }
+
+    const resolved = await resolveOrCreateFirebaseUser(verifiedToken)
+
+    assert.ok(resolved.id)
+    assert.equal(resolved.email, "google_farmer_test@gmail.com")
+    assert.equal(resolved.name, "Sathish Rai")
+    assert.equal(resolved.image, "https://images.example.com/avatar.jpg")
+    assert.equal(resolved.capabilities.includes("FARMER"), true)
+    assert.equal(resolved.needsPhone, true, "Should require phone number completion for field handovers")
+
+    // Clean up
+    await prisma.user.delete({ where: { id: resolved.id } }).catch(() => {})
+  })
+
+  it("13. One-time phone capture updates user with canonical 12-digit format and marks verified", async () => {
+    const TEST_GOOGLE_UID = "google_fb_uid_test_phone_step"
+    const verifiedToken = {
+      uid: TEST_GOOGLE_UID,
+      email: "google_capture_test@gmail.com",
+      name: "Ganesh Poojary",
+    }
+
+    const resolved = await resolveOrCreateFirebaseUser(verifiedToken)
+    assert.equal(resolved.needsPhone, true)
+
+    // Simulate saving phone via API logic
+    const { normalizePhone } = await import("../src/server/lib/phone")
+    const canonicalPhone = normalizePhone("9845012345")
+    assert.equal(canonicalPhone, "919845012345")
+
+    const updated = await prisma.user.update({
+      where: { id: resolved.id },
+      data: { phone: canonicalPhone, phoneVerified: true },
+    })
+
+    assert.equal(updated.phone, "919845012345")
+    assert.equal(updated.phoneVerified, true)
+
+    // Clean up
+    await prisma.user.delete({ where: { id: resolved.id } }).catch(() => {})
+  })
 })

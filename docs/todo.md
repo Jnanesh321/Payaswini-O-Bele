@@ -1,4 +1,18 @@
 ## Completed
+- [x] **Comprehensive Engineering Review & Production Hardening (2026-10-29)**:
+      - Conducted 7 parallel audits: Lead Architecture, Frontend, Backend, Database, Security, QA, and DX.
+      - Generated authoritative deliverables in `docs/audit/`.
+      - Redacted exposed plaintext secret from `docs/DEPLOYMENT.md`.
+      - Hardened session signature engine (`src/lib/auth-session.ts`) to require secret in production.
+      - Fixed conditional `useMemo` in `src/app/(store)/tools/[slug]/page.tsx`, achieving 0 ESLint errors.
+      - Resolved self-service state machine deadlock in `src/server/lib/booking-state-machine.ts` for farmer actors.
+      - Enabled Web Speech API by setting `Permissions-Policy: microphone=(self)` in `next.config.ts`.
+      - Fixed cart deposit computation in `src/store/cart.ts` to include deposits in Grand Total.
+      - Hardened `POST /api/razorpay/verify` against snake_case / camelCase and single / array booking ID variations.
+      - Preserved catalog URL search parameters in `src/components/tools/tools-content.tsx`.
+      - Secured Asset QR lookup in `src/app/api/assets/[assetCode]/route.ts` with `requireAuth`.
+      - Created `npm run test:unit` running 31 hermetic unit tests offline in < 600ms.
+      - Confirmed origin of Vercel catalog data as seeded Neon PostgreSQL records and documented safe soft-archival plan.
 - [x] **Firebase Phone Authentication Migration (2026-10-03)**:
       - Migrated from MSG91 + NextAuth credentials to Firebase Phone Authentication.
       - Integrated Firebase Client SDK (`RecaptchaVerifier`, `signInWithPhoneNumber`) with invisible reCAPTCHA.

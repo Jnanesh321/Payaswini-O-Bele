@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Compass, CalendarDays, User, ShoppingBag } from "lucide-react"
+import { Compass, CalendarDays, User, ShoppingBag, Tractor } from "lucide-react"
 import { useCartStore } from "@/store/cart"
 import { cn } from "@/lib/utils"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { useMounted } from "@/hooks/use-mounted"
 
 interface BottomNavProps {
@@ -15,6 +15,7 @@ interface BottomNavProps {
 
 export function BottomNav({ className }: BottomNavProps) {
   const pathname = usePathname()
+  const locale = useLocale()
   const t = useTranslations("homeUtility")
   const itemCount = useCartStore((s) => s.getItemCount())
   const mounted = useMounted()
@@ -36,6 +37,13 @@ export function BottomNav({ className }: BottomNavProps) {
       label: t("explore"),
       icon: Compass,
       isActive: pathname === "/",
+    },
+    {
+      id: "catalog",
+      href: "/tools",
+      label: locale === "kn" ? "ಕ್ಯಾಟಲಾಗ್" : "Catalog",
+      icon: Tractor,
+      isActive: pathname.startsWith("/tools"),
     },
     {
       id: "bookings",

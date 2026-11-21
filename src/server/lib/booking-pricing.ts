@@ -36,6 +36,17 @@ export const REQUESTED_SERVICE_TYPES: readonly RequestedServiceType[] = [
   "SELF_OPERATE",
 ]
 
+export type PaymentMode = "PAY_ON_HANDOVER" | "ONLINE"
+
+export const PAYMENT_MODES = {
+  payOnHandover: "PAY_ON_HANDOVER",
+  online: "ONLINE",
+} as const
+
+export function isPaymentMode(value: unknown): value is PaymentMode {
+  return value === "PAY_ON_HANDOVER" || value === "ONLINE"
+}
+
 export function normalizeServiceType(type: unknown): "SELF_SERVICE_RENTAL" | "OPERATOR_ONLY" {
   if (type === "WITH_OPERATOR" || type === "OPERATOR_ONLY") {
     return "OPERATOR_ONLY"

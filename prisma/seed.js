@@ -49,10 +49,10 @@ const tools = [
     },
     category: "CLIMBING_POLES",
     images: [
-      "/images/tools/arecanut-pole.png",
+      "/images/tools/arecanut-pole.webp",
     ],
     thumbnailUrl:
-      "/images/tools/arecanut-pole.png",
+      "/images/tools/arecanut-pole.webp",
     pricePerDay: inr(299),
     pricePerWeek: inr(1499),
     pricePerSeason: inr(4999),
@@ -87,10 +87,10 @@ const tools = [
     },
     category: "SPRAYERS",
     images: [
-      "/images/tools/battery-sprayer.png",
+      "/images/tools/battery-sprayer.webp",
     ],
     thumbnailUrl:
-      "/images/tools/battery-sprayer.png",
+      "/images/tools/battery-sprayer.webp",
     pricePerDay: inr(149),
     pricePerWeek: inr(749),
     deposit: 0,
@@ -121,10 +121,10 @@ const tools = [
     },
     category: "TILLERS",
     images: [
-      "/images/tools/power-tiller.png",
+      "/images/tools/power-tiller.webp",
     ],
     thumbnailUrl:
-      "/images/tools/power-tiller.png",
+      "/images/tools/power-tiller.webp",
     pricePerDay: inr(599),
     pricePerWeek: inr(2999),
     deposit: 0,
@@ -156,10 +156,10 @@ const tools = [
     },
     category: "PRUNERS_CUTTERS",
     images: [
-      "/images/tools/brush-cutter.png",
+      "/images/tools/brush-cutter.webp",
     ],
     thumbnailUrl:
-      "/images/tools/brush-cutter.png",
+      "/images/tools/brush-cutter.webp",
     pricePerDay: inr(249),
     pricePerWeek: inr(1199),
     deposit: 0,
@@ -192,10 +192,10 @@ const tools = [
     },
     category: "TILLERS",
     images: [
-      "/images/tools/tractor.png",
+      "/images/tools/tractor.webp",
     ],
     thumbnailUrl:
-      "/images/tools/tractor.png",
+      "/images/tools/tractor.webp",
     pricePerDay: inr(1299),
     pricePerWeek: inr(6499),
     deposit: 0,
@@ -582,7 +582,7 @@ async function main() {
       currentCustodianId: raju.id,
       pricePerDay: inr(1299),
       deposit: 0,
-      images: ["/images/tools/tractor.png"],
+      images: ["/images/tools/tractor.webp"],
       conditionGrade: "EXCELLENT",
       verificationStatus: "VERIFIED",
       rating: 5.0,

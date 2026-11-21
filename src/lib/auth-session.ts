@@ -8,12 +8,14 @@
 export interface SessionUser {
   id: string
   firebaseUid?: string
-  phone: string
+  phone?: string | null
   name?: string | null
   email?: string | null
   image?: string | null
   isAdmin: boolean
   capabilities: string[]
+  isNewUser?: boolean
+  needsPhone?: boolean
 }
 
 export interface SessionPayload extends SessionUser {
@@ -25,11 +27,16 @@ export const SESSION_COOKIE_NAME = "obele_session"
 export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60 // 30 days
 
 function getSecretKey(): string {
-  return (
-    process.env.SESSION_SECRET ||
-    process.env.NEXTAUTH_SECRET ||
-    "obele-default-dev-secret-key-at-least-32-chars-long"
-  )
+  const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET
+  if (secret) return secret
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "[Auth Security] Fatal: SESSION_SECRET or NEXTAUTH_SECRET must be configured in production environments."
+    )
+  }
+
+  return "obele-default-dev-secret-key-at-least-32-chars-long"
 }
 
 function base64UrlEncode(str: string): string {

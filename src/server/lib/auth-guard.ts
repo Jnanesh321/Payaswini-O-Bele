@@ -16,10 +16,9 @@ export interface AuthenticatedUser {
   name?: string | null
   email?: string | null
   image?: string | null
-  isAdmin?: boolean
+  isAdmin?: boolean 
   capabilities?: CapabilityType[]
 }
-
 /**
  * Ensures the request is authenticated with a valid session.
  */

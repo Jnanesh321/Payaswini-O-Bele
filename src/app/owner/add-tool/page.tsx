@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { ArrowLeft, HelpCircle, Camera, ImageIcon, Check, Loader2, Plus, Minus } from "lucide-react"
+import { ArrowLeft, HelpCircle, Camera, ImageIcon, Check, Loader2, Plus, Minus, X } from "lucide-react"
 import { Button } from "@/components/ui"
 import { ToolCategory } from "@prisma/client"
+import { useSession } from "@/components/providers/session-provider"
+import { PhoneCompletionModal } from "@/components/auth"
 
 const categoryOptions = [
   { value: ToolCategory.TILLERS, label: "Tillage & Land Prep (Tiller)" },
@@ -21,6 +23,7 @@ const categoryOptions = [
 
 export default function AddToolPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [name, setName] = useState("")
   const [category, setCategory] = useState<string>(ToolCategory.CLIMBING_POLES)
   const [pricePerDay, setPricePerDay] = useState("")
@@ -31,19 +34,88 @@ export default function AddToolPage() {
   const [description, setDescription] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [imageUrl, setImageUrl] = useState("")
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPhoneModal, setShowPhoneModal] = useState(false)
 
   const handleIncrement = () => setQuantity((q) => q + 1)
   const handleDecrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1))
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) return setError("Tool Name is required")
-    if (!pricePerDay.trim()) return setError("Daily Rental Rate is required")
-    if (!description.trim()) return setError("Description is required")
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
+    // Show immediate local preview
+    const localUrl = URL.createObjectURL(file)
+    setPhotoPreview(localUrl)
+    setUploadingPhoto(true)
+    setError("")
+
+    try {
+      // Compress image client-side via canvas for fast mobile uploading
+      const compressedDataUrl = await new Promise<string>((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          const maxDim = 1200
+          let { width, height } = img
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width)
+              width = maxDim
+            } else {
+              width = Math.round((width * maxDim) / height)
+              height = maxDim
+            }
+          }
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext("2d")
+          ctx?.drawImage(img, 0, 0, width, height)
+          resolve(canvas.toDataURL("image/jpeg", 0.82))
+        }
+        img.onerror = () => resolve(localUrl)
+        img.src = localUrl
+      })
+
+      // Attempt upload to /api/upload
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const data = await res.json()
+
+      if (res.ok && data.success && data.url) {
+        setImageUrl(data.url)
+        setPhotoPreview(data.url)
+      } else {
+        // Fallback to compressed base64 data URL if upload failed
+        setImageUrl(compressedDataUrl)
+        setPhotoPreview(compressedDataUrl)
+      }
+    } catch {
+      // Fallback
+      setImageUrl(localUrl)
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  const handleRemovePhoto = () => {
+    setImageUrl("")
+    setPhotoPreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const executeSubmit = async () => {
     setLoading(true)
     setError("")
 
@@ -67,6 +139,10 @@ export default function AddToolPage() {
 
       const data = await res.json()
       if (!res.ok) {
+        if (data.needsPhone) {
+          setShowPhoneModal(true)
+          return
+        }
         setError(data.error || "Failed to list tool")
         return
       }
@@ -79,6 +155,29 @@ export default function AddToolPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!name.trim()) return setError("Tool Name is required")
+    if (!pricePerDay.trim()) return setError("Daily Rental Rate is required")
+    if (!description.trim()) return setError("Description is required")
+
+    // Check if user has a verified phone number for equipment listings
+    const userPhone = session?.user?.phone
+    const hasValidPhone = Boolean(
+      userPhone &&
+      userPhone.startsWith("91") &&
+      userPhone.length === 12 &&
+      !userPhone.includes("000000")
+    )
+
+    if (session?.user?.needsPhone || !hasValidPhone) {
+      setShowPhoneModal(true)
+      return
+    }
+
+    await executeSubmit()
   }
 
   return (
@@ -119,37 +218,75 @@ export default function AddToolPage() {
           <div className="space-y-2.5">
             <div className="flex items-center justify-between text-[12px] font-bold text-[#5C4A37]">
               <span>Tool Photos *</span>
-              <span className="text-[10px] text-[#8B4513]">Up to 4 photos</span>
+              <span className="text-[10px] text-[#8B4513]">Camera or Gallery</span>
             </div>
+
+            {/* Hidden native camera/file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handlePhotoSelect}
+            />
             
-            <div className="flex gap-2.5">
-              {/* Camera add photo block */}
-              <div className="w-[100px] h-[100px] rounded-2xl bg-white border border-dashed border-[#D5D9C9] flex flex-col items-center justify-center gap-1 hover:bg-white/50 cursor-pointer">
-                <Camera className="h-6 w-6 text-[#5C4A37]" />
-                <span className="text-[10px] font-bold text-[#5C4A37]">Add Photo</span>
-              </div>
+            <div className="flex gap-2.5 items-center">
+              {/* Native Camera Add Photo Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="w-[100px] h-[100px] rounded-2xl bg-white border border-dashed border-[#D5D9C9] flex flex-col items-center justify-center gap-1 hover:bg-[#F2ECE1] transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
+              >
+                {uploadingPhoto ? (
+                  <Loader2 className="h-6 w-6 text-[#2D5016] animate-spin" />
+                ) : (
+                  <Camera className="h-6 w-6 text-[#2D5016]" />
+                )}
+                <span className="text-[10px] font-bold text-[#5C4A37]">
+                  {uploadingPhoto ? "Compressing..." : "Snap / Upload"}
+                </span>
+              </button>
               
-              {/* Preview block */}
-              <div className="w-[100px] h-[100px] rounded-2xl bg-[#C5D5BD] border border-[#D5D9C9] relative overflow-hidden flex items-center justify-center">
-                <ImageIcon className="h-6 w-6 text-[#2D5016]" />
-                <div className="absolute inset-0 bg-black/10 flex items-end p-1.5 justify-end">
-                  <span className="text-[8px] bg-[#2D5016] text-white px-1.5 py-0.5 rounded font-bold">Auto</span>
+              {/* Photo Preview block */}
+              {photoPreview ? (
+                <div className="w-[100px] h-[100px] rounded-2xl border border-[#2D5016] relative overflow-hidden flex items-center justify-center bg-black/5 shadow-2xs">
+                  <img
+                    src={photoPreview}
+                    alt="Tool Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black transition"
+                    title="Remove Photo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  <div className="absolute bottom-0 inset-x-0 bg-[#2D5016]/80 text-white text-[8px] font-bold py-0.5 text-center">
+                    Captured
+                  </div>
                 </div>
-              </div>
-
-              {/* Placeholder block */}
-              <div className="w-[100px] h-[100px] rounded-2xl bg-white border border-[#D5D9C9] flex items-center justify-center opacity-40">
-                <ImageIcon className="h-5 w-5 text-[#5C4A37]" />
-              </div>
+              ) : (
+                <div className="w-[100px] h-[100px] rounded-2xl bg-[#E8F0D5]/50 border border-dashed border-[#D5D9C9] flex flex-col items-center justify-center opacity-60">
+                  <ImageIcon className="h-6 w-6 text-[#5C4A37]" />
+                  <span className="text-[8px] text-[#5C4A37] mt-0.5">Preview</span>
+                </div>
+              )}
             </div>
 
-            {/* Optional URL input for E2E validation */}
+            {/* Optional URL input for E2E validation / manual override */}
             <input
               type="text"
               placeholder="Or paste image URL (Optional)"
               className="w-full text-xs font-semibold bg-white border border-[#D5D9C9] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#2D5016] focus:ring-1 focus:ring-[#2D5016] transition-all"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => {
+                setImageUrl(e.target.value)
+                setPhotoPreview(e.target.value || null)
+              }}
             />
           </div>
 
@@ -399,6 +536,17 @@ export default function AddToolPage() {
           )}
         </Button>
       </div>
+
+      {/* One-Time Phone Completion Prompt for Tool Listings */}
+      <PhoneCompletionModal
+        isOpen={showPhoneModal}
+        onClose={() => setShowPhoneModal(false)}
+        onSuccess={() => {
+          setShowPhoneModal(false)
+          executeSubmit()
+        }}
+        canDismiss
+      />
     </div>
   )
 }

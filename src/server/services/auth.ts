@@ -99,8 +99,7 @@ export async function sendOtp(request: Request, phone?: string) {
   const sms = await sendOtpSms(normalized, otp)
   const sent = sms.sent
 
-  const enableDevMasterOtp =
-    process.env.ENABLE_DEV_MASTER_OTP === "true" || process.env.NODE_ENV !== "production"
+  const enableDevMasterOtp = process.env.ENABLE_DEV_MASTER_OTP === "true"
 
   if (!sent && enableDevMasterOtp) {
     console.log(`[DEV ONLY] OTP for ${normalized}: ${otp}`)
@@ -135,7 +134,7 @@ export async function verifyOtp(request: Request, data: { phone?: string; otp?: 
   }
 
   const isDevMasterOtp =
-    (process.env.ENABLE_DEV_MASTER_OTP === "true" || process.env.NODE_ENV !== "production") &&
+    process.env.ENABLE_DEV_MASTER_OTP === "true" &&
     (cleanedOtp === "123456" || cleanedOtp === "000000")
 
   const record = await prisma.otpRequest.findFirst({

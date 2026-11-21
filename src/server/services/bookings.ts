@@ -61,6 +61,7 @@ export interface CreateBookingInput {
   deliveryType?: string
   deliveryAddress?: string
   notes?: string
+  paymentMode?: "PAY_ON_HANDOVER" | "ONLINE" | string
 }
 
 export class CreateBookingError extends Error {
@@ -73,7 +74,9 @@ export class CreateBookingError extends Error {
 }
 
 export async function createBooking(userId: string, input: CreateBookingInput) {
-  const { toolId, toolInstanceId, serviceType, deliveryType, notes, deliveryAddress } = input
+  const { toolId, toolInstanceId, serviceType, deliveryType, notes, deliveryAddress, paymentMode } = input
+  const isPayOnHandover = paymentMode === "PAY_ON_HANDOVER"
+  const initialStatus = isPayOnHandover ? BookingStatus.OWNER_PENDING : BookingStatus.REQUESTED
 
   // ── Validate toolId ──────────────────────────────────────────────────────
   if (!toolId || typeof toolId !== "string") {
@@ -105,6 +108,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
   let resolvedInstanceId: string | undefined = undefined
   let toolOwnerId: string
   let toolOwnerTaluk: string | null | undefined = undefined
+  let selectedInstance: { pricePerDay?: number | null; deposit?: number | null } | null = null
 
   if (toolInstanceId) {
     const instance = await prisma.toolInstance.findUnique({
@@ -120,6 +124,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
     resolvedInstanceId = instance.id
     toolOwnerId = instance.ownerId
     toolOwnerTaluk = instance.owner?.taluk
+    selectedInstance = instance
   } else {
     // Auto-select an available instance
     const availableInstance = await prisma.toolInstance.findFirst({
@@ -135,6 +140,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
     resolvedInstanceId = availableInstance.id
     toolOwnerId = availableInstance.ownerId
     toolOwnerTaluk = availableInstance.owner?.taluk
+    selectedInstance = availableInstance
   }
 
   // ── Authoritative dispatch eligibility verification (Pilot Hub Model & Tool Radius) ──
@@ -155,17 +161,23 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
     throw err
   }
 
-  // ── Server-authoritative pricing ─────────────────────────────────────────
+  // ── Server-authoritative pricing (enforce physical asset instance deposit) ──
   const deliveryFee = resolveDeliveryCharge(deliveryType)
   const mappedServiceType: BookingServiceType =
     serviceType === "OPERATOR_ONLY"
       ? BookingServiceType.OPERATOR_ONLY
       : BookingServiceType.SELF_SERVICE_RENTAL
 
+  const effectiveTool = {
+    ...tool,
+    pricePerDay: selectedInstance?.pricePerDay ?? tool.pricePerDay,
+    deposit: selectedInstance?.deposit ?? tool.deposit,
+  }
+
   let pricing: ReturnType<typeof computeBookingPricing>
   try {
     pricing = computeBookingPricing({
-      tool,
+      tool: effectiveTool,
       serviceType,
       startDate,
       endDate,
@@ -184,7 +196,7 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
       data: {
         orderRef: `ORD${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
         userId,
-        totalAmount: pricing.totalAmount,
+        totalAmount: isPayOnHandover ? 0 : pricing.totalAmount,
         paymentStatus: "PENDING",
       },
     })
@@ -211,10 +223,10 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
         subtotal: pricing.subtotal,
         pricePerDay: pricing.toolFeePerDay,
         totalAmount: pricing.totalAmount,
-        status: BookingStatus.REQUESTED,
+        status: initialStatus,
         deliveryAddress: typeof deliveryAddress === "string" ? deliveryAddress : undefined,
         bookingRef: `BK${Date.now()}${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
-        notes: typeof notes === "string" ? notes : undefined,
+        notes: typeof notes === "string" ? notes : isPayOnHandover ? "Pay on Handover (UPI/Cash at Pickup)" : undefined,
       },
     })
 
@@ -222,11 +234,24 @@ export async function createBooking(userId: string, input: CreateBookingInput) {
       data: {
         orderId: orderRecord.id,
         bookingId: newBooking.id,
-        amount: pricing.totalAmount,
+        amount: isPayOnHandover ? 0 : pricing.totalAmount,
         status: "PENDING",
-        depositFrozen: pricing.deposit > 0,
+        method: isPayOnHandover ? "PAY_ON_HANDOVER" : "ONLINE",
+        depositFrozen: isPayOnHandover ? false : pricing.deposit > 0,
       },
     })
+
+    if (isPayOnHandover) {
+      await tx.bookingStateLog.create({
+        data: {
+          bookingId: newBooking.id,
+          fromState: BookingStatus.REQUESTED,
+          toState: BookingStatus.OWNER_PENDING,
+          actor: BookingEventActor.SYSTEM,
+          note: "Pay on Handover (UPI / Cash at Pickup) — initial state set to OWNER_PENDING with ₹0 online charge",
+        },
+      })
+    }
 
     return tx.booking.findUniqueOrThrow({
       where: { id: newBooking.id },
@@ -401,7 +426,7 @@ export async function transitionBooking(params: {
   let selfServiceAccepted = false
   if (
     effectiveTo === BookingStatus.OWNER_ACCEPTED &&
-    booking.status === BookingStatus.OWNER_PENDING &&
+    (booking.status === BookingStatus.OWNER_PENDING || booking.status === BookingStatus.REQUESTED) &&
     deriveModeFromServiceType(booking.serviceType) === "WITH_OPERATOR"
   ) {
     if (body.operatorMode !== "assign_operator" && body.operatorMode !== "self_service") {
@@ -426,7 +451,7 @@ export async function transitionBooking(params: {
   // Owner accept → auto-queue for operator dispatch
   const autoAdvanceToOperatorPending =
     effectiveTo === BookingStatus.OWNER_ACCEPTED &&
-    booking.status === BookingStatus.OWNER_PENDING &&
+    (booking.status === BookingStatus.OWNER_PENDING || booking.status === BookingStatus.REQUESTED) &&
     deriveModeFromServiceType(booking.serviceType) === "WITH_OPERATOR" &&
     body.operatorMode === "assign_operator"
 

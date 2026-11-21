@@ -24,6 +24,12 @@ export interface VerifiedFirebaseToken {
 let adminApp: App | null = null
 
 export function isFirebaseAdminConfigured(): boolean {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (process.env.FIREBASE_AUTH_EMULATOR_HOST || process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true")
+  ) {
+    return true
+  }
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) return true
   if (
     (process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) &&
@@ -41,6 +47,16 @@ export function isFirebaseAdminConfigured(): boolean {
 }
 
 function getAdminApp(): App | null {
+  const isDev = process.env.NODE_ENV !== "production"
+  if (
+    isDev &&
+    (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST) &&
+    !process.env.FIREBASE_AUTH_EMULATOR_HOST
+  ) {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST =
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST?.replace(/^https?:\/\//, "") || "127.0.0.1:9099"
+  }
+
   const existingApps = getApps()
   if (existingApps.length > 0) {
     return existingApps[0]!
@@ -157,6 +173,14 @@ export async function verifyFirebaseIdToken(
     // Format: mock_firebase_{uid}
     const simpleMatch = trimmed.match(/^mock_firebase_([a-zA-Z0-9_-]+)$/)
     if (simpleMatch) {
+      if (simpleMatch[1].includes("google")) {
+        return {
+          uid: simpleMatch[1],
+          email: `${simpleMatch[1]}@gmail.com`,
+          name: "Google Farmer",
+          picture: "https://images.unsplash.com/photo-1544717305-2782549b5136",
+        }
+      }
       return {
         uid: simpleMatch[1],
         phoneNumber: "+919845100002",

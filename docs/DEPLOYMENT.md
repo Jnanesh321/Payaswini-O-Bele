@@ -138,22 +138,21 @@ plus an approved OTP template. I cannot create these for you.
 
 ---
 
-## 7. NEXTAUTH_SECRET
+## 7. NEXTAUTH_SECRET & SESSION_SECRET
 
-Current real value (already written into your local `.env.local`, and must be
-set identically in Vercel):
+Generate a cryptographically strong secret for your local `.env.local` and configure it in Vercel:
 
-```
-b9rYYswGpLEpKtGDcY9NPdt+RAXeFAE0tFvgpbhWOohuKCLanlazkXuOyRQIB4TF
-```
+```bash
+# Generate with OpenSSL:
+openssl rand -base64 32
 
-Regenerate whenever you want (PowerShell, 48 random bytes → 64-char Base64):
-
-```powershell
+# Or generate in PowerShell (48 random bytes → Base64):
 $rng=[System.Security.Cryptography.RandomNumberGenerator]::Create()
 $b=New-Object byte[] 48; $rng.GetBytes($b); $rng.Dispose()
 [Convert]::ToBase64String($b)
 ```
+
+> **Security Note:** Never commit live session secrets to version control. Set `SESSION_SECRET` (and `NEXTAUTH_SECRET`) directly in your Vercel Project Environment Variables.
 
 ---
 
@@ -219,3 +218,46 @@ is enough to start.
       after a real purchase test).
 - [ ] Release APK opens, loads content from `https://…vercel.app` (Status bar →
       address shows HTTPS origin, not `file://` or `10.0.2.2`).
+
+---
+
+## 11. Firebase Local Emulator Suite Workflow (Dev & Offline Testing)
+
+To test the end-to-end phone authentication flow locally without requiring a Google Cloud Blaze plan or sending real SMS carrier messages:
+
+### Architecture
+- **Auth Emulator:** Runs locally on `127.0.0.1:9099`.
+- **Emulator UI:** Accessible at `http://127.0.0.1:4000/auth`.
+- **Configuration:** Managed via `firebase.json` and `.firebaserc` (`default: o-bele`).
+- **Gating:** Client connection is guarded in `src/lib/firebase/client.ts` by `process.env.NODE_ENV !== "production"` and `NEXT_PUBLIC_USE_FIREBASE_EMULATOR="true"`. Server verification in `src/lib/firebase/admin.ts` automatically routes to `FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099`.
+
+### Step-by-Step Testing Instructions
+
+1. **Start the Firebase Auth Emulator:**
+   ```powershell
+   npm run emulator
+   ```
+   *Logs will confirm:*
+   ```text
+   ✔ All emulators ready! It is now safe to connect your app.
+   i View Emulator UI at http://127.0.0.1:4000/
+   ```
+
+2. **Ensure `.env.local` has the emulator flag enabled:**
+   ```env
+   NEXT_PUBLIC_USE_FIREBASE_EMULATOR="true"
+   ```
+
+3. **Start the Next.js development server (in another terminal):**
+   ```powershell
+   npm run dev
+   ```
+
+4. **Perform Login:**
+   - Navigate to `http://localhost:3000/login`.
+   - Enter any 10-digit mobile number (e.g. `9845012345` or `9876543210`).
+   - Click **Verify & Continue**. reCAPTCHA resolves locally without charging SMS quotas.
+   - Open the Emulator UI at **`http://127.0.0.1:4000/auth`**.
+   - Check the **View SMS** / verification codes panel in the Emulator UI to see the generated 6-digit OTP code (or check the terminal output running `npm run emulator`).
+   - Enter the 6-digit code into O~Bele's verification screen.
+   - **Result:** You will be authenticated, `obele_session` cookie is issued, and you are redirected to the app.

@@ -1,4 +1,5 @@
 import { BookingEventActor, BookingStatus } from "@prisma/client"
+import Razorpay from "razorpay"
 import { prisma } from "@/server/db/prisma"
 import { sendSmsNotification } from "@/server/lib/sms"
 import { computeCancellationPolicy } from "@/server/lib/booking-state-machine"
@@ -31,6 +32,39 @@ export async function expireOverdueOwnerRequests(now = new Date()): Promise<numb
       booking.totalAmount,
     )
 
+    let refundProcessed = false
+    let refundId: string | null = null
+
+    if (
+      booking.payment &&
+      booking.payment.status === "CAPTURED" &&
+      booking.payment.razorpayPaymentId &&
+      policy.refundAmount > 0
+    ) {
+      try {
+        const razorpayKey = process.env.RAZORPAY_KEY_ID || ""
+        if (!razorpayKey.startsWith("rzp_test_placeholder") && process.env.RAZORPAY_KEY_SECRET) {
+          const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID!,
+            key_secret: process.env.RAZORPAY_KEY_SECRET!,
+          })
+          const refundRes = await razorpay.payments.refund(booking.payment.razorpayPaymentId, {
+            amount: policy.refundAmount,
+            notes: {
+              reason: "OWNER_SLA_EXPIRED",
+              bookingId: booking.id,
+              bookingRef: booking.bookingRef,
+            },
+          })
+          refundId = (refundRes as { id?: string })?.id || null
+          refundProcessed = true
+        }
+      } catch (err) {
+        console.error(`[OwnerSLA] Razorpay refund failed for booking ${booking.id}:`, err)
+        refundProcessed = false
+      }
+    }
+
     await prisma.$transaction(async (tx) => {
       await tx.booking.update({
         where: { id: booking.id },
@@ -42,9 +76,13 @@ export async function expireOverdueOwnerRequests(now = new Date()): Promise<numb
           fromState: BookingStatus.OWNER_PENDING,
           toState: BookingStatus.CANCELLED_BY_PLATFORM,
           actor: BookingEventActor.SYSTEM,
-          note: `Auto-cancelled: tool owner did not respond within the 4-hour SLA. Full refund of ₹${(
-            policy.refundAmount / 100
-          ).toFixed(2)} recorded.`,
+          note: refundProcessed
+            ? `Auto-cancelled: tool owner did not respond within the 4-hour SLA. Full refund of ₹${(
+                policy.refundAmount / 100
+              ).toFixed(2)} processed via Razorpay (${refundId || "online"}).`
+            : `Auto-cancelled: tool owner did not respond within the 4-hour SLA. Refund of ₹${(
+                policy.refundAmount / 100
+              ).toFixed(2)} recorded — pending admin payment gateway resolution.`,
         },
       })
 
@@ -54,19 +92,21 @@ export async function expireOverdueOwnerRequests(now = new Date()): Promise<numb
           data: {
             refundAmount: policy.refundAmount,
             cancellationFee: policy.operatorFee,
-            ...(policy.refundAmount > 0 ? { status: "REFUNDED" as const } : {}),
+            depositRefundId: refundId,
+            ...(refundProcessed ? { status: "REFUNDED" as const } : { disputeLocked: true }),
           },
         })
       }
     })
 
     if (booking.farmer.phone) {
-      await sendSmsNotification(
-        booking.farmer.phone,
-        `O~Bele: The tool owner did not respond to your booking ${booking.bookingRef} within 4 hours, so it was cancelled. A full refund of ₹${(
-          policy.refundAmount / 100
-        ).toFixed(2)} has been recorded for your payment.`,
-      )
+      const smsMessage = refundProcessed
+        ? `O~Bele: The tool owner did not respond to your booking ${booking.bookingRef} within 4 hours, so it was cancelled. A full refund of ₹${(
+            policy.refundAmount / 100
+          ).toFixed(2)} has been refunded to your payment method.`
+        : `O~Bele: The tool owner did not respond to your booking ${booking.bookingRef} within 4 hours, so it was cancelled. Our team is processing your refund request.`
+
+      await sendSmsNotification(booking.farmer.phone, smsMessage)
     }
   }
 

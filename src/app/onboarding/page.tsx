@@ -6,8 +6,9 @@ import { useSession } from "@/components/providers/session-provider"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { AppLogo } from "@/components/ui/app-logo"
-import { Loader2, ArrowRight, Check } from "lucide-react"
+import { Loader2, ArrowRight, Check, User, MapPin } from "lucide-react"
 import { Button } from "@/components/ui"
+import { REGIONAL_TALUKS } from "@/lib/geo"
 
 interface RoleOption {
   id: string
@@ -43,7 +44,9 @@ export default function OnboardingPage() {
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   
   const { status } = useSession()
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
+  const [name, setName] = useState("")
+  const [taluk, setTaluk] = useState("")
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(["FARMER"])
   const [fetching, setFetching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -55,24 +58,32 @@ export default function OnboardingPage() {
     }
   }, [status, router])
 
-  // Fetch current user capabilities
+  // Fetch current user capabilities & profile
   useEffect(() => {
     if (status === "authenticated") {
-      const loadCapabilities = async () => {
+      const loadProfile = async () => {
         setFetching(true)
         try {
           const res = await fetch("/api/user/capabilities")
           const data = await res.json()
-          if (data.success && Array.isArray(data.capabilities)) {
-            setSelectedRoles(data.capabilities)
+          if (data.success) {
+            if (Array.isArray(data.capabilities) && data.capabilities.length > 0) {
+              setSelectedRoles(data.capabilities)
+            }
+            if (data.user?.name && !/^Farmer\s+\d+$/i.test(data.user.name.trim())) {
+              setName(data.user.name)
+            }
+            if (data.user?.taluk) {
+              setTaluk(data.user.taluk)
+            }
           }
         } catch (err) {
-          console.error("Failed to load capabilities:", err)
+          console.error("Failed to load profile:", err)
         } finally {
           setFetching(false)
         }
       }
-      loadCapabilities()
+      loadProfile()
     }
   }, [status])
 
@@ -85,6 +96,10 @@ export default function OnboardingPage() {
   }
 
   const handleContinue = async () => {
+    if (!name.trim()) {
+      setError("Please enter your name to complete registration.")
+      return
+    }
     if (selectedRoles.length === 0) {
       setError("Please select at least one role to continue.")
       return
@@ -95,13 +110,32 @@ export default function OnboardingPage() {
       const res = await fetch("/api/user/capabilities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ capabilities: selectedRoles }),
+        body: JSON.stringify({
+          capabilities: selectedRoles,
+          name: name.trim(),
+          taluk: taluk || undefined,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || "Failed to save capabilities")
+        setError(data.error || "Failed to save profile")
         return
       }
+
+      // Smart destination based on single-role selection if default callback
+      if (callbackUrl === "/" || !callbackUrl) {
+        if (selectedRoles.length === 1 && selectedRoles[0] === "TOOL_OWNER") {
+          router.push("/owner")
+          router.refresh()
+          return
+        }
+        if (selectedRoles.length === 1 && selectedRoles[0] === "OPERATOR") {
+          router.push("/operator")
+          router.refresh()
+          return
+        }
+      }
+
       // Redirect on success
       router.push(callbackUrl)
       router.refresh()
@@ -136,39 +170,97 @@ export default function OnboardingPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-[390px] min-h-[85vh] flex flex-col justify-between"
+        className="w-full max-w-[420px] min-h-[85vh] flex flex-col justify-between py-4"
       >
         {/* Welcome Header */}
-        <div className="pt-6">
-          <div className="rounded-2xl p-2.5 mb-4 inline-block">
+        <div className="pt-2">
+          <div className="rounded-2xl p-2 mb-2 inline-block">
             <AppLogo width={140} height={50} className="h-10 w-auto" priority />
           </div>
-          <h1 className="text-[28px] font-bold text-foreground font-heading leading-tight tracking-tight">
-            What brings you to O~Bele?
+          <h1 className="text-[26px] font-bold text-foreground font-heading leading-tight tracking-tight">
+            Welcome to O~Bele
           </h1>
-          <p className="text-[14px] text-muted-foreground font-medium leading-relaxed mt-3">
-            Choose your journey on Karnataka&apos;s primary community machinery hub.{" "}
-            <span className="text-[#C85A32] font-semibold">Select all that apply.</span>
+          <p className="text-[13px] text-muted-foreground font-medium leading-relaxed mt-1.5">
+            Tell us your name and choose what brings you to Karnataka&apos;s community machinery hub.
           </p>
         </div>
 
+        {/* Profile Details (Name & Location) */}
+        <div className="my-5 space-y-3.5 bg-card/60 dark:bg-card/40 border border-border/80 rounded-2xl p-4 shadow-sm">
+          <div>
+            <label className="text-[11px] font-bold text-[#6B706E] dark:text-[#A1A7A4] tracking-wider uppercase block" htmlFor="onboard-name">
+              Your Full Name <span className="text-[#C85A32]">*</span>
+            </label>
+            <div className="flex items-center bg-[#FDFBF7] dark:bg-[#1A1F1A] border border-[#D5D9C9] dark:border-[#2D382D] rounded-xl px-3.5 py-2.5 mt-1 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
+              <User className="h-4 w-4 text-muted-foreground mr-2.5 flex-shrink-0" />
+              <input
+                id="onboard-name"
+                type="text"
+                placeholder="e.g. Jnanesh Sharma"
+                className="bg-transparent border-0 outline-none p-0 text-[14px] font-semibold text-foreground w-full placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  if (error) setError("")
+                }}
+                required
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-[#6B706E] dark:text-[#A1A7A4] tracking-wider uppercase block" htmlFor="onboard-taluk">
+              Nearest Hub / Taluk
+            </label>
+            <div className="flex items-center bg-[#FDFBF7] dark:bg-[#1A1F1A] border border-[#D5D9C9] dark:border-[#2D382D] rounded-xl px-3.5 py-2.5 mt-1 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
+              <MapPin className="h-4 w-4 text-muted-foreground mr-2.5 flex-shrink-0" />
+              <select
+                id="onboard-taluk"
+                value={taluk}
+                onChange={(e) => setTaluk(e.target.value)}
+                className="bg-transparent border-0 outline-none p-0 text-[14px] font-semibold text-foreground w-full focus:ring-0 focus:outline-none cursor-pointer"
+              >
+                <option value="" className="text-muted-foreground bg-card">Select nearest regional hub</option>
+                {REGIONAL_TALUKS.map((t) => (
+                  <option key={t.id} value={t.name} className="text-foreground bg-card">
+                    {t.name} ({t.district})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Roles List */}
-        <div className="space-y-4 my-6 flex-1 flex flex-col justify-center">
+        <div className="space-y-3 mb-4 flex-1 flex flex-col justify-center">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[12px] font-bold text-[#6B706E] dark:text-[#A1A7A4] uppercase tracking-wider">
+              I want to:
+            </span>
+            <span className="text-[11px] text-[#C85A32] font-semibold">
+              Select all that apply
+            </span>
+          </div>
+
           {roleOptions.map((role) => {
             const isSelected = selectedRoles.includes(role.id)
             return (
               <motion.div
                 key={role.id}
-                onClick={() => toggleRole(role.id)}
+                onClick={() => {
+                  toggleRole(role.id)
+                  if (error) setError("")
+                }}
                 whileTap={{ scale: 0.99 }}
-                className={`relative flex items-center p-4 rounded-2xl border cursor-pointer transition-all duration-300 shadow-sm ${
+                className={`relative flex items-center p-3.5 rounded-2xl border cursor-pointer transition-all duration-300 shadow-sm ${
                   isSelected
-                    ? "bg-primary/10 border-primary dark:bg-primary/20"
+                    ? "bg-primary/10 border-primary dark:bg-primary/20 shadow-[0_2px_8px_rgba(45,80,22,0.12)]"
                     : "bg-card border-border hover:border-primary/50"
                 }`}
               >
                 {/* Role Icon */}
-                <div className="relative w-12 h-12 flex-shrink-0 bg-transparent">
+                <div className="relative w-11 h-11 flex-shrink-0 bg-transparent">
                   <Image
                     src={role.icon}
                     alt={role.title}
@@ -178,18 +270,18 @@ export default function OnboardingPage() {
                 </div>
 
                 {/* Details */}
-                <div className="ml-4 mr-8 flex-1">
-                  <h3 className="text-[17px] font-bold text-foreground leading-tight tracking-tight">
+                <div className="ml-3.5 mr-7 flex-1">
+                  <h3 className="text-[15px] font-bold text-foreground leading-tight tracking-tight">
                     {role.title}
                   </h3>
-                  <p className="text-[12px] text-muted-foreground font-medium leading-tight mt-1.5">
+                  <p className="text-[12px] text-muted-foreground font-medium leading-tight mt-1">
                     {role.description}
                   </p>
                 </div>
 
                 {/* Checkbox Icon */}
                 <div
-                  className={`absolute right-4 w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-200 ${
+                  className={`absolute right-3.5 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-200 ${
                     isSelected
                       ? "bg-primary border-primary"
                       : "bg-background border-border"
@@ -201,7 +293,7 @@ export default function OnboardingPage() {
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <Check className="h-3.5 w-3.5 text-primary-foreground stroke-[3.5]" />
+                      <Check className="h-3 w-3 text-primary-foreground stroke-[3.5]" />
                     </motion.div>
                   )}
                 </div>
@@ -213,7 +305,7 @@ export default function OnboardingPage() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-xs text-[#C0392B] font-semibold text-center"
+              className="text-xs text-[#C0392B] font-semibold text-center mt-2"
             >
               {error}
             </motion.p>
@@ -221,21 +313,21 @@ export default function OnboardingPage() {
         </div>
 
         {/* Bottom Actions */}
-        <div className="pt-4 border-t border-[#F2ECE1] bg-transparent">
+        <div className="pt-3 border-t border-[#F2ECE1] dark:border-[#2D382D] bg-transparent">
           <p className="text-[10px] text-[#6B706E] text-center font-medium leading-normal tracking-wide">
             By continuing, you agree to local cooperative guidelines.
           </p>
 
           <Button
             onClick={handleContinue}
-            className="w-full bg-[#C85A32] hover:bg-[#B24D28] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(200,90,50,0.2)] active:scale-[0.98] disabled:opacity-50"
-            disabled={saving || selectedRoles.length === 0}
+            className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-13 rounded-xl flex items-center justify-center gap-2 mt-3 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
+            disabled={saving || !name.trim() || selectedRoles.length === 0}
           >
             {saving ? (
               <Loader2 className="h-5 w-5 animate-spin text-white" />
             ) : (
               <>
-                <span className="text-[15px] tracking-wide">Continue</span>
+                <span className="text-[15px] tracking-wide">Complete Setup & Continue</span>
                 <ArrowRight className="h-[18px] w-[18px] stroke-[2.5]" />
               </>
             )}

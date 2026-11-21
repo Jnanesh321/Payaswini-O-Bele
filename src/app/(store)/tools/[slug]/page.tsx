@@ -130,12 +130,19 @@ export default function ToolDetailPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Wrench size={32} className="text-muted-foreground mb-2" />
           <p className="text-xs text-muted-foreground">The requested machine does not exist.</p>
-          <Link
-            href="/tools"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back()
+              } else {
+                router.push("/")
+              }
+            }}
+            className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
           >
-            <ChevronLeft size={14} /> Back to Catalog
-          </Link>
+            <ChevronLeft size={14} /> Back
+          </button>
         </div>
       </FarmerShell>
     )
@@ -184,15 +191,12 @@ export default function ToolDetailPage() {
     router.push("/cart")
   }
 
-  const scenarioEstimate = () => {
-    const sd = startDate ? new Date(startDate) : new Date()
-    const ed = endDate
-      ? new Date(endDate)
-      : new Date(sd.getTime() + selectedDays * 24 * 60 * 60 * 1000)
-    const basePricing = calculateRentalPrice(activePricePerDay, sd, ed)
-    const totalOperatorFee = operatorFeePerDay * basePricing.days
-    return basePricing.totalAmount + totalOperatorFee
-  }
+  const estimatedStartDate = startDate ? new Date(startDate) : new Date()
+  const estimatedEndDate = endDate
+    ? new Date(endDate)
+    : new Date(estimatedStartDate.getTime() + selectedDays * 24 * 60 * 60 * 1000)
+  const estimatedPricing = calculateRentalPrice(activePricePerDay, estimatedStartDate, estimatedEndDate)
+  const estimatedTotal = estimatedPricing.totalAmount + (operatorFeePerDay * estimatedPricing.days)
 
   return (
     <FarmerShell
@@ -200,12 +204,20 @@ export default function ToolDetailPage() {
       title={getLocaleName(tool, locale)}
       subtitle={`Renting from ${activeOwnerName}`}
       headerRight={
-        <Link
-          href="/tools"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-foreground"
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back()
+            } else {
+              router.push("/")
+            }
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-foreground transition active:scale-95 cursor-pointer"
+          aria-label="Back"
         >
           <ChevronLeft size={16} />
-        </Link>
+        </button>
       }
     >
       <div className="flex flex-col gap-4">
@@ -411,7 +423,7 @@ export default function ToolDetailPage() {
           <div className="mt-3 flex items-center justify-between rounded-xl bg-background p-2.5">
             <span className="text-[11px] text-muted-foreground">Estimated Total:</span>
             <span className="font-display text-sm font-bold text-primary">
-              {fp(scenarioEstimate())}
+              {fp(estimatedTotal)}
             </span>
           </div>
 

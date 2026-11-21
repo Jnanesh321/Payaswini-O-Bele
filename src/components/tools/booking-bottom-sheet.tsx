@@ -23,6 +23,7 @@ import { formatPrice } from "@/lib/utils"
 import type { ToolCard as ToolCardType } from "@/types"
 import { ShiftSelector, type ShiftType, FARM_SHIFTS } from "./shift-selector"
 import { useUserLocation } from "@/hooks/use-user-location"
+import { PhoneCompletionModal } from "@/components/auth"
 
 declare global {
   interface Window {
@@ -94,6 +95,13 @@ export function BookingBottomSheet({
   const [days, setDays] = useState<number>(1)
   const [loading, setLoading] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showPhoneModal, setShowPhoneModal] = useState<boolean>(false)
+
+  // 3. Fulfillment Delivery Option State ("pickup": ₹0 vs "delivery": ₹50)
+  const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("pickup")
+
+  // 4. Payment Mode State ("PAY_ON_HANDOVER" vs "ONLINE")
+  const [paymentMode, setPaymentMode] = useState<"PAY_ON_HANDOVER" | "ONLINE">("PAY_ON_HANDOVER")
 
   // Farm GPS location tracking
   const { coords: cachedGps, isLocating: isLocatingGps, detectLocation: detectGpsLocation } = useUserLocation()
@@ -144,12 +152,14 @@ export function BookingBottomSheet({
   const toolRentalTotal = Math.round(pricePerDay * effectiveMultiplier)
   const isWithOperator = serviceType === "OPERATOR_ONLY"
   const operatorWageTotal = isWithOperator ? Math.round(operatorFeePerDay * effectiveMultiplier) : 0
-  const totalPayableUpfront = toolRentalTotal + operatorWageTotal + deposit
+  const deliveryFee = deliveryType === "delivery" ? 5000 : 0
+  const totalBookingValue = toolRentalTotal + operatorWageTotal + deposit + deliveryFee
+  const totalPayableUpfront = paymentMode === "PAY_ON_HANDOVER" ? 0 : totalBookingValue
 
   // Format Helper
   const fp = (paise: number) => formatPrice(paise, locale)
 
-  // Razorpay Checkout Trigger
+  // Razorpay or Pay-on-Handover Checkout Trigger
   const handleProceedToPay = useCallback(async () => {
     if (!tool) return
     setErrorMessage(null)
@@ -161,11 +171,23 @@ export function BookingBottomSheet({
       return
     }
 
+    // Check if user has a verified contact phone number for handovers
+    const userPhone = session.user.phone
+    const hasValidPhone = Boolean(
+      userPhone &&
+      userPhone.startsWith("91") &&
+      userPhone.length === 12 &&
+      !userPhone.includes("000000")
+    )
+
+    if (session.user.needsPhone || !hasValidPhone) {
+      setShowPhoneModal(true)
+      return
+    }
+
     setLoading(true)
 
     try {
-      await loadRazorpay()
-
       const startDate = new Date()
       startDate.setDate(startDate.getDate() + selectedDayOffset)
       startDate.setHours(selectedShift === "AFTERNOON" ? 13 : 6, 0, 0, 0)
@@ -174,14 +196,50 @@ export function BookingBottomSheet({
       const endDate = new Date(startDate)
       endDate.setDate(endDate.getDate() + durationDays)
 
+      const deliveryAddress = farmCoords
+        ? `Farm GPS: ${farmCoords.latitude.toFixed(5)}, ${farmCoords.longitude.toFixed(5)} (${tool.taluk || "Local Hub"})`
+        : `${tool.taluk || "Kasaragod / Puttur"} Hub Dispatch`
+
+      // ── A. Pay on Handover (UPI / Cash at Pickup) — Instant Booking in OWNER_PENDING ──
+      if (paymentMode === "PAY_ON_HANDOVER") {
+        const res = await fetch("/api/rentals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            toolId: tool.id,
+            toolInstanceId: (tool as Record<string, unknown>).toolInstanceId,
+            serviceType,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            deliveryType,
+            deliveryAddress,
+            paymentMode: "PAY_ON_HANDOVER",
+            notes: "Pay on Handover (UPI/Cash at Pickup)",
+          }),
+        })
+
+        const resData = await res.json()
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.error || "Failed to create booking")
+        }
+
+        const bookingId = resData.data?.id
+        onClose()
+        if (onSuccess) onSuccess()
+        const targetUrl = bookingId ? `/orders/${bookingId}` : "/dashboard"
+        router.push(targetUrl)
+        return
+      }
+
+      // ── B. Pay Online Now (Razorpay Escrow) ──
+      await loadRazorpay()
+
       const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          deliveryType: "delivery",
-          deliveryAddress: farmCoords
-            ? `Farm GPS: ${farmCoords.latitude.toFixed(5)}, ${farmCoords.longitude.toFixed(5)} (${tool.taluk || "Local Hub"})`
-            : `${tool.taluk || "Kasaragod / Puttur"} Hub Dispatch`,
+          deliveryType,
+          deliveryAddress,
           items: [
             {
               toolId: tool.id,
@@ -205,8 +263,8 @@ export function BookingBottomSheet({
       const key = orderPayload.key || orderPayload.keyId || "rzp_test_placeholder"
       const bookingId = orderPayload.bookingId || orderPayload.bookings?.[0]?.id
 
-      // Dev Mock Checkout Handler
-      if (typeof window === "undefined" || !window.Razorpay || orderId?.startsWith("order_mock_")) {
+      // Mock order checkout handler (when mock gateway enabled)
+      if (orderId?.startsWith("order_mock_")) {
         const verifyRes = await fetch("/api/razorpay/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -219,13 +277,24 @@ export function BookingBottomSheet({
         })
 
         const verifyData = await verifyRes.json()
-        if (verifyData.success || process.env.NODE_ENV !== "production") {
+        if (verifyData.success) {
           onClose()
           if (onSuccess) onSuccess()
           const targetUrl = bookingId ? `/orders/${bookingId}` : "/dashboard"
           router.push(targetUrl)
           return
+        } else {
+          setErrorMessage(verifyData.error || "Mock payment verification failed. Please try again.")
+          setLoading(false)
+          return
         }
+      }
+
+      // Verify Razorpay SDK loaded successfully
+      if (typeof window === "undefined" || !window.Razorpay) {
+        setErrorMessage("Payment gateway failed to load. Please check your mobile data connection and try again.")
+        setLoading(false)
+        return
       }
 
       // Live / Sandbox Razorpay Modal
@@ -285,7 +354,22 @@ export function BookingBottomSheet({
       setErrorMessage(err instanceof Error ? err.message : "Booking initialization failed")
       setLoading(false)
     }
-  }, [tool, session, selectedDayOffset, days, serviceType, totalPayableUpfront, router, onClose, onSuccess])
+  }, [
+    tool,
+    session,
+    selectedDayOffset,
+    days,
+    serviceType,
+    deliveryType,
+    paymentMode,
+    totalPayableUpfront,
+    totalBookingValue,
+    farmCoords,
+    activeShift,
+    router,
+    onClose,
+    onSuccess,
+  ])
 
   if (!tool) return null
 
@@ -587,18 +671,162 @@ export function BookingBottomSheet({
                 </div>
               </div>
 
-              {/* ── Section 3: Pricing Breakdown & Pre-Auth Guarantee ── */}
-              <div className="rounded-2xl border border-[#E5E7EB] bg-[#FAF7F0] p-4 space-y-2.5">
-                {/* FinTech Deposit Guarantee Pill */}
-                <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/20 p-2.5 text-xs text-emerald-800 dark:text-emerald-300">
-                  <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-bold">Zero Cash Lock • UPI Pre-Authorization</p>
-                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                      No cash is debited for deposit today. A temporary hold is placed on UPI and auto-released upon tool return.
+              {/* ── Section 3: Fulfillment / Delivery Method ───── */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B4513]">
+                  3. FULFILLMENT METHOD
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("pickup")}
+                    className={`rounded-2xl border p-3 text-left transition-all cursor-pointer ${
+                      deliveryType === "pickup"
+                        ? "border-[#2D5016] bg-[#2D5016]/5 ring-1 ring-[#2D5016]"
+                        : "border-[#E5E7EB] bg-[#FAF7F0] hover:bg-[#FAF7F0]/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-display text-xs font-bold text-[#1C1C16]">Pickup from Owner</span>
+                      <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.2">
+                        ₹0
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] text-[#6B7280] leading-tight">
+                      Collect directly from {locationTaluk} hub
                     </p>
+                    <span className="mt-2 block text-xs font-bold text-[#2D5016]">FREE (₹0)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("delivery")}
+                    className={`rounded-2xl border p-3 text-left transition-all cursor-pointer ${
+                      deliveryType === "delivery"
+                        ? "border-[#2D5016] bg-[#2D5016]/5 ring-1 ring-[#2D5016]"
+                        : "border-[#E5E7EB] bg-[#FAF7F0] hover:bg-[#FAF7F0]/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-display text-xs font-bold text-[#1C1C16]">Home / Farm Delivery</span>
+                      <span className="text-[10px] font-bold text-[#8B4513]">+₹50</span>
+                    </div>
+                    <p className="mt-1 text-[10px] text-[#6B7280] leading-tight">
+                      Delivered to your pinned farm gate
+                    </p>
+                    <span className="mt-2 block text-xs font-bold text-[#8B4513]">₹50</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Section 4: Payment Method Toggle ─────────────── */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B4513]">
+                  4. PAYMENT METHOD
+                </span>
+                <div className="space-y-2.5">
+                  {/* Option A: Pay on Handover */}
+                  <div
+                    onClick={() => setPaymentMode("PAY_ON_HANDOVER")}
+                    className={`flex cursor-pointer items-start justify-between rounded-2xl border p-3.5 transition-all ${
+                      paymentMode === "PAY_ON_HANDOVER"
+                        ? "border-[#2D5016] bg-[#2D5016]/5 ring-1 ring-[#2D5016]"
+                        : "border-[#E5E7EB] bg-[#FAF7F0]/60 hover:bg-[#FAF7F0]"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                          paymentMode === "PAY_ON_HANDOVER"
+                            ? "border-[#2D5016] bg-[#2D5016] text-white"
+                            : "border-[#D1D5DB] bg-white"
+                        }`}
+                      >
+                        {paymentMode === "PAY_ON_HANDOVER" && <Check size={12} strokeWidth={3} />}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-display text-xs font-bold text-[#1C1C16]">
+                            Pay on Handover (UPI / Cash)
+                          </span>
+                          <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                            Trusted Neighbor
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-[#6B7280] leading-tight">
+                          Inspect machine first. Pay owner directly on handover. ₹0 charged today.
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="shrink-0 text-[11px] font-bold text-emerald-700">
+                      ₹0 online
+                    </span>
+                  </div>
+
+                  {/* Option B: Pay Online Now */}
+                  <div
+                    onClick={() => setPaymentMode("ONLINE")}
+                    className={`flex cursor-pointer items-start justify-between rounded-2xl border p-3.5 transition-all ${
+                      paymentMode === "ONLINE"
+                        ? "border-[#2D5016] bg-[#2D5016]/5 ring-1 ring-[#2D5016]"
+                        : "border-[#E5E7EB] bg-[#FAF7F0]/60 hover:bg-[#FAF7F0]"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                          paymentMode === "ONLINE"
+                            ? "border-[#2D5016] bg-[#2D5016] text-white"
+                            : "border-[#D1D5DB] bg-white"
+                        }`}
+                      >
+                        {paymentMode === "ONLINE" && <Check size={12} strokeWidth={3} />}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-display text-xs font-bold text-[#1C1C16]">
+                            Pay Online Now (Razorpay Escrow)
+                          </span>
+                          <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold">
+                            Escrow Hold
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-[#6B7280] leading-tight">
+                          Pre-authorize via UPI. Deposit held safely in escrow until return.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* ── Section 5: Pricing Breakdown & Guarantee ─────── */}
+              <div className="rounded-2xl border border-[#E5E7EB] bg-[#FAF7F0] p-4 space-y-2.5">
+                {/* Guarantee Pill */}
+                {paymentMode === "PAY_ON_HANDOVER" ? (
+                  <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/20 p-2.5 text-xs text-emerald-800 dark:text-emerald-300">
+                    <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Cohort Zero Trust Guarantee</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        Booking dispatches immediately for owner confirmation. Settle payment via UPI or cash directly at handover.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/20 p-2.5 text-xs text-emerald-800 dark:text-emerald-300">
+                    <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Zero Cash Lock • UPI Pre-Authorization</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        No cash is debited for deposit today. A temporary hold is placed on UPI and auto-released upon tool return.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between text-xs text-[#1C1C16] pt-1">
                   <span className="text-[#6B7280]">
@@ -624,13 +852,24 @@ export function BookingBottomSheet({
                   <span className="font-semibold">{fp(deposit)}</span>
                 </div>
 
+                <div className="flex items-center justify-between text-xs text-[#1C1C16]">
+                  <span className="text-[#6B7280]">
+                    Fulfillment ({deliveryType === "delivery" ? "Home Delivery" : "Pickup from Owner"})
+                  </span>
+                  <span className="font-semibold">
+                    {deliveryType === "delivery" ? fp(deliveryFee) : "FREE (₹0)"}
+                  </span>
+                </div>
+
                 <div className="pt-2 border-t border-[#E5E7EB]/80 flex items-baseline justify-between">
                   <div>
                     <span className="font-display text-sm font-bold text-[#1C1C16]">
                       Payable Now
                     </span>
                     <p className="text-[10px] text-[#2D5016] font-medium">
-                      * Includes operator & fuel allowance
+                      {paymentMode === "PAY_ON_HANDOVER"
+                        ? `* ${fp(totalBookingValue)} payable on handover`
+                        : "* Includes operator, fuel & deposit hold"}
                     </p>
                   </div>
 
@@ -641,7 +880,7 @@ export function BookingBottomSheet({
               </div>
             </div>
 
-            {/* ── Section 4: Bottom CTA Footer ─────────────────── */}
+            {/* ── Section 6: Bottom CTA Footer ─────────────────── */}
             <div className="border-t border-[#E5E7EB] p-4 space-y-2 bg-[#FFFFFF]">
               <button
                 type="button"
@@ -652,20 +891,36 @@ export function BookingBottomSheet({
                 {loading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Processing Payment…</span>
+                    <span>Processing Booking…</span>
                   </>
+                ) : paymentMode === "PAY_ON_HANDOVER" ? (
+                  <span>Confirm Booking (Pay on Handover) →</span>
                 ) : (
                   <span>Proceed to Pay {fp(totalPayableUpfront)} via UPI →</span>
                 )}
               </button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280]">
-                <span>🔒 Deposit held safely in escrow until return</span>
+                {paymentMode === "PAY_ON_HANDOVER" ? (
+                  <span>🤝 Trusted Neighbor: No online fee charged now. Handover directly with owner.</span>
+                ) : (
+                  <span>🔒 Deposit held safely in escrow until return</span>
+                )}
               </div>
             </div>
           </motion.div>
         </div>
       )}
+      {/* ── One-Time Phone Number Completion Prompt ── */}
+      <PhoneCompletionModal
+        isOpen={showPhoneModal}
+        onClose={() => setShowPhoneModal(false)}
+        onSuccess={() => {
+          setShowPhoneModal(false)
+          handleProceedToPay()
+        }}
+        canDismiss
+      />
     </AnimatePresence>
   )
 }

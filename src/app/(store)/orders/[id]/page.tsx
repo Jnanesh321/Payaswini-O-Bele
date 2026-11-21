@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { ChevronLeft, Package, Phone } from "lucide-react"
 import { Badge, Button, Card, Skeleton } from "@/components/ui"
 import { bookingStatusLabel, bookingStatusTone } from "@/lib/booking-status"
@@ -76,6 +76,7 @@ function formatStamp(iso: string): string {
 }
 
 export default function OrderDetailPage() {
+  const router = useRouter()
   const params = useParams()
   const id = Array.isArray(params.id) ? params.id[0] : params.id
   const [order, setOrder] = useState<BookingDetail | null>(null)
@@ -135,12 +136,19 @@ export default function OrderDetailPage() {
 
   return (
     <div className="container py-8">
-      <Link
-        href="/orders"
-        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window !== "undefined" && window.history.length > 1) {
+            router.back()
+          } else {
+            router.push("/orders")
+          }
+        }}
+        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
       >
-        <ChevronLeft className="h-4 w-4" /> Back to orders
-      </Link>
+        <ChevronLeft className="h-4 w-4" /> Back
+      </button>
 
       {loading ? (
         <div className="space-y-4">

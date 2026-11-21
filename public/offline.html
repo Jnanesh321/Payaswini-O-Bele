@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>O~Bele - ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ / Offline</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #FAF7F0;
+      color: #1C1208;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #D5D9C9;
+      border-radius: 24px;
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 4px 16px rgba(45, 80, 22, 0.08);
+    }
+    .icon-container {
+      width: 72px;
+      height: 72px;
+      background: #E8F0D5;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 32px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #2D5016;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5C4A37;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6B7280;
+      margin-bottom: 8px;
+    }
+    .kn-text {
+      font-size: 13px;
+      color: #4B5563;
+      margin-bottom: 24px;
+    }
+    .btn-retry {
+      background-color: #2D5016;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(45, 80, 22, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-retry:active {
+      transform: scale(0.97);
+      background-color: #223D10;
+    }
+    .footer-note {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #9CA3AF;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-container">
+      🚜
+    </div>
+
+    <h1>ನೆಟ್‌ವರ್ಕ್ ಸಿಗ್ನಲ್ ದುರ್ಬಲವಾಗಿದೆ</h1>
+    <h2>Weak Network Connection</h2>
+
+    <p>ತೋಟ ಅಥವಾ ಗ್ರಾಮೀಣ ಭಾಗದಲ್ಲಿ ಮೊಬೈಲ್ ಡೇಟಾ ಸಿಗ್ನಲ್ ಕಡಿತಗೊಂಡಿರಬಹುದು.</p>
+    <p class="kn-text">Mobile network signal seems weak or disconnected. Please check your data connection.</p>
+
+    <button class="btn-retry" onclick="retryConnection()">
+      <span>🔄</span>
+      <span>ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ / Retry Connection</span>
+    </button>
+
+    <div class="footer-note">
+      O~Bele (Payaswini) • Rural Agricultural Equipment Network
+    </div>
+  </div>
+
+  <script>
+    function retryConnection() {
+      const btn = document.querySelector('.btn-retry');
+      btn.innerHTML = '<span>⏳</span><span>ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ... / Retrying...</span>';
+      btn.disabled = true;
+      setTimeout(function() {
+        window.location.reload();
+      }, 500);
+    }
+
+    // Auto-retry when internet comes back online
+    window.addEventListener('online', function() {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

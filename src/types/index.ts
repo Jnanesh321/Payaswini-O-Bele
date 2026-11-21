@@ -55,6 +55,8 @@ export interface ToolCard {
     id?: string
     name?: string | null
     isVerified?: boolean
+    taluk?: string | null
+    village?: string | null
   } | null
   ownerOffers?: OwnerOffer[]
   createdAt: string

@@ -26,8 +26,18 @@ export interface UserCoordinates {
   timestamp?: number
 }
 
+export const ALL_AREAS_OPTION: TalukOption = {
+  id: "all",
+  name: "All Areas",
+  nameKn: "ಎಲ್ಲಾ ಪ್ರದೇಶಗಳು",
+  district: "Kasaragod",
+  distanceApprox: "All Hubs",
+  lat: 12.5937,
+  lng: 74.9458,
+}
+
 /**
- * 9 Regional Taluks covering the pilot corridor across
+ * 11 Regional Taluks covering the pilot corridor across
  * Kasaragod District (Kerala) and Dakshina Kannada District (Karnataka).
  * Each taluk center serves as the registered dispatch-origin / service-hub coordinate.
  */
@@ -69,6 +79,15 @@ export const REGIONAL_TALUKS: TalukOption[] = [
     lat: 12.5843,
     lng: 75.0536,
   },
+  {
+    id: "kanhangad",
+    name: "Kanhangad",
+    nameKn: "ಕಾಞಂಗಾಡ್",
+    district: "Kasaragod",
+    distanceApprox: "28-32 km",
+    lat: 12.3083,
+    lng: 75.0917,
+  },
 
   // Dakshina Kannada District (Karnataka)
   {
@@ -79,6 +98,15 @@ export const REGIONAL_TALUKS: TalukOption[] = [
     distanceApprox: "45-50 km",
     lat: 12.7687,
     lng: 75.2071,
+  },
+  {
+    id: "vittal",
+    name: "Vittal",
+    nameKn: "ವಿಟ್ಲ",
+    district: "Dakshina Kannada",
+    distanceApprox: "35-40 km",
+    lat: 12.7667,
+    lng: 75.1000,
   },
   {
     id: "sullia",
@@ -198,8 +226,14 @@ export function resolveRegisteredDispatchHub(
   if (cleaned.includes("kasaragod")) {
     return REGIONAL_TALUKS.find((t) => t.id === "kasaragod_town") ?? null
   }
+  if (cleaned.includes("kanhangad") || cleaned.includes("hosdurg")) {
+    return REGIONAL_TALUKS.find((t) => t.id === "kanhangad") ?? null
+  }
   if (cleaned.includes("puttur")) {
     return REGIONAL_TALUKS.find((t) => t.id === "puttur") ?? null
+  }
+  if (cleaned.includes("vittal") || cleaned.includes("vitla")) {
+    return REGIONAL_TALUKS.find((t) => t.id === "vittal") ?? null
   }
   if (cleaned.includes("sullia") || cleaned.includes("sulya")) {
     return REGIONAL_TALUKS.find((t) => t.id === "sullia") ?? null

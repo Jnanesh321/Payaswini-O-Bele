@@ -7,13 +7,19 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth()
     const body = await request.json()
-    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, bookingIds } = body
+    const razorpayOrderId = body.razorpayOrderId || body.razorpay_order_id
+    const razorpayPaymentId = body.razorpayPaymentId || body.razorpay_payment_id
+    const razorpaySignature = body.razorpaySignature || body.razorpay_signature
+    const bookingIds: string[] = Array.isArray(body.bookingIds)
+      ? body.bookingIds
+      : body.bookingId
+        ? [body.bookingId]
+        : []
 
     if (
       !razorpayOrderId ||
       !razorpayPaymentId ||
       !razorpaySignature ||
-      !Array.isArray(bookingIds) ||
       bookingIds.length === 0
     ) {
       return NextResponse.json(

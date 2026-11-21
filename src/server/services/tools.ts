@@ -10,10 +10,11 @@ export async function listTools(params: {
   minPrice?: string
   maxPrice?: string
   search?: string
+  taluk?: string
   page?: number
   limit?: number
 }) {
-  const { category, sortBy, minPrice, maxPrice, search, page = 1, limit = 12 } = params
+  const { category, sortBy, minPrice, maxPrice, search, taluk, page = 1, limit = 12 } = params
 
   const where: Record<string, unknown> = { isActive: true }
   if (category && category !== "all") where.category = category
@@ -27,6 +28,18 @@ export async function listTools(params: {
     if (minPrice) priceFilter.gte = parseFloat(minPrice)
     if (maxPrice) priceFilter.lte = parseFloat(maxPrice)
     where.pricePerDay = priceFilter
+  }
+  if (taluk && taluk.toLowerCase() !== "all") {
+    where.instances = {
+      some: {
+        owner: {
+          OR: [
+            { taluk: { contains: taluk, mode: "insensitive" } },
+            { village: { contains: taluk, mode: "insensitive" } },
+          ],
+        },
+      },
+    }
   }
 
   const orderBy: Record<string, string> = { createdAt: "desc" }
@@ -85,6 +98,7 @@ export async function listTools(params: {
         rating: inst.rating ?? 4.8,
         reviewCount: inst.reviewCount ?? 0,
         notes: inst.notes,
+        canSelfOperate: !t.requiresCertifiedOperator,
       }
     })
     const prices = ownerOffers.map((o) => o.pricePerDay)

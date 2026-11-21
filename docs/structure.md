@@ -15,7 +15,16 @@ krishirent/
 ├── tsconfig.json
 │
 ├── docs/                        — Project documentation (keep current)
+│   ├── audit/                   — Comprehensive engineering & security audit reports
+│   │   ├── architecture-and-engineering-review.md
+│   │   ├── frontend-review.md
+│   │   ├── backend-review.md
+│   │   ├── database-and-data-environments-review.md
+│   │   ├── security-review.md
+│   │   ├── qa-and-release-review.md
+│   │   └── documentation-review.md
 │   ├── changelog.md             — Completed work, dated entries
+│   ├── DEPLOYMENT.md            — Production deployment & Vercel/Neon guide
 │   ├── errors.md                — Known issues & gotchas
 │   ├── O-Bele-Specification-v1.md — Full product & engineering specification
 │   ├── structure.md             — This file

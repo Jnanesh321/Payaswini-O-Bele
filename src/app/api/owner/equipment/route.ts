@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireCapability, AuthGuardError } from "@/server/lib/auth-guard"
+import { requireAuth, AuthGuardError } from "@/server/lib/auth-guard"
 import { getOwnerEquipment } from "@/server/services/owners"
 import { prisma } from "@/server/db/prisma"
 import { CapabilityType, ToolCategory, ToolInstanceStatus, VerificationStatus } from "@prisma/client"
 
 export async function GET() {
   try {
-    const user = await requireCapability(CapabilityType.TOOL_OWNER)
+    const user = await requireAuth()
+    const hasOwnerCap = await prisma.userCapability.findUnique({
+      where: {
+        userId_type: {
+          userId: user.id,
+          type: CapabilityType.TOOL_OWNER,
+        },
+      },
+    })
+
+    if (!hasOwnerCap) {
+      return NextResponse.json({
+        success: true,
+        data: { equipment: [], totalEarnings: 0, pendingRequests: 0 },
+      })
+    }
+
     const data = await getOwnerEquipment(user.id)
     return NextResponse.json({ success: true, data })
   } catch (error) {
@@ -20,7 +36,51 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireCapability(CapabilityType.TOOL_OWNER)
+    const user = await requireAuth()
+
+    // Check if owner has a valid 12-digit Indian contact phone number for equipment handovers
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { phone: true },
+    })
+
+    const hasValidPhone = Boolean(
+      dbUser?.phone &&
+      dbUser.phone.startsWith("91") &&
+      dbUser.phone.length === 12 &&
+      !dbUser.phone.includes("000000")
+    )
+
+    if (!hasValidPhone) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "A valid 10-digit mobile number is required before listing equipment.",
+          needsPhone: true,
+        },
+        { status: 400 }
+      )
+    }
+
+    // Auto-grant TOOL_OWNER capability on first tool submission (Cohort Zero unblocker)
+    await prisma.userCapability.upsert({
+      where: {
+        userId_type: {
+          userId: user.id,
+          type: CapabilityType.TOOL_OWNER,
+        },
+      },
+      update: {
+        status: VerificationStatus.VERIFIED,
+      },
+      create: {
+        userId: user.id,
+        type: CapabilityType.TOOL_OWNER,
+        status: VerificationStatus.VERIFIED,
+        verifiedAt: new Date(),
+      },
+    })
+
     const body = await request.json()
     const {
       name,
@@ -125,7 +185,11 @@ export async function POST(request: NextRequest) {
         return `${prefix}_${randomSuffix}_${String(index).padStart(3, "0")}`
       }
 
-      // Create ToolInstance records with owner-specific rate, deposit, photos, condition, and PENDING status
+      // Cohort Zero pilot: auto-verify tools by default so real equipment is immediately live
+      const autoVerify = process.env.PILOT_AUTO_VERIFY_TOOLS !== "false"
+      const instanceVerification = autoVerify ? VerificationStatus.VERIFIED : VerificationStatus.PENDING
+
+      // Create ToolInstance records with owner-specific rate, deposit, photos, and condition
       const instancesData = Array.from({ length: qty }).map((_, i) => ({
         assetCode: generateAssetCode(name, i + 1),
         toolId: tool.id,
@@ -136,7 +200,7 @@ export async function POST(request: NextRequest) {
         deposit: depPaise,
         images: [toolImage],
         conditionGrade: typeof conditionGrade === "string" ? conditionGrade : "GOOD",
-        verificationStatus: VerificationStatus.PENDING,
+        verificationStatus: instanceVerification,
         notes: description,
       }))
 
@@ -147,10 +211,14 @@ export async function POST(request: NextRequest) {
       return tool
     })
 
+    const isLive = process.env.PILOT_AUTO_VERIFY_TOOLS !== "false"
+
     return NextResponse.json({
       success: true,
       tool: result,
-      message: "Tool listing submitted successfully. Pending admin approval before going live.",
+      message: isLive
+        ? "Tool listing published successfully and is now live on the marketplace."
+        : "Tool listing submitted successfully. Pending admin approval before going live.",
     })
   } catch (error) {
     if (error instanceof AuthGuardError) {

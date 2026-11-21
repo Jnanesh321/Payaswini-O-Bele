@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       minPrice: searchParams.get("minPrice") ?? undefined,
       maxPrice: searchParams.get("maxPrice") ?? undefined,
       search: searchParams.get("search") ?? undefined,
+      taluk: searchParams.get("taluk") ?? undefined,
       page: parseInt(searchParams.get("page") || "1"),
       limit: parseInt(searchParams.get("limit") || "12"),
     })

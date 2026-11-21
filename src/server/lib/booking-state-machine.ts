@@ -140,72 +140,90 @@ function tr(
 }
 
 const TRANSITION_RULES: readonly TransitionRule[] = [
+  // ── Milestone 1: REQUESTED / OWNER_PENDING -> OWNER_ACCEPTED ──
   tr(BookingStatus.REQUESTED, BookingStatus.OWNER_PENDING, [BookingEventActor.SYSTEM]),
+  tr(BookingStatus.REQUESTED, BookingStatus.OWNER_ACCEPTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.REQUESTED, BookingStatus.CANCELLED_BY_FARMER, [BookingEventActor.FARMER]),
   tr(BookingStatus.REQUESTED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.OWNER_PENDING, BookingStatus.OWNER_ACCEPTED, [BookingEventActor.TOOL_OWNER]),
+  tr(BookingStatus.OWNER_PENDING, BookingStatus.OWNER_ACCEPTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OWNER_PENDING, BookingStatus.CANCELLED_BY_OWNER, [BookingEventActor.TOOL_OWNER]),
   tr(BookingStatus.OWNER_PENDING, BookingStatus.CANCELLED_BY_FARMER, [BookingEventActor.FARMER]),
   tr(BookingStatus.OWNER_PENDING, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
+  // ── Milestone 2: OWNER_ACCEPTED -> WORK_STARTED (or normal intermediate steps) ──
   tr(BookingStatus.OWNER_ACCEPTED, BookingStatus.OPERATOR_PENDING, [BookingEventActor.SYSTEM]),
   tr(BookingStatus.OWNER_ACCEPTED, BookingStatus.TOOL_COLLECTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.FARMER, BookingEventActor.SYSTEM], BOOKING_MODES.selfOperate),
+  tr(BookingStatus.OWNER_ACCEPTED, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OWNER_ACCEPTED, BookingStatus.CANCELLED_BY_FARMER, [BookingEventActor.FARMER]),
   tr(BookingStatus.OWNER_ACCEPTED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
   tr(BookingStatus.OPERATOR_PENDING, BookingStatus.OPERATOR_ASSIGNED, [BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.OPERATOR_PENDING, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_PENDING, BookingStatus.FAILED_NO_OPERATOR, [BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_PENDING, BookingStatus.CANCELLED_BY_FARMER, [BookingEventActor.FARMER]),
   tr(BookingStatus.OPERATOR_PENDING, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
   tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.OPERATOR_ACCEPTED, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.OPERATOR_PENDING, [BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.CANCELLED_BY_OPERATOR, [BookingEventActor.OPERATOR]),
   tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.FAILED_NO_OPERATOR, [BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_ASSIGNED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
   tr(BookingStatus.OPERATOR_ACCEPTED, BookingStatus.FETCHING_TOOL, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.OPERATOR_ACCEPTED, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.OPERATOR_ACCEPTED, BookingStatus.CANCELLED_BY_OPERATOR, [BookingEventActor.OPERATOR]),
   tr(BookingStatus.OPERATOR_ACCEPTED, BookingStatus.CANCELLED_BY_FARMER, [BookingEventActor.FARMER]),
   tr(BookingStatus.OPERATOR_ACCEPTED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
   tr(BookingStatus.FETCHING_TOOL, BookingStatus.TOOL_COLLECTED, [BookingEventActor.OPERATOR, BookingEventActor.TOOL_OWNER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.FETCHING_TOOL, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.FETCHING_TOOL, BookingStatus.CANCELLED_BY_OPERATOR, [BookingEventActor.OPERATOR]),
   tr(BookingStatus.FETCHING_TOOL, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.TOOL_COLLECTED, BookingStatus.TRAVELLING_TO_FARM, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.TOOL_COLLECTED, BookingStatus.TRAVELLING_TO_FARM, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.TOOL_COLLECTED, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.TOOL_COLLECTED, BookingStatus.RETURNING_TOOL, [BookingEventActor.FARMER, BookingEventActor.TOOL_OWNER, BookingEventActor.SYSTEM], BOOKING_MODES.selfOperate),
   tr(BookingStatus.TOOL_COLLECTED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.TRAVELLING_TO_FARM, BookingStatus.ARRIVED, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.TRAVELLING_TO_FARM, BookingStatus.ARRIVED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.TRAVELLING_TO_FARM, BookingStatus.WORK_STARTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.TRAVELLING_TO_FARM, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.ARRIVED, BookingStatus.WORK_STARTED, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.ARRIVED, BookingStatus.WORK_STARTED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.ARRIVED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.WORK_STARTED, BookingStatus.WORK_PAUSED, [BookingEventActor.OPERATOR]),
-  tr(BookingStatus.WORK_STARTED, BookingStatus.WORK_COMPLETED, [BookingEventActor.OPERATOR]),
+  // ── Milestone 3: WORK_STARTED -> TOOL_RETURNED ──
+  tr(BookingStatus.WORK_STARTED, BookingStatus.WORK_PAUSED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER]),
+  tr(BookingStatus.WORK_STARTED, BookingStatus.WORK_COMPLETED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.WORK_STARTED, BookingStatus.TOOL_RETURNED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.WORK_STARTED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.WORK_PAUSED, BookingStatus.WORK_RESUMED, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.WORK_PAUSED, BookingStatus.WORK_RESUMED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER]),
+  tr(BookingStatus.WORK_PAUSED, BookingStatus.TOOL_RETURNED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.WORK_PAUSED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.WORK_RESUMED, BookingStatus.WORK_PAUSED, [BookingEventActor.OPERATOR]),
-  tr(BookingStatus.WORK_RESUMED, BookingStatus.WORK_COMPLETED, [BookingEventActor.OPERATOR]),
+  tr(BookingStatus.WORK_RESUMED, BookingStatus.WORK_PAUSED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER]),
+  tr(BookingStatus.WORK_RESUMED, BookingStatus.WORK_COMPLETED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.WORK_RESUMED, BookingStatus.TOOL_RETURNED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.WORK_RESUMED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.WORK_COMPLETED, BookingStatus.RETURNING_TOOL, [BookingEventActor.OPERATOR, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.WORK_COMPLETED, BookingStatus.RETURNING_TOOL, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.WORK_COMPLETED, BookingStatus.TOOL_RETURNED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.FARMER, BookingEventActor.SYSTEM]),
   tr(BookingStatus.WORK_COMPLETED, BookingStatus.DISPUTED, [BookingEventActor.FARMER, BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN]),
   tr(BookingStatus.WORK_COMPLETED, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.RETURNING_TOOL, BookingStatus.TOOL_RETURNED, [BookingEventActor.OPERATOR, BookingEventActor.TOOL_OWNER, BookingEventActor.SYSTEM]),
+  tr(BookingStatus.RETURNING_TOOL, BookingStatus.TOOL_RETURNED, [BookingEventActor.OPERATOR, BookingEventActor.FARMER, BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.RETURNING_TOOL, BookingStatus.DISPUTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN]),
   tr(BookingStatus.RETURNING_TOOL, BookingStatus.CANCELLED_BY_PLATFORM, [BookingEventActor.ADMIN]),
 
+  // ── Milestone 4 & 5: TOOL_RETURNED -> COMPLETED ──
   tr(BookingStatus.TOOL_RETURNED, BookingStatus.INSPECTION, [BookingEventActor.SYSTEM, BookingEventActor.TOOL_OWNER]),
+  tr(BookingStatus.TOOL_RETURNED, BookingStatus.COMPLETED, [BookingEventActor.TOOL_OWNER, BookingEventActor.OPERATOR, BookingEventActor.ADMIN, BookingEventActor.SYSTEM]),
   tr(BookingStatus.TOOL_RETURNED, BookingStatus.DISPUTED, [BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN]),
 
-  tr(BookingStatus.INSPECTION, BookingStatus.COMPLETED, [BookingEventActor.SYSTEM]),
+  tr(BookingStatus.INSPECTION, BookingStatus.COMPLETED, [BookingEventActor.SYSTEM, BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN]),
   tr(BookingStatus.INSPECTION, BookingStatus.DISPUTED, [BookingEventActor.SYSTEM, BookingEventActor.TOOL_OWNER, BookingEventActor.ADMIN]),
 
   tr(BookingStatus.DISPUTED, BookingStatus.COMPLETED, [BookingEventActor.ADMIN]),

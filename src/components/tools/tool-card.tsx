@@ -1,6 +1,7 @@
 import { useState, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { MapPin, Award, Star, Plus, Minus, UserCheck, ChevronDown, ChevronUp, Sparkles, ShieldCheck } from "lucide-react";
 import type { ToolCard as ToolCardType, OwnerOffer } from "@/types";
 import { BookingBottomSheet } from "./booking-bottom-sheet";
@@ -32,6 +33,7 @@ export interface ToolCardProps {
   translations?: Record<string, { name?: string; description?: string }> | null;
   canSelfOperate?: boolean;
   ownerOffers?: OwnerOffer[];
+  isSponsored?: boolean;
 }
 
 export const ToolCard = memo(function ToolCard({
@@ -42,7 +44,7 @@ export const ToolCard = memo(function ToolCard({
   ownerName = "Verified Owner",
   ownerVerified = true,
   taluk = "Kasaragod",
-  distanceKm = 3.2,
+  distanceKm,
   dailyRate,
   deposit = 1000,
   allowsSelfOperate = true,
@@ -55,7 +57,9 @@ export const ToolCard = memo(function ToolCard({
   images,
   thumbnailUrl,
   ownerOffers,
+  isSponsored = false,
 }: ToolCardProps) {
+  const locale = useLocale();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isOwnersExpanded, setIsOwnersExpanded] = useState(false);
   const [selectedOwner, setSelectedOwner] = useState<OwnerOffer | null>(null);
@@ -84,7 +88,12 @@ export const ToolCard = memo(function ToolCard({
   const finalOwnerVerified = ownerVerified ?? tool?.owner?.isVerified ?? true;
   const finalTaluk = selectedOwner?.taluk || taluk || tool?.taluk || "Kasaragod";
   const finalDistance =
-    distanceKm ?? tool?.distanceKm ?? Number((3.2 + ((index * 1.7) % 7)).toFixed(1));
+    typeof distanceKm === "number"
+      ? distanceKm
+      : typeof tool?.distanceKm === "number"
+      ? tool.distanceKm
+      : null;
+  const hasRealDistance = typeof finalDistance === "number";
 
   // Determine pricing based on selected owner or tool rate
   const rawRate =
@@ -114,10 +123,6 @@ export const ToolCard = memo(function ToolCard({
 
   const finalRequiresCert = requiresCertifiedOperator ?? tool?.requiresCertifiedOperator ?? false;
 
-  // Dynamic Instamart-style ETA generator based on index & distance
-  const etaMinutes = Math.min(60, Math.max(30, Math.round(finalDistance * 12)));
-  const isImmediate = index % 2 === 0;
-
   const toolObj = tool || {
     id: finalId,
     slug: finalSlug,
@@ -126,7 +131,7 @@ export const ToolCard = memo(function ToolCard({
     deposit: finalDeposit * 100,
     requiresCertifiedOperator: finalRequiresCert,
     taluk: finalTaluk,
-    distanceKm: finalDistance,
+    distanceKm: finalDistance ?? undefined,
     images: selectedOwner?.images && selectedOwner.images.length > 0 ? selectedOwner.images : [finalImage],
     canSelfOperate: selectedOwner?.canSelfOperate ?? allowsSelfOperate,
     toolInstanceId: selectedOwner?.instanceId,
@@ -159,22 +164,31 @@ export const ToolCard = memo(function ToolCard({
     <div className="group relative bg-card rounded-2xl p-3.5 border border-border/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col gap-3">
       {/* ── Top Hyperlocal Dispatch Banner (Instamart Style) ── */}
       <div className="flex items-center justify-between gap-1.5 text-[10px] font-bold">
-        {isImmediate ? (
+        {hasRealDistance ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 border border-emerald-500/20">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>⚡ Dispatches in ~{etaMinutes}m from {finalTaluk}</span>
+            <span>⚡ ~{finalDistance} km from your farm ({finalTaluk})</span>
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 border border-amber-500/20">
-            <span>🚜 Next slot: Tomorrow 6:00 AM</span>
+            <span>📍 Operating Hub: {finalTaluk}</span>
           </span>
         )}
 
-        {/* Krishi Assured Badge */}
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-          <Award className="w-3 h-3 text-primary shrink-0" />
-          <span>Krishi Assured</span>
-        </span>
+        <div className="flex items-center gap-1 shrink-0">
+          {isSponsored && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded-full border border-amber-300/80 dark:border-amber-700/60 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>{locale === "kn" ? "ಪ್ರಾಯೋಜಿತ" : "Sponsored"}</span>
+            </span>
+          )}
+
+          {/* Krishi Assured Badge */}
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+            <Award className="w-3 h-3 text-primary shrink-0" />
+            <span>Krishi Assured</span>
+          </span>
+        </div>
       </div>
 
       {/* ── Main Content: Image & Tool Specs ── */}
@@ -215,7 +229,7 @@ export const ToolCard = memo(function ToolCard({
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-md">
               <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-              {finalDistance} km • {finalTaluk}
+              {hasRealDistance ? `${finalDistance} km • ${finalTaluk}` : finalTaluk}
             </span>
 
             {finalRequiresCert ? (
