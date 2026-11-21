@@ -89,13 +89,10 @@ function getAdminApp(): App | null {
   if (projectId && clientEmail && privateKey) {
     try {
       privateKey = privateKey.trim()
-      if (
-        (privateKey.startsWith('"') && privateKey.endsWith('"')) ||
-        (privateKey.startsWith("'") && privateKey.endsWith("'"))
-      ) {
-        privateKey = privateKey.slice(1, -1)
-      }
-      privateKey = privateKey.replace(/\\n/g, "\n")
+      // Strip surrounding quotes (^"|"$ or ^'|'$)
+      privateKey = privateKey.replace(/^["']+|["']+$/g, "").trim()
+      // Normalize escaped newlines (\n) and Windows line breaks (\r\n) to standard newlines
+      privateKey = privateKey.replace(/\\n/g, "\n").replace(/\r\n/g, "\n")
       adminApp = initializeApp({
         credential: cert({
           projectId,

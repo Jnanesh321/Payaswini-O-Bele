@@ -35,13 +35,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    let body: any
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON request body" },
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
     const idToken = body?.idToken
 
     if (!idToken || typeof idToken !== "string") {
       return NextResponse.json(
         { success: false, error: "Missing or invalid idToken" },
-        { status: 400 }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       )
     }
 
@@ -55,11 +64,16 @@ export async function POST(request: NextRequest) {
     const token = await signSessionToken(sessionUser)
 
     // 4. Attach HTTP-only session cookie
-    const response = NextResponse.json({
-      success: true,
-      user: sessionUser,
-      isNewUser: Boolean(sessionUser.isNewUser),
-    })
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: sessionUser,
+        isNewUser: Boolean(sessionUser.isNewUser),
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    )
 
     const isSecure =
       process.env.NODE_ENV === "production" ||
@@ -74,23 +88,28 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch (error) {
-    if (error instanceof FirebaseTokenVerificationError) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: error.statusCode }
-      )
+  } catch (err: unknown) {
+    console.error("[/api/auth/session] Fatal error:", err)
+
+    let statusCode = 500
+    let message = "Authentication failed. Please check server logs."
+
+    if (err instanceof FirebaseTokenVerificationError) {
+      statusCode = err.statusCode || 401
+      message = err.message
+    } else if (err instanceof FirebaseUserLinkingError) {
+      statusCode = err.statusCode || 400
+      message = err.message
+    } else if (err instanceof Error) {
+      message = err.message
     }
-    if (error instanceof FirebaseUserLinkingError) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: error.statusCode }
-      )
-    }
-    console.error("[SessionAPI] Login failed:", error)
+
     return NextResponse.json(
-      { success: false, error: "Authentication failed. Please try again." },
-      { status: 500 }
+      { success: false, error: message },
+      {
+        status: statusCode,
+        headers: { "Content-Type": "application/json" },
+      }
     )
   }
 }

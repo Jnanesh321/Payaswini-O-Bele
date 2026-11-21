@@ -55,15 +55,28 @@ export async function resolveOrCreateFirebaseUser(
   }
 
   // 1. Check if user is already linked by Firebase UID
-  let user = await prisma.user.findUnique({
-    where: { firebaseUid: uid },
-    include: {
-      capabilities: {
-        where: { status: VerificationStatus.VERIFIED },
-        select: { type: true },
+  let user = null
+  try {
+    user = await prisma.user.findUnique({
+      where: { firebaseUid: uid },
+      include: {
+        capabilities: {
+          where: { status: VerificationStatus.VERIFIED },
+          select: { type: true },
+        },
       },
-    },
-  })
+    })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes("firebaseUid") || (err as { code?: string })?.code === "P2021" || (err as { code?: string })?.code === "P2022") {
+      console.error("[AuthFirebase] Neon Postgres database is missing 'firebaseUid' column. Please run 'npx prisma db push' or 'npx prisma migrate deploy'.", err)
+      throw new FirebaseUserLinkingError(
+        "Database schema mismatch: missing 'firebaseUid' in database. Please run 'npx prisma db push' or 'npx prisma migrate deploy' on Neon.",
+        500
+      )
+    }
+    throw err
+  }
 
   if (user) {
     // Keep avatar and name updated if missing in Prisma
@@ -160,31 +173,44 @@ export async function resolveOrCreateFirebaseUser(
   }
 
   // 4. Provision new user if not found by UID, phone, or email
-  user = await prisma.user.create({
-    data: {
-      phone: parsedPhone ? parsedPhone.normalized : null,
-      firebaseUid: uid,
-      name: name || (email ? email.split("@")[0] : `Farmer ${uid.slice(-4)}`),
-      email: email || undefined,
-      image: picture || undefined,
-      phoneVerified: Boolean(parsedPhone),
-      capabilities: {
-        create: [
-          {
-            type: "FARMER",
-            status: VerificationStatus.VERIFIED,
-            verifiedAt: new Date(),
-          },
-        ],
+  try {
+    user = await prisma.user.create({
+      data: {
+        phone: parsedPhone ? parsedPhone.normalized : null,
+        firebaseUid: uid,
+        name: name || (email ? email.split("@")[0] : `Farmer ${uid.slice(-4)}`),
+        email: email || undefined,
+        image: picture || undefined,
+        phoneVerified: Boolean(parsedPhone),
+        capabilities: {
+          create: [
+            {
+              type: "FARMER",
+              status: VerificationStatus.VERIFIED,
+              verifiedAt: new Date(),
+            },
+          ],
+        },
       },
-    },
-    include: {
-      capabilities: {
-        where: { status: VerificationStatus.VERIFIED },
-        select: { type: true },
+      include: {
+        capabilities: {
+          where: { status: VerificationStatus.VERIFIED },
+          select: { type: true },
+        },
       },
-    },
-  })
+    })
+  } catch (createErr: unknown) {
+    const errorMsg = createErr instanceof Error ? createErr.message : String(createErr)
+    if (errorMsg.includes("null value in column \"phone\"") || errorMsg.includes("P2011") || errorMsg.includes("phone")) {
+      console.error("[auth-firebase] Database schema requires non-null phone. Migration needed: Run 'npx prisma migrate deploy'.", createErr)
+      throw new Error("Database requires migration: 'phone' column cannot be null. Please run 'npx prisma migrate deploy'.")
+    }
+    if (errorMsg.includes("firebaseUid") || errorMsg.includes("P2021")) {
+      console.error("[auth-firebase] Database missing 'firebaseUid' column. Migration needed: Run 'npx prisma migrate deploy'.", createErr)
+      throw new Error("Database requires migration: 'firebaseUid' column missing. Please run 'npx prisma migrate deploy'.")
+    }
+    throw createErr
+  }
 
   return formatSessionUser(user, true)
 }
