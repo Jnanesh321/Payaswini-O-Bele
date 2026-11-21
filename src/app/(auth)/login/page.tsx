@@ -6,19 +6,25 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { AppLogo } from "@/components/ui/app-logo"
-import { Loader2, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react"
+import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Sun, Moon, Monitor } from "lucide-react"
 import { Button } from "@/components/ui"
 import { OtpBoxedInput } from "@/components/otp/otp-boxed-input"
 import { getClientAuth, isFirebaseConfigured } from "@/lib/firebase/client"
 import { isNativePlatform } from "@/lib/platform"
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from "firebase/auth"
 import { GoogleSignInButton, PhoneCompletionModal } from "@/components/auth"
+import { useTheme } from "next-themes"
+import { useMounted } from "@/hooks/use-mounted"
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialPhone = searchParams.get("phone") || ""
   const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const mounted = useMounted()
+  const effectiveTheme = mounted ? (resolvedTheme || "light") : "light"
+  const isDark = effectiveTheme === "dark"
 
   const [step, setStep] = useState<"phone" | "otp">("phone")
   const [phone, setPhone] = useState(initialPhone)
@@ -296,7 +302,7 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#121512] flex flex-col items-center justify-center p-4 font-sans text-foreground transition-colors duration-200">
+    <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0F150D] flex flex-col items-center justify-center p-4 font-sans text-neutral-900 dark:text-[#FAF7F0] transition-colors duration-200">
       {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
       <div id="recaptcha-container" />
 
@@ -306,38 +312,90 @@ export default function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-[390px] min-h-[85vh] flex flex-col justify-between"
       >
+        {/* Top Header Bar: Back to Home + Subtle Theme Toggle Pill */}
+        <div className="flex items-center justify-between w-full pt-4 pb-2 px-1">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Home</span>
+          </Link>
+
+          {/* Theme Toggle Pill: Light / Dark / System */}
+          <div
+            className="inline-flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-[#1C2618] border border-neutral-200 dark:border-[#2C3A26] text-[11px] font-semibold"
+            role="group"
+            aria-label="Theme selector"
+          >
+            <button
+              type="button"
+              onClick={() => setTheme("light")}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-all ${
+                mounted && theme === "light"
+                  ? "bg-white dark:bg-[#2D5016] text-neutral-900 dark:text-white shadow-xs font-bold"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+              title="Light theme"
+            >
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme("dark")}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-all ${
+                mounted && theme === "dark"
+                  ? "bg-white dark:bg-[#2D5016] text-neutral-900 dark:text-white shadow-xs font-bold"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+              title="Dark theme"
+            >
+              <Moon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Dark</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme("system")}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-all ${
+                mounted && theme === "system"
+                  ? "bg-white dark:bg-[#2D5016] text-neutral-900 dark:text-white shadow-xs font-bold"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+              }`}
+              title="System preference"
+            >
+              <Monitor className="w-3.5 h-3.5 text-blue-400" />
+              <span>System</span>
+            </button>
+          </div>
+        </div>
+
         {/* Brand Header with official SVG logo */}
-        <div className="pt-6 text-center">
+        <div className="pt-2 text-center">
           <Link href="/" className="inline-block">
-            <div className="rounded-2xl p-2.5 mb-2 inline-block transition-transform hover:scale-105">
+            <div className="rounded-2xl p-2 mb-1 inline-block transition-transform hover:scale-105">
               <AppLogo width={150} height={53} className="h-12 w-auto mx-auto" priority />
             </div>
           </Link>
-          <p className="text-[13px] text-muted-foreground font-sans font-medium tracking-wide">
+          <p className="text-[13px] text-neutral-600 dark:text-neutral-400 font-sans font-medium tracking-wide">
             Farm tools, shared.
           </p>
         </div>
 
-        {/* Scenic Illustration (Light: Sun / Green Farm | Dark: Moonlit Starry Farm) */}
-        <div className="relative w-full h-[130px] my-6 rounded-2xl overflow-hidden shadow-sm border border-border/50">
+        {/* Scenic Illustration (Daytime farm when light, moonlit night farm when dark) */}
+        <div className="relative w-full h-[130px] my-5 rounded-2xl overflow-hidden shadow-sm border border-neutral-200 dark:border-[#2C3A26]">
           <Image
-            src="/images/scenic-illustration.webp"
-            alt="Scenic Farm Illustration (Day)"
+            key={isDark ? "hero-dark" : "hero-light"}
+            src={isDark ? "/images/scenic-night-illustration.webp" : "/images/scenic-illustration.webp"}
+            alt={isDark ? "Scenic Farm Illustration (Night)" : "Scenic Farm Illustration (Day)"}
             fill
-            className="object-cover block dark:hidden"
-            priority
-          />
-          <Image
-            src="/images/scenic-night-illustration.webp"
-            alt="Scenic Farm Illustration (Night)"
-            fill
-            className="object-cover hidden dark:block"
+            className="object-cover transition-opacity duration-300"
             priority
           />
         </div>
 
         {/* Main Card with AnimatePresence for smooth transitions */}
-        <div className="bg-card dark:bg-card/90 rounded-2xl p-6 border border-border shadow-[0_4px_12px_rgba(45,80,22,0.05)] flex-1 flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#172014] rounded-2xl p-6 border border-neutral-200 dark:border-[#2C3A26] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex-1 flex flex-col justify-between transition-colors">
           <AnimatePresence mode="wait">
             {step === "phone" ? (
               <motion.div
@@ -349,10 +407,10 @@ export default function LoginPage() {
                 className="flex-1 flex flex-col justify-between"
               >
                 <div>
-                  <h2 className="text-[21px] font-bold text-foreground font-heading tracking-tight leading-snug">
+                  <h2 className="text-[21px] font-bold text-neutral-900 dark:text-[#FAF7F0] font-heading tracking-tight leading-snug">
                     Sign in to Payaswini O~Bele
                   </h2>
-                  <p className="text-[13px] text-muted-foreground font-sans mt-1.5 leading-relaxed font-medium">
+                  <p className="text-[13px] text-neutral-600 dark:text-neutral-400 font-sans mt-1.5 leading-relaxed font-medium">
                     Fast, secure login for farmers and machinery owners.
                   </p>
 
@@ -365,28 +423,28 @@ export default function LoginPage() {
                   </div>
 
                   <div className="my-5 flex items-center gap-3">
-                    <div className="h-[1px] flex-1 bg-border/80" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      or continue with mobile number
+                    <div className="h-[1px] flex-1 bg-neutral-200 dark:bg-[#2C3A26]" />
+                    <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      or continue with phone
                     </span>
-                    <div className="h-[1px] flex-1 bg-border/80" />
+                    <div className="h-[1px] flex-1 bg-neutral-200 dark:bg-[#2C3A26]" />
                   </div>
 
                   <form onSubmit={handleSendOtp} className="mt-2">
                     <div>
-                      <label className="text-[11px] font-bold text-[#6B706E] tracking-wider uppercase block" htmlFor="phone">
+                      <label className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 tracking-wider uppercase block" htmlFor="phone">
                         Phone Number
                       </label>
-                      <div className="flex items-center bg-[#FDFBF7] border border-[#D5D9C9] rounded-xl px-4 py-3 mt-2 focus-within:border-[#2D5016] focus-within:ring-1 focus-within:ring-[#2D5016] transition-all">
-                        <span className="text-[15px] font-bold text-[#6B706E] tracking-tight">
+                      <div className="flex items-center bg-neutral-50 dark:bg-[#1E291B] border border-neutral-200 dark:border-[#2C3A26] rounded-xl px-4 py-3 mt-2 focus-within:border-[#2D5016] dark:focus-within:border-[#4B8324] focus-within:ring-1 focus-within:ring-[#2D5016] dark:focus-within:ring-[#4B8324] transition-all">
+                        <span className="text-[15px] font-bold text-neutral-800 dark:text-neutral-200 tracking-tight">
                           +91
                         </span>
-                        <div className="h-4 w-[1px] bg-[#D5D9C9] mx-3" />
+                        <div className="h-4 w-[1px] bg-neutral-300 dark:bg-[#2C3A26] mx-3" />
                         <input
                           id="phone"
                           type="tel"
                           placeholder="98450 12345"
-                          className="bg-transparent border-0 outline-none p-0 text-[15px] font-bold text-[#1F2421] w-full placeholder-[#98A2B3] focus:ring-0 focus:outline-none"
+                          className="bg-transparent border-0 outline-none p-0 text-[15px] font-bold text-neutral-900 dark:text-[#FAF7F0] w-full placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-0 focus:outline-none"
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           required
@@ -396,16 +454,16 @@ export default function LoginPage() {
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="ml-2 text-[#3D6B1F]"
+                            className="ml-2 text-[#3D6B1F] dark:text-[#68A33C]"
                           >
-                            <CheckCircle2 className="h-5 w-5 fill-[#3D6B1F] text-white" />
+                            <CheckCircle2 className="h-5 w-5 fill-[#3D6B1F] dark:fill-[#68A33C] text-white" />
                           </motion.div>
                         )}
                       </div>
                     </div>
 
                     {isDevMode && (
-                      <div className="mt-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400">
+                      <div className="mt-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-300">
                         Firebase credentials not detected in env{missingClientEnv.length > 0 ? ` (Missing: ${missingClientEnv.join(", ")})` : ""}. Running in prototype dev auth mode.
                       </div>
                     )}
@@ -414,7 +472,7 @@ export default function LoginPage() {
                       <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-xs text-[#C0392B] font-semibold mt-3"
+                        className="text-xs text-red-600 dark:text-red-400 font-semibold mt-3"
                       >
                         {error}
                       </motion.p>
@@ -422,21 +480,21 @@ export default function LoginPage() {
                   </form>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-[#F2ECE1]">
-                  <p className="text-[11px] text-[#6B706E] text-center font-medium leading-normal">
+                <div className="mt-8 pt-4 border-t border-neutral-200 dark:border-[#2C3A26]">
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 text-center font-medium leading-normal">
                     By continuing, you agree to O~Bele&apos;s{" "}
-                    <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                    <span className="text-[#C85A32] dark:text-[#E07A5F] font-semibold hover:underline cursor-pointer">
                       Terms of Service
                     </span>{" "}
                     &{" "}
-                    <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                    <span className="text-[#C85A32] dark:text-[#E07A5F] font-semibold hover:underline cursor-pointer">
                       Privacy Policy
                     </span>.
                   </p>
 
                   <Button
                     onClick={handleSendOtp}
-                    className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
+                    className="w-full bg-[#143626] hover:bg-[#1E3A0F] dark:bg-[#2D5016] dark:hover:bg-[#3D6B1F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
                     disabled={loading || !isPhoneValid}
                   >
                     {loading ? (
@@ -467,7 +525,7 @@ export default function LoginPage() {
                         setStep("phone")
                         setError("")
                       }}
-                      className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 focus:outline-none"
+                      className="text-xs font-bold text-[#2D5016] dark:text-[#68A33C] hover:underline inline-flex items-center gap-1 focus:outline-none"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" /> Change Number
                     </button>
@@ -507,21 +565,21 @@ export default function LoginPage() {
                   )}
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-[#F2ECE1]">
-                  <p className="text-[11px] text-[#6B706E] text-center font-medium leading-normal">
+                <div className="mt-8 pt-4 border-t border-neutral-200 dark:border-[#2C3A26]">
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 text-center font-medium leading-normal">
                     By continuing, you agree to O~Bele&apos;s{" "}
-                    <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                    <span className="text-[#C85A32] dark:text-[#E07A5F] font-semibold hover:underline cursor-pointer">
                       Terms of Service
                     </span>{" "}
                     &{" "}
-                    <span className="text-[#C85A32] font-semibold hover:underline cursor-pointer">
+                    <span className="text-[#C85A32] dark:text-[#E07A5F] font-semibold hover:underline cursor-pointer">
                       Privacy Policy
                     </span>.
                   </p>
 
                   <Button
                     onClick={() => handleVerifyOtp(otpCode)}
-                    className="w-full bg-[#143626] hover:bg-[#1E3A0F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
+                    className="w-full bg-[#143626] hover:bg-[#1E3A0F] dark:bg-[#2D5016] dark:hover:bg-[#3D6B1F] text-white font-bold h-14 rounded-xl flex items-center justify-center gap-2 mt-4 transition-all shadow-[0_4px_12px_rgba(20,54,38,0.2)] active:scale-[0.98] disabled:opacity-50"
                     disabled={otpCode.length !== 6 || loading}
                   >
                     {loading ? (

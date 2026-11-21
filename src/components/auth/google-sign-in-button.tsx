@@ -99,10 +99,10 @@ export function GoogleSignInButton({
       type="button"
       onClick={handleGoogleSignIn}
       disabled={disabled || loading}
-      className={`w-full flex items-center justify-center gap-3 bg-[#FFFFFF] hover:bg-[#FAF7F0] text-[#1C1C16] font-bold py-3.5 px-4 rounded-2xl border border-[#D5D9C9] shadow-xs active:scale-[0.98] transition cursor-pointer disabled:opacity-60 ${className}`}
+      className={`w-full flex items-center justify-center gap-3 bg-white dark:bg-[#1E291B] hover:bg-neutral-50 dark:hover:bg-[#253322] text-neutral-900 dark:text-[#FAF7F0] font-bold py-3.5 px-4 rounded-2xl border border-neutral-200 dark:border-[#2C3A26] shadow-xs active:scale-[0.98] transition cursor-pointer disabled:opacity-60 ${className}`}
     >
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-[#2D5016]" />
+        <Loader2 className="w-5 h-5 animate-spin text-[#2D5016] dark:text-[#68A33C]" />
       ) : (
         <GoogleIcon className="w-5 h-5" />
       )}
