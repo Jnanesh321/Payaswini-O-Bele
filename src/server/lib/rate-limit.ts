@@ -17,25 +17,31 @@ export async function checkRateLimit(
   const expiresAt = new Date(windowStart.getTime() + windowMs * 2)
   const resetAt = new Date(windowStart.getTime() + windowMs)
 
-  const record = await prisma.rateLimit.upsert({
-    where: {
-      key_windowStart: { key, windowStart },
-    },
-    update: {
-      count: { increment: 1 },
-    },
-    create: {
-      key,
-      count: 1,
-      windowStart,
-      expiresAt,
-    },
-  })
+  try {
+    const record = await prisma.rateLimit.upsert({
+      where: {
+        key_windowStart: { key, windowStart },
+      },
+      update: {
+        count: { increment: 1 },
+      },
+      create: {
+        key,
+        count: 1,
+        windowStart,
+        expiresAt,
+      },
+    })
 
-  const allowed = record.count <= config.maxRequests
-  const remaining = Math.max(0, config.maxRequests - record.count)
+    const allowed = record.count <= config.maxRequests
+    const remaining = Math.max(0, config.maxRequests - record.count)
 
-  return { allowed, remaining, resetAt }
+    return { allowed, remaining, resetAt }
+  } catch (err) {
+    // Fail-open gracefully in production if the database is unreachable or rateLimit table isn't migrated
+    console.warn("[RateLimit] Database rate limit check failed, failing open:", err)
+    return { allowed: true, remaining: config.maxRequests, resetAt }
+  }
 }
 
 export function getClientIp(request: Request): string {

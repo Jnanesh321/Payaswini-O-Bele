@@ -103,19 +103,41 @@ export default function LoginPage() {
       body: JSON.stringify({ idToken }),
     })
 
-    const data = await res.json()
+    const contentType = res.headers.get("content-type") || ""
+    let data: any = null
+
+    if (contentType.includes("application/json")) {
+      try {
+        data = await res.json()
+      } catch {
+        data = null
+      }
+    } else {
+      // Server returned HTML (e.g. 500/504 error page from Vercel or SPA catch-all rewrite)
+      const rawText = await res.text()
+      console.error("[Login] Expected JSON from /api/auth/session but received non-JSON:", {
+        status: res.status,
+        statusText: res.statusText,
+        contentType,
+        snippet: rawText.slice(0, 300),
+      })
+      throw new Error(
+        `Server returned ${res.status} ${res.statusText || "Error"} (non-JSON response). Please check server logs and Vercel environment variables.`
+      )
+    }
+
     if (!res.ok) {
-      throw new Error(data.error || "Authentication failed on server")
+      throw new Error(data?.error || `Authentication failed on server (Status ${res.status})`)
     }
 
     // If Google user or newly provisioned user needs phone number for handovers, prompt now
-    if (data.user?.needsPhone) {
+    if (data?.user?.needsPhone) {
       setShowPhoneModal(true)
       return
     }
 
     // If newly provisioned user, show them what they want to do (rent, lend, operate)
-    if (data.isNewUser) {
+    if (data?.isNewUser) {
       router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
       router.refresh()
       return
@@ -124,11 +146,13 @@ export default function LoginPage() {
     // Check capabilities for onboarding routing (for users without assigned roles)
     try {
       const capRes = await fetch("/api/user/capabilities")
-      const capData = await capRes.json()
-      if (capData.success && !capData.hasCapabilities) {
-        router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
-        router.refresh()
-        return
+      if (capRes.ok && (capRes.headers.get("content-type") || "").includes("application/json")) {
+        const capData = await capRes.json()
+        if (capData?.success && !capData?.hasCapabilities) {
+          router.push(`/onboarding?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+          router.refresh()
+          return
+        }
       }
     } catch (err) {
       console.error("Failed to check capabilities:", err)

@@ -48,12 +48,33 @@ export function AuthModal({
       body: JSON.stringify({ idToken }),
     })
 
-    const data = await res.json()
-    if (!res.ok) {
-      throw new Error(data.error || "Authentication failed on server")
+    const contentType = res.headers.get("content-type") || ""
+    let data: any = null
+
+    if (contentType.includes("application/json")) {
+      try {
+        data = await res.json()
+      } catch {
+        data = null
+      }
+    } else {
+      const rawText = await res.text()
+      console.error("[AuthModal] Expected JSON from /api/auth/session but received non-JSON:", {
+        status: res.status,
+        statusText: res.statusText,
+        contentType,
+        snippet: rawText.slice(0, 300),
+      })
+      throw new Error(
+        `Server returned ${res.status} ${res.statusText || "Error"} (non-JSON response). Please check server logs.`
+      )
     }
 
-    if (data.user?.needsPhone) {
+    if (!res.ok) {
+      throw new Error(data?.error || `Authentication failed on server (Status ${res.status})`)
+    }
+
+    if (data?.user?.needsPhone) {
       setShowPhoneModal(true)
       return
     }

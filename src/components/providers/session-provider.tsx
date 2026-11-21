@@ -28,7 +28,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const fetchSession = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/me")
-      if (res.ok) {
+      const contentType = res.headers.get("content-type") || ""
+      if (res.ok && contentType.includes("application/json")) {
         const json = await res.json()
         if (json.success && json.user) {
           setUser(json.user)
@@ -51,7 +52,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       try {
         const res = await fetch("/api/auth/me")
         if (!isMounted) return
-        if (res.ok) {
+        const contentType = res.headers.get("content-type") || ""
+        if (res.ok && contentType.includes("application/json")) {
           const json = await res.json()
           if (json.success && json.user) {
             setUser(json.user)

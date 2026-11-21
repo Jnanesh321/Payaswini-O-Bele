@@ -42,9 +42,30 @@ export function PhoneCompletionModal({
         body: JSON.stringify({ phone: cleanPhone }),
       })
 
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to update phone number")
+      const contentType = res.headers.get("content-type") || ""
+      let data: any = null
+
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json()
+        } catch {
+          data = null
+        }
+      } else {
+        const rawText = await res.text()
+        console.error("[PhoneModal] Expected JSON from /api/user/phone but received non-JSON:", {
+          status: res.status,
+          statusText: res.statusText,
+          contentType,
+          snippet: rawText.slice(0, 300),
+        })
+        throw new Error(
+          `Server returned ${res.status} ${res.statusText || "Error"} (non-JSON response). Please check server logs.`
+        )
+      }
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || `Failed to update phone number (Status ${res.status})`)
       }
 
       onSuccess(data.user?.phone || `91${cleanPhone}`)
